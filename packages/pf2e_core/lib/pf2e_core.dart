@@ -15,4 +15,7 @@ export 'src/model/spellcasting.dart';
 export 'src/model/variant_rules.dart';
 export 'src/pathbuilder/import_report.dart';
 export 'src/pathbuilder/pathbuilder_importer.dart';
+export 'src/rules/check_resolver.dart';
+export 'src/rules/degree_of_success.dart';
 export 'src/rules/derived_stats.dart';
+export 'src/rules/dice.dart';

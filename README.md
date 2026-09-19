@@ -1,14 +1,15 @@
 # Game
 
-A text-first Pathfinder 2e RPG for Android and iOS, built around importing a
-character you already play.
+A text-first Pathfinder 2e RPG for phones, tablets, and the browser, built
+around importing a character you already play.
 
 ## The idea
 
 You export your character from [Pathbuilder 2e](https://pathbuilder2e.com/) and
 play *that* character — not a generic one. The pitch is the gap between table
-sessions: short, phone-shaped, no GM needed, and it feeds the campaign rather
-than competing with it.
+sessions: short, no GM needed, and it feeds the campaign rather than competing
+with it. Phone-shaped first, but a text log and an input bar scale up to a
+tablet or a desktop browser far more gracefully than a tactical grid would.
 
 ## Design decisions so far
 
@@ -27,7 +28,10 @@ Three amendments to the 90s inspiration:
 
 - **Tap-composed commands, not a typed parser.** Verbs and targets as chips
   that assemble the same grammar underneath. The log reads like a MUD; the
-  input does not fight a touchscreen.
+  input does not fight a touchscreen. Because both forms compile to the same
+  grammar, the typed parser comes back for free wherever there is a real
+  keyboard — the web and tablet builds can offer it as a power-user path while
+  phones stay on chips.
 - **Zones, not a flat world.** PF2e is more spatial than it looks — flanking,
   reach, and reactions are core. Abstract positions (engaged / near / far)
   preserve that without a grid.
@@ -43,9 +47,17 @@ load-bearing fix.
 asynchronous multiplayer drops in later. Async also keeps a larger group
 viable: turn latency is fatal to a shared tactical grid and harmless to text.
 
-**Flutter + Dart**, with the rules engine as a pure package carrying no
-Flutter dependency, so it stays headlessly testable and the UI stays
-swappable.
+**Flutter + Dart**, which reaches Android, iOS, tablets, and the web from one
+codebase, with the rules engine as a pure package carrying no Flutter
+dependency, so it stays headlessly testable and the UI stays swappable.
+
+Targeting the browser is not free, and it constrains the engine rather than
+just the UI. Dart integers are 64-bit when compiled natively but are backed by
+doubles on the web, exact only to 2^53. Any arithmetic that relies on 64-bit
+wraparound would therefore give different answers in a browser than on a
+phone — which for dice means a replayed turn diverging between a PC and a
+phone. The dice roller is built inside that bound deliberately; see
+`packages/pf2e_core/lib/src/rules/dice.dart`.
 
 ## Layout
 
@@ -60,8 +72,9 @@ a full character sheet — before any UI exists.
 
 ## Status
 
-`pf2e_core` imports a real export and reproduces its sheet exactly. Every
-value is pinned against the Pathbuilder display for build 472704:
+`pf2e_core` imports a real export, reproduces its sheet exactly, and resolves
+checks against it. Every sheet value is pinned against the Pathbuilder display
+for build 472704:
 
 ```
 $ dart run pf2e_core:sheet packages/pf2e_core/test/fixtures/korash.json
@@ -73,6 +86,11 @@ AC 25  HP 70  Speed 20ft  Class DC 22
 Fortitude +12 (E)  Reflex +10 (E)  Will +10 (E)
 ```
 
+Check resolution covers the four degrees of success and the natural 20/1
+shifts, driven by a seeded roller whose sequence is fixed by its seed and can
+be snapshotted mid-turn — which is what makes an asynchronous turn replayable
+on someone else's device.
+
 ## Next
 
 The gap between importing a character and *running* one is the real work. A
@@ -80,9 +98,10 @@ level 6 character references roughly 80 distinct rules elements — feats, class
 features, spells, focus spells — and implementing those, not parsing them, is
 the bulk of the project. Near-term order:
 
-1. Character store: import, re-import on level-up without losing history, party
+1. Scene model: locations with options gated on skills and DCs, as data. Two
+   or three hand-written scenes is enough to feel whether the loop works.
+2. Character store: import, re-import on level-up without losing history, party
    of four.
-2. Skill checks and degrees of success — the smallest complete game loop.
 3. Zone-based encounters over the derived statblock.
 4. Feat and spell effects, as a growing set with explicit gaps surfaced to the
    player rather than silently ignored. These live in a separate content
