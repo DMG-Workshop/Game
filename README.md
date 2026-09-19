@@ -116,6 +116,11 @@ The same character is expert at reading a corpse and untrained at reciting
 over it. In a combat sim both collapse to "+15 to hit"; here they are the
 content.
 
+A party of four is stored with full import history. Re-importing after a
+level-up proposes an update rather than applying one, listing exactly what
+changed, and every import is kept — including its raw payload, so an earlier
+state can always be re-derived.
+
 ## Next
 
 The gap between importing a character and *running* one is the real work. A
@@ -123,9 +128,7 @@ level 6 character references roughly 80 distinct rules elements — feats, class
 features, spells, focus spells — and implementing those, not parsing them, is
 the bulk of the project. Near-term order:
 
-1. Character store: import, re-import on level-up without losing history, party
-   of four.
-2. Zone-based encounters over the derived statblock.
+1. Zone-based encounters over the derived statblock.
 4. Feat and spell effects, as a growing set with explicit gaps surfaced to the
    player rather than silently ignored. These live in a separate content
    package: rules *text and names* are licensed material, rules *arithmetic* is
