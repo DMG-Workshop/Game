@@ -85,7 +85,10 @@ the bulk of the project. Near-term order:
 2. Skill checks and degrees of success — the smallest complete game loop.
 3. Zone-based encounters over the derived statblock.
 4. Feat and spell effects, as a growing set with explicit gaps surfaced to the
-   player rather than silently ignored.
+   player rather than silently ignored. These live in a separate content
+   package: rules *text and names* are licensed material, rules *arithmetic* is
+   not, so keeping them apart scopes the licence obligation to one place. See
+   [NOTICE.md](NOTICE.md).
 
 Re-import has to be non-destructive. The character levels up at the table, in
 Pathbuilder; if this app grants its own XP the two copies drift and the thing
@@ -102,16 +105,14 @@ dart analyze
 
 ## Licence and attribution
 
-Pathfinder 2e rules mechanics are published by Paizo under the ORC License
-(Remaster) and the OGL 1.0a (pre-Remaster). This project implements rules
-mechanics only and ships no Paizo trademarks, setting material, adventure
-content, or art. "Pathfinder" is a trademark of Paizo Inc.; Paizo's Community
-Use Policy is non-commercial and does not cover a paid application.
+**Not distributable yet.** This project implements Pathfinder 2e rules
+mechanics, which Paizo publishes under the ORC License. That licence requires
+the distributed work to carry the licence text and an attribution notice, and
+neither is complete here — `LICENSES/ORC_LICENSE.txt` is a placeholder.
 
-Pathbuilder 2e is a third-party application by Redrazors and is not affiliated
-with this project. Its export dialog links to the Pathmuncher Foundry VTT
-module, so third-party import is an advertised use, but no Pathbuilder data is
-bundled or scraped here — the user supplies their own export.
+See [NOTICE.md](NOTICE.md) for what is outstanding, what must never be included
+(trademarks, Golarion setting material, adventure content, art), and why the
+licence boundary and the engine/content boundary should be the same line.
 
-None of the above is legal advice. Get the licence notice reviewed before any
-commercial release.
+"Pathfinder" is a trademark of Paizo Inc. This project is unaffiliated with
+Paizo and with Pathbuilder. None of this is legal advice.

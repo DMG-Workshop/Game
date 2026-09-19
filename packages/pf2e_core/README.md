@@ -74,9 +74,15 @@ Intelligence), not `+10`.
 
 ## Licence
 
-Pathfinder 2e rules mechanics are published by Paizo under the ORC License
-(Remaster) and the OGL 1.0a (pre-Remaster). This package implements rules
-mechanics only. It ships no Paizo trademarks, setting material, adventure
-content, or art, and it is not affiliated with or endorsed by Paizo or with
-Pathbuilder. Any distributed build must carry the appropriate licence notice —
-get that reviewed before shipping commercially.
+This package implements Pathfinder 2e rules mechanics, published by Paizo under
+the ORC License. The required licence text and attribution notice are **not yet
+complete** — see [NOTICE.md](../../NOTICE.md) at the repository root before
+distributing anything.
+
+The package ships no Paizo trademarks, setting material, adventure content, or
+art. The one concentration of licensed expression here is
+`test/fixtures/korash.json`, a real Pathbuilder export naming roughly eighty
+rules elements; it is kept because pinning the importer against a real payload
+is worth more than a synthetic one.
+
+Unaffiliated with Paizo and with Pathbuilder. Not legal advice.
