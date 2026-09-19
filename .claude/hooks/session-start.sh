@@ -62,10 +62,13 @@ if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   echo "export PATH=\"$DART_SDK_DIR/bin:\$PATH\"" >> "$CLAUDE_ENV_FILE"
 fi
 
-# Warm the package cache so `dart test` works immediately.
-if [ -f "$PROJECT_DIR/packages/pf2e_core/pubspec.yaml" ]; then
-  echo "Resolving pf2e_core dependencies..."
-  (cd "$PROJECT_DIR/packages/pf2e_core" && dart pub get)
-fi
+# Warm the package cache so `dart test` works immediately. Every package under
+# packages/ is resolved, so a new one does not need this hook edited.
+shopt -s nullglob
+for pubspec in "$PROJECT_DIR"/packages/*/pubspec.yaml; do
+  package_dir="$(dirname "$pubspec")"
+  echo "Resolving $(basename "$package_dir") dependencies..."
+  (cd "$package_dir" && dart pub get)
+done
 
 echo "Dart toolchain ready."

@@ -178,6 +178,40 @@ class DerivedStats {
     return null;
   }
 
+  /// Resolves a statistic from a string key, for data-driven content.
+  ///
+  /// Accepts a core skill (`deception`), a Lore subskill (`lore:undead`), a
+  /// save (`fortitude`), or `perception`. Matching ignores case and
+  /// surrounding whitespace. Returns null when nothing matches, so callers can
+  /// report a bad key in their content rather than silently rolling the wrong
+  /// statistic.
+  CheckValue? statByKey(String key) {
+    final needle = key.trim().toLowerCase();
+    if (needle.isEmpty) return null;
+
+    if (needle.startsWith('lore:')) {
+      return lore(needle.substring(5));
+    }
+
+    switch (needle) {
+      case 'perception':
+        return perception;
+      case 'fortitude':
+      case 'fort':
+        return fortitude;
+      case 'reflex':
+      case 'ref':
+        return reflex;
+      case 'will':
+        return will;
+    }
+
+    if (CoreSkill.tryParse(needle) case final coreSkill?) {
+      return skill(coreSkill);
+    }
+    return null;
+  }
+
   /// Spell attack bonus and DC per spellcasting entry.
   List<SpellcastingValue> get spellcasting => [
         for (final entry in character.spellcasting)

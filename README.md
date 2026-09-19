@@ -64,11 +64,16 @@ phone. The dice roller is built inside that bound deliberately; see
 ```
 packages/
   pf2e_core/     Rules engine and Pathbuilder importer (pure Dart, no Flutter)
+  game_core/     Scene engine and session state (depends on pf2e_core)
 ```
 
-The Flutter app is not started yet. `pf2e_core` is the foundation: it proves
-the riskiest assumption — that a Pathbuilder export contains enough to rebuild
-a full character sheet — before any UI exists.
+The Flutter app is not started yet, and deliberately so: the game is playable
+in a terminal first. A text log with an input bar *is* the product, so proving
+the loop costs a CLI rather than an app shell. If it is not good in a terminal,
+a UI will not save it.
+
+`pf2e_core` proves that a Pathbuilder export contains enough to rebuild a full
+character sheet. `game_core` proves the loop on top of it.
 
 ## Status
 
@@ -91,6 +96,26 @@ shifts, driven by a seeded roller whose sequence is fixed by its seed and can
 be snapshotted mid-turn — which is what makes an asynchronous turn replayable
 on someone else's device.
 
+**The game is playable.** A short adventure ships as data, and the menu makes
+the whole design argument on its own:
+
+```
+$ dart run game_core:play --seed=12 --choices=examine-body,descend
+
+  1. Examine the body properly  [Lore: Undead +14 vs DC 18]
+  2. Recite the funeral rites over him  [Religion +0 vs DC 15]
+  3. Offer the widow your condolences  [Diplomacy +13 vs DC 20]
+  4. Collect your fee and go
+
+> examine-body
+
+  ~ Lore: Undead: d20(16) +14 = 30 vs DC 18 -> Critical Success
+```
+
+The same character is expert at reading a corpse and untrained at reciting
+over it. In a combat sim both collapse to "+15 to hit"; here they are the
+content.
+
 ## Next
 
 The gap between importing a character and *running* one is the real work. A
@@ -98,11 +123,9 @@ level 6 character references roughly 80 distinct rules elements — feats, class
 features, spells, focus spells — and implementing those, not parsing them, is
 the bulk of the project. Near-term order:
 
-1. Scene model: locations with options gated on skills and DCs, as data. Two
-   or three hand-written scenes is enough to feel whether the loop works.
-2. Character store: import, re-import on level-up without losing history, party
+1. Character store: import, re-import on level-up without losing history, party
    of four.
-3. Zone-based encounters over the derived statblock.
+2. Zone-based encounters over the derived statblock.
 4. Feat and spell effects, as a growing set with explicit gaps surfaced to the
    player rather than silently ignored. These live in a separate content
    package: rules *text and names* are licensed material, rules *arithmetic* is

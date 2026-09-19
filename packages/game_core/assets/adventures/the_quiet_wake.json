@@ -1,0 +1,259 @@
+{
+  "id": "the-quiet-wake",
+  "title": "The Quiet Wake",
+  "startScene": "chapel",
+  "scenes": [
+    {
+      "id": "chapel",
+      "title": "The Chapel of Ash",
+      "body": "Rain gnaws at the shutters. Wilm Harrow lies in an open casket, hands folded, coins on his eyes — and you laid him out yourself two days ago, so you know for a fact the left hand was the broken one. It is folded over the right now.\n\nThe widow Harrow watches from the second pew. Eleven mourners. Not one of them has looked at the body since you arrived.",
+      "options": [
+        {
+          "id": "examine-body",
+          "label": "Examine the body properly",
+          "check": { "stat": "lore:undead", "dc": 18 },
+          "outcomes": {
+            "criticalSuccess": {
+              "text": "You do not need to touch him. The stillness is wrong — not the slackness of the dead but the patience of something waiting for an instruction. Someone has bound Wilm Harrow as a thrall and dressed the binding up as grief. Whoever did it was competent and in a hurry, and the tether runs down, toward the crypt.",
+              "setFlags": ["knows-thrall", "suspicious"]
+            },
+            "success": {
+              "text": "The hands. The colour under the nails. The way the chest has not settled the way a two-day chest settles. Wilm Harrow is not merely dead, and the wrongness of it points downward, toward the crypt stair.",
+              "setFlags": ["suspicious"]
+            },
+            "failure": {
+              "text": "You lean close. Cold, correct, unremarkable — and yet your own hands know they folded that left hand differently. Knowing a thing is wrong is not the same as knowing what it is."
+            },
+            "criticalFailure": {
+              "text": "You lean too close for too long, and the widow's voice cuts across the chapel: \"Undertaker. Is there a problem with my husband?\" Eleven faces turn. Somewhere below the floor, something stops moving.",
+              "setFlags": ["alarmed"]
+            }
+          }
+        },
+        {
+          "id": "recite-rites",
+          "label": "Recite the funeral rites over him",
+          "check": { "stat": "religion", "dc": 15 },
+          "outcomes": {
+            "success": {
+              "text": "You find the cadence from somewhere and the room settles into it. For a moment the wrongness in the casket seems to hold its breath."
+            },
+            "failure": {
+              "text": "You know the dead. You do not know the gods. You get four words in before the shape of the next one deserts you, and the widow's mouth thins at the silence."
+            },
+            "criticalFailure": {
+              "text": "You reach for a prayer and come back with an undertaker's inventory cadence instead — flat, procedural, and unmistakably not a blessing. A mourner in the third row crosses herself at you rather than with you.",
+              "setFlags": ["alarmed"]
+            }
+          }
+        },
+        {
+          "id": "speak-widow",
+          "label": "Offer the widow your condolences",
+          "check": { "stat": "diplomacy", "dc": 20 },
+          "outcomes": {
+            "success": {
+              "text": "You say the true thing rather than the kind one, which is that he was a difficult man who deserved a careful burial. Her grip loosens on the pew. \"He came back up the stair,\" she says, to her hands. \"On the first night. I did not imagine it.\"",
+              "setFlags": ["widow-trusts", "suspicious"]
+            },
+            "failure": {
+              "text": "She accepts your words the way one accepts a delivery. Whatever she is holding, she is not handing it to you."
+            },
+            "criticalFailure": {
+              "text": "\"You people,\" she says, loud enough for the pews. \"You handle the dead all day and you have no idea how to speak to the living.\" She is not wrong, and now everyone is looking.",
+              "setFlags": ["alarmed"]
+            }
+          }
+        },
+        {
+          "id": "descend",
+          "label": "Take the crypt stair",
+          "requires": { "flags": ["suspicious"] },
+          "outcome": {
+            "text": "You excuse yourself with the particular authority of a man whose job is downstairs, and the mourners let you go.",
+            "goTo": "crypt"
+          }
+        },
+        {
+          "id": "leave",
+          "label": "Collect your fee and go",
+          "outcome": {
+            "text": "It is not your house, not your husband, and not your night.",
+            "goTo": "ending-walked-away"
+          }
+        }
+      ]
+    },
+    {
+      "id": "crypt",
+      "title": "Below the Chapel",
+      "body": "Eleven generations of Harrows in the walls, and one lamp still burning that no one lit for a funeral. The air down here is dry and busy.\n\nAt the far end, a coffin lid rests against the wall. Beside it, a ledger lies open, its pages weighted flat with a stone.",
+      "options": [
+        {
+          "id": "read-ledger",
+          "label": "Read the ledger",
+          "check": { "stat": "lore:local undead", "dc": 16 },
+          "outcomes": {
+            "criticalSuccess": {
+              "text": "Not a burial register — a worklist. Names, dates, and beside each a small mark you have seen twice before in this parish, both times on bodies that would not stay filed. Wilm Harrow is the fourth name. The fifth is tonight's date, and it is the widow's.",
+              "setFlags": ["knows-thrall", "knows-target"]
+            },
+            "success": {
+              "text": "Names and dates in a careful hand, and against four of them a mark that is not a religious one. Wilm Harrow is the fourth. There is a fifth line, freshly inked, and the date beside it is tonight.",
+              "setFlags": ["knows-thrall"]
+            },
+            "failure": {
+              "text": "Names, dates, a tidy hand. It reads like a parish record and tells you nothing a parish record would not."
+            }
+          }
+        },
+        {
+          "id": "search",
+          "label": "Search the crypt",
+          "check": { "stat": "perception", "dc": 18 },
+          "outcomes": {
+            "success": {
+              "text": "Scuff marks in the dust, going up the stair and coming back down. Several times. Recently. Whoever it is has not been trying very hard to hide it, which is its own kind of information."
+            },
+            "failure": {
+              "text": "Dust, stone, and the accumulated silence of a family that never much liked one another."
+            },
+            "criticalFailure": {
+              "text": "You put your hand on the coffin lid to steady it and it goes over with a crack that travels the length of the chapel above.",
+              "setFlags": ["alarmed"]
+            }
+          }
+        },
+        {
+          "id": "open-coffin",
+          "label": "Lift the fallen lid back into place",
+          "check": { "stat": "athletics", "dc": 20 },
+          "outcomes": {
+            "success": {
+              "text": "Stone grinds on stone and settles true. The crypt looks undisturbed again, which may buy you a quarter of an hour."
+            },
+            "failure": {
+              "text": "It is heavier than it has any right to be, and it does not go where you want it."
+            }
+          }
+        },
+        {
+          "id": "confront",
+          "label": "Follow the lamp to the inner vault",
+          "requires": { "flags": ["knows-thrall"] },
+          "outcome": {
+            "text": "The lamp is burning for someone. You go and find out who.",
+            "goTo": "vault"
+          }
+        },
+        {
+          "id": "back",
+          "label": "Go back up",
+          "outcome": {
+            "text": "You climb back toward the sound of rain and murmuring.",
+            "goTo": "chapel"
+          }
+        }
+      ]
+    },
+    {
+      "id": "vault",
+      "title": "The Inner Vault",
+      "body": "A thin man in a good coat is writing in a second ledger by lamplight. He does not startle. He finishes the line first.\n\n\"The undertaker,\" he says. \"I did wonder whether you would be a problem. You laid him out very well, you know. It made the binding much easier.\"",
+      "options": [
+        {
+          "id": "command",
+          "label": "Take the tether off him yourself",
+          "requires": { "minProficiency": { "stat": "lore:undead", "rank": "expert" } },
+          "check": { "stat": "lore:undead", "dc": 20 },
+          "outcomes": {
+            "criticalSuccess": {
+              "text": "You have spent your life learning what the dead are owed, and a binding is only a sentence someone else wrote. You read it, you find its end, and you unpick it in front of him. Upstairs, eleven mourners hear a man in a casket let go of a breath he had been holding for two days.\n\nThe thin man looks at his own ledger as if it has insulted him.",
+              "goTo": "ending-unmade"
+            },
+            "success": {
+              "text": "You find the seam of the thing and pull. It does not come apart cleanly, but it comes apart, and whatever was standing behind his shoulder is no longer standing anywhere.",
+              "goTo": "ending-unmade"
+            },
+            "failure": {
+              "text": "You reach for the binding and it is not where a binding should be. He has written it inside out — badly, but unfamiliarly, which is worse.",
+              "setFlags": ["exposed"]
+            }
+          }
+        },
+        {
+          "id": "bluff",
+          "label": "Tell him you were sent to collect",
+          "check": { "stat": "deception", "dc": 22 },
+          "outcomes": {
+            "criticalSuccess": {
+              "text": "You name a price, a schedule, and an employer, and you do it in the bored register of a man who has done this a hundred times. He apologises for the delay. He actually apologises.",
+              "goTo": "ending-collected"
+            },
+            "success": {
+              "text": "He weighs you, decides the risk of being right is worse than the cost of being wrong, and closes the ledger. \"Then you had better take him,\" he says.",
+              "goTo": "ending-collected"
+            },
+            "failure": {
+              "text": "\"No,\" he says, pleasantly. \"No, I don't think you were.\"",
+              "setFlags": ["exposed"]
+            }
+          }
+        },
+        {
+          "id": "intimidate",
+          "label": "Explain what happens to people who do this in your parish",
+          "check": { "stat": "intimidation", "dc": 20 },
+          "outcomes": {
+            "success": {
+              "text": "You are an orc with a scythe in a room full of other people's relatives, and you let that finish the sentence for you. He gathers his ledger with unhurried, unconvincing dignity.",
+              "goTo": "ending-driven-off"
+            },
+            "failure": {
+              "text": "He looks at the scythe the way one looks at weather. \"You are very large,\" he agrees, \"and I am very nearly finished.\"",
+              "setFlags": ["exposed"]
+            }
+          }
+        },
+        {
+          "id": "withdraw",
+          "label": "Back out and take the widow with you",
+          "outcome": {
+            "text": "You have what you came for: a name, a date, and the certainty that the fifth line is tonight.",
+            "goTo": "ending-warned"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ending-unmade",
+      "title": "Unmade",
+      "body": "You put Wilm Harrow back the way he was supposed to be, which is the whole of your profession stated plainly. The thin man will be someone's problem again — but not tonight's, and not hers.",
+      "isEnding": true
+    },
+    {
+      "id": "ending-collected",
+      "title": "Collected",
+      "body": "You walk a dead man out of his own wake under a lie so flat it could be filed, and nobody stops you. The widow does not ask where he has gone. She looks, if anything, relieved.",
+      "isEnding": true
+    },
+    {
+      "id": "ending-driven-off",
+      "title": "Driven Off",
+      "body": "He goes, and he takes his ledger, and the fifth line goes with him unfinished. You have not solved it. You have moved it. Some nights that is the job.",
+      "isEnding": true
+    },
+    {
+      "id": "ending-warned",
+      "title": "The Fifth Line",
+      "body": "You get her out into the rain and tell her the truth in the fewest words it will fit into. She does not argue. She had already counted the nights herself.",
+      "isEnding": true
+    },
+    {
+      "id": "ending-walked-away",
+      "title": "Not Your Night",
+      "body": "You collect your fee and walk home through the rain. Two days later the parish buries the widow Harrow, and the notice says it was sudden.",
+      "isEnding": true
+    }
+  ]
+}
