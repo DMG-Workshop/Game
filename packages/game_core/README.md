@@ -70,6 +70,48 @@ with no outcomes at all.
 Stat keys are checked separately via `unresolvableStats`, because a typo like
 `lore:undad` is only detectable against a real character sheet.
 
+## The party
+
+Four, by default, because Pathfinder 2e's encounter budgets assume four player
+characters. Import four and published encounter maths works as written, with no
+invented scaling — that is the reason the party exists rather than a single
+hero.
+
+`Party.bestFor('lore:undead')` answers the question a group check actually
+poses: who should roll? It matters that one of them is an expert and the rest
+are untrained. `rankedFor` gives the whole table, best first.
+
+## Re-import is never destructive
+
+The character belongs to the table, not to this app. It levels up in
+Pathbuilder and arrives here again, so an import must never overwrite what came
+before.
+
+`CharacterStore.prepare()` returns a proposal rather than applying anything:
+
+```dart
+final proposal = store.prepare(payload, buildCode: '472704');
+
+proposal.isNewCharacter;  // false
+proposal.confidence;      // MatchConfidence.exact
+proposal.changes;         // ['level 6 -> 7', 'gained 2 feat(s): ...']
+proposal.warnings;        // importer notes, plus anything odd about the update
+
+store.commit(proposal);     // appends a revision to the matched member
+store.commitAsNew(proposal); // or force a separate member — twins happen
+```
+
+Matching is by Pathbuilder export code when one is known (`exact`), otherwise
+by name, ancestry and class — the fields that survive levelling (`likely`).
+Pathbuilder payloads carry no id of their own, so identity is ours to assign
+and keep.
+
+Every import is kept as a `CharacterRevision`, including its **raw payload**.
+That means an earlier state can always be re-derived, and a later improvement
+to the importer can be applied retroactively to imports taken before it
+existed. Reverting appends a revision rather than truncating, so an accidental
+revert is itself reversible.
+
 ## Sessions are replayable
 
 `GameSession.snapshot()` captures the current scene, the flags, and the dice
