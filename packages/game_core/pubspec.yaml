@@ -1,0 +1,15 @@
+name: game_core
+description: Scene engine and session state for the text-first Pathfinder 2e RPG.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  pf2e_core:
+    path: ../pf2e_core
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.25.0

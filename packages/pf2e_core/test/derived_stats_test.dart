@@ -167,4 +167,28 @@ void main() {
     expect(sheet, contains('Speed 20ft'));
     expect(sheet, contains('Lore: Undead'));
   });
+
+  group('statByKey', () {
+    test('resolves core skills, lores, saves and perception', () {
+      expect(stats.statByKey('deception')!.total, 13);
+      expect(stats.statByKey('Athletics')!.total, 12);
+      expect(stats.statByKey('  occultism  ')!.total, 12);
+      expect(stats.statByKey('lore:undead')!.total, 14);
+      expect(stats.statByKey('Lore: Local Undead')!.total, 12);
+      expect(stats.statByKey('perception')!.total, 8);
+      expect(stats.statByKey('fortitude')!.total, 12);
+      expect(stats.statByKey('will')!.total, 10);
+    });
+
+    test('distinguishes a skill from a same-named lore', () {
+      expect(stats.statByKey('religion')!.total, 0);
+      expect(stats.statByKey('lore:religion')!.total, 12);
+    });
+
+    test('returns null for an unknown key rather than guessing', () {
+      expect(stats.statByKey('basketweaving'), isNull);
+      expect(stats.statByKey('lore:nonexistent'), isNull);
+      expect(stats.statByKey(''), isNull);
+    });
+  });
 }
