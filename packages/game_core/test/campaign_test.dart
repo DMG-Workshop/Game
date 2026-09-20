@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:game_core/game_core.dart';
+import 'package:pf2e_core/pf2e_core.dart';
 import 'package:test/test.dart';
 
 const _dir = '../../campaigns/shattered_seals';
@@ -170,6 +171,61 @@ void main() {
     test('filters by type', () {
       expect(campaign.gear.ofType('armor'), hasLength(1));
       expect(campaign.gear.ofType('weapon'), hasLength(3));
+    });
+  });
+
+  group('system vocabulary', () {
+    // Pathfinder and D&D 5e name several skills differently, and 5e wording
+    // slips into notes written from memory. An item promising a bonus to a
+    // skill that does not exist is a rule nothing can ever apply, so the
+    // mechanical text is checked rather than trusted.
+    const fiveEditionOnly = {
+      'persuasion': 'Diplomacy',
+      'animal handling': 'Nature',
+      'sleight of hand': 'Thievery',
+      'investigation': 'Perception, or Recall Knowledge',
+      'insight': 'Perception',
+    };
+
+    test('gear rules text uses Pathfinder skill names', () {
+      final offences = <String>[];
+      for (final item in campaign.gear.all) {
+        final text =
+            '${item.special ?? ''} ${item.traits.join(' ')}'.toLowerCase();
+        for (final entry in fiveEditionOnly.entries) {
+          if (text.contains(entry.key)) {
+            offences.add('${item.name}: "${entry.key}" should be '
+                '${entry.value}');
+          }
+        }
+      }
+      expect(offences, isEmpty, reason: offences.join('; '));
+    });
+
+    test("the Monarch's Vestment grants a typed Diplomacy bonus", () {
+      // Bonuses in Pathfinder are typed, and an untyped one would stack where
+      // it should not, so the item says which kind it is.
+      final vestment = campaign.gear.byId('a_011_monarchs_vestment')!;
+      expect(vestment.special, contains('Diplomacy'));
+      expect(vestment.special, contains('item bonus'));
+      expect(vestment.special, isNot(contains('Persuasion')));
+    });
+
+    test('every skill an item names is one the engine can resolve', () {
+      // Korash stands in as any imported character: the skill list is the
+      // same for all of them.
+      final stats = DerivedStats(const PathbuilderImporter()
+          .importJson(
+              File('../pf2e_core/test/fixtures/korash.json').readAsStringSync())
+          .character);
+      for (final item in campaign.gear.all) {
+        for (final skill in CoreSkill.values) {
+          if ((item.special ?? '').contains(skill.displayName)) {
+            expect(stats.statByKey(skill.key), isNotNull,
+                reason: '${item.name} names ${skill.displayName}');
+          }
+        }
+      }
     });
   });
 

@@ -27,7 +27,7 @@
       "traits": ["heavy", "divine", "authority"],
       "description": "Golden plate armor fit for a king. It emanates majesty.",
       "stats": { "ac": 20, "bonus": 2, "magic": true },
-      "special": "+2 to Charisma/Persuasion checks."
+      "special": "+2 item bonus to Diplomacy checks."
     },
     {
       "item_id": "w_018_shadow_ripper",
