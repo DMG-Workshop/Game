@@ -148,7 +148,11 @@ level 6 character references roughly 80 distinct rules elements — feats, class
 features, spells, focus spells — and implementing those, not parsing them, is
 the bulk of the project. Near-term order:
 
-1. Zone-based encounters over the derived statblock.
+1. Room navigation and NPC conversation over the campaign map, so Valorheim is
+   walkable rather than only modelled.
+2. Writing the fourteen rooms the map names but nobody has written yet — run
+   `dart run game_core:survey` for the current list.
+3. Zone-based encounters over the derived statblock.
 4. Feat and spell effects, as a growing set with explicit gaps surfaced to the
    player rather than silently ignored. These live in a separate content
    package: rules *text and names* are licensed material, rules *arithmetic* is
