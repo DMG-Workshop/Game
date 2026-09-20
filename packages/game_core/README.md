@@ -15,11 +15,40 @@ are one problem, narrative is another.
 ```
 dart run game_core:play
 dart run game_core:play --seed=12 --choices=examine-body,descend,read-ledger
+dart run game_core:play --characters=korash.json,sela.json --seed=12
 ```
 
 `--choices` plays a scripted sequence instead of reading stdin, which makes a
 playthrough reproducible and testable. With a fixed `--seed`, the same choices
 always produce the same rolls.
+
+At the prompt, add a name to say who attempts something — `examine-body
+korash`. Without one, the best candidate rolls.
+
+## Who rolls
+
+The engine **does not decide this**. `candidatesFor` ranks everyone who could
+attempt a check, `suggestedActorFor` names the best, and `choose` accepts any
+of them:
+
+```dart
+session.suggestedActorFor('examine-body');       // (actor: korash, stat: +14)
+session.choose('examine-body');                  // the best one rolls
+session.choose('recite-rites', actorId: 'korash') // or this one does
+```
+
+So a client can roll the suggestion silently, offer the ranked list, or let a
+scene constrain it. None of those is foreclosed, because the product answer
+isn't obvious yet and the engine shouldn't pretend otherwise.
+
+An actor with no such statistic is left out rather than ranked last — an
+absent Lore is not the same as an untrained skill. A gate opens an option when
+*any* actor satisfies it, and is re-checked against whoever actually attempts
+it, so the party is offered the chance only its expert can take.
+
+The ranking produces detail nobody writes on purpose. Korash the undertaker is
++0 at reciting funeral rites; Sela the rogue is +2, because both are untrained
+and she has the Wisdom. The party's best at burying someone is the thief.
 
 ## Content is data
 

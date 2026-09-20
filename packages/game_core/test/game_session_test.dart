@@ -177,7 +177,7 @@ void main() {
       final snapshot = original.snapshot();
       final resumed = GameSession.restore(
         adventure: loadQuietWake(),
-        character: loadKorash(),
+        actors: [SessionActor(id: 'pc', character: loadKorash())],
         snapshot: snapshot,
       );
 
@@ -202,7 +202,7 @@ void main() {
       expect(
         () => GameSession.restore(
           adventure: loadQuietWake(),
-          character: loadKorash(),
+          actors: [SessionActor(id: 'pc', character: loadKorash())],
           snapshot: session.snapshot(),
         ),
         throwsArgumentError,

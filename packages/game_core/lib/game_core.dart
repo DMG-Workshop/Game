@@ -12,3 +12,4 @@ export 'src/scene/adventure_loader.dart';
 export 'src/scene/scene.dart';
 export 'src/session/game_event.dart';
 export 'src/session/game_session.dart';
+export 'src/session/session_actor.dart';

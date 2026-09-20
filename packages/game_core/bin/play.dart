@@ -18,14 +18,19 @@ Future<void> main(List<String> args) async {
     return;
   }
 
-  final characterPath = options['character'] ?? _defaultCharacter;
+  final characterPaths = (options['characters'] ?? options['character'] ?? '')
+      .split(',')
+      .map((p) => p.trim())
+      .where((p) => p.isNotEmpty)
+      .toList();
+  if (characterPaths.isEmpty) characterPaths.add(_defaultCharacter);
+
   final adventurePath = options['adventure'] ?? _defaultAdventure;
   final seed = int.tryParse(options['seed'] ?? '') ??
       DateTime.now().millisecondsSinceEpoch;
 
-  final characterFile = File(characterPath);
   final adventureFile = File(adventurePath);
-  for (final file in [characterFile, adventureFile]) {
+  for (final file in [...characterPaths.map(File.new), adventureFile]) {
     if (!file.existsSync()) {
       stderr.writeln('No such file: ${file.path}');
       exitCode = 66;
@@ -33,11 +38,17 @@ Future<void> main(List<String> args) async {
     }
   }
 
-  final ImportResult imported;
+  final actors = <SessionActor>[];
   final Adventure adventure;
   try {
-    imported = const PathbuilderImporter()
-        .importJson(characterFile.readAsStringSync());
+    for (final path in characterPaths) {
+      final imported =
+          const PathbuilderImporter().importJson(File(path).readAsStringSync());
+      actors.add(SessionActor(
+        id: _actorIdFor(imported.character.name, actors),
+        character: imported.character,
+      ));
+    }
     adventure =
         const AdventureLoader().fromJson(adventureFile.readAsStringSync());
   } on PathbuilderImportException catch (e) {
@@ -52,15 +63,22 @@ Future<void> main(List<String> args) async {
 
   final session = GameSession(
     adventure: adventure,
-    character: imported.character,
+    actors: actors,
     roller: DiceRoller(seed),
   );
 
-  final missing =
-      const AdventureLoader().unresolvableStats(adventure, session.stats);
+  // A statistic nobody in the party has is a content bug, not a bad roll.
+  final missing = <String>{};
+  for (final actor in session.actors) {
+    missing.addAll(
+        const AdventureLoader().unresolvableStats(adventure, actor.stats));
+  }
+  for (final actor in session.actors) {
+    missing.removeWhere((key) => actor.statFor(key) != null);
+  }
   if (missing.isNotEmpty) {
-    stderr.writeln('Adventure references unknown statistics: '
-        '${missing.join(', ')}');
+    stderr.writeln('Adventure references statistics nobody has: '
+        '${(missing.toList()..sort()).join(', ')}');
     exitCode = 65;
     return;
   }
@@ -68,8 +86,11 @@ Future<void> main(List<String> args) async {
   stdout
     ..writeln('=' * 68)
     ..writeln(adventure.title)
-    ..writeln('Playing ${session.character} (seed $seed)')
-    ..writeln('=' * 68);
+    ..writeln('Party (seed $seed):');
+  for (final actor in session.actors) {
+    stdout.writeln('  ${actor.id.padRight(8)} $actor');
+  }
+  stdout.writeln('=' * 68);
 
   final scripted = (options['choices'] ?? '')
       .split(',')
@@ -113,14 +134,20 @@ Future<void> main(List<String> args) async {
       }
     }
 
-    final resolved = _resolveChoice(choice, available);
+    // "examine-body korash" or "1 sela" names who attempts it; without a name
+    // the best candidate does.
+    final parts = choice.split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
+    final resolved =
+        parts.isEmpty ? null : _resolveChoice(parts.first, available);
+    final actorId = parts.length > 1 ? parts.elementAt(1) : null;
     if (resolved == null) {
       stdout.writeln('Not an option here.');
       continue;
     }
 
     try {
-      _renderEvent(session.choose(resolved));
+      _renderEvent(session.choose(resolved, actorId: actorId),
+          solo: session.actors.length == 1);
     } on InvalidChoiceException catch (e) {
       stdout.writeln(e.message);
     }
@@ -157,30 +184,58 @@ void _renderScene(GameSession session) {
 void _look(GameSession session) => _renderScene(session);
 
 void _renderOptions(GameSession session, List<SceneOption> available) {
+  final solo = session.actors.length == 1;
   stdout.writeln('');
   for (var i = 0; i < available.length; i++) {
     final option = available[i];
     final check = option.check;
     var suffix = '';
     if (check != null) {
-      final stat = session.stats.statByKey(check.statKey);
-      suffix = stat == null
-          ? '  [${check.statKey} DC ${check.dc}]'
-          : '  [${stat.label} ${stat.formatted} vs DC ${check.dc}]';
+      final best = session.suggestedActorFor(option.id);
+      if (best == null) {
+        suffix = '  [nobody can roll ${check.statKey}]';
+      } else {
+        // Name who would roll it, and by how much they beat the next best —
+        // with a party, that gap is the interesting part of the choice.
+        final who = solo ? '' : '${best.actor.name}: ';
+        suffix = '  [$who${best.stat.label} ${best.stat.formatted} '
+            'vs DC ${check.dc}]';
+      }
     }
     stdout.writeln('  ${i + 1}. ${option.label}$suffix');
+
+    if (!solo && check != null) {
+      final others = session.candidatesFor(option.id).skip(1);
+      if (others.isNotEmpty) {
+        stdout.writeln('       also: ${others.map((c) => '${c.actor.id} '
+            '${c.stat.formatted}').join(', ')}');
+      }
+    }
   }
 }
 
-void _renderEvent(GameEvent event) {
+void _renderEvent(GameEvent event, {required bool solo}) {
   final check = event.check;
   if (check != null) {
-    stdout.writeln('\n  ~ ${check.label}: d20(${check.dieRoll}) '
+    final who = solo ? '' : '${event.actorName} — ';
+    stdout.writeln('\n  ~ $who${check.label}: d20(${check.dieRoll}) '
         '${check.modifier >= 0 ? '+' : ''}${check.modifier} = ${check.total} '
         'vs DC ${check.dc} -> ${check.degree.displayName}'
         '${check.wasShiftedByNatural ? ' (natural ${check.dieRoll})' : ''}');
   }
   stdout.writeln('\n${_wrap(event.narration)}');
+}
+
+/// A short, stable handle for typing at the prompt: first name, lower-cased,
+/// suffixed only if two characters collide.
+String _actorIdFor(String name, List<SessionActor> existing) {
+  final base = name.trim().split(RegExp(r'\s+')).first.toLowerCase();
+  final taken = {for (final a in existing) a.id};
+  if (!taken.contains(base)) return base;
+  for (var n = 2;; n++) {
+    final candidate = '$base$n';
+    if (!taken.contains(candidate)) return candidate;
+  }
 }
 
 String _wrap(String text, {int width = 68}) {
@@ -222,9 +277,14 @@ Map<String, String> _parseArgs(List<String> args) {
 const _usage = '''
 usage: play [options]
 
-  --character=PATH   Pathbuilder export (default: $_defaultCharacter)
+  --characters=A,B   One or more Pathbuilder exports, comma separated
+                     (default: $_defaultCharacter)
   --adventure=PATH   Adventure JSON (default: $_defaultAdventure)
   --seed=N           Dice seed; omit for a random one
   --choices=a,b,c    Play a scripted sequence instead of reading stdin
   --help             Show this message
+
+At the prompt, enter an option number or id. Add a name to say who attempts
+it ("examine-body korash"); without one, the best candidate rolls. "look"
+re-describes the room, "quit" ends the session.
 ''';

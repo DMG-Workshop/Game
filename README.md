@@ -121,6 +121,19 @@ level-up proposes an update rather than applying one, listing exactly what
 changed, and every import is kept — including its raw payload, so an earlier
 state can always be re-derived.
 
+With a party, the menu names who would roll:
+
+```
+  1. Examine the body properly  [Korash Blackearth: Lore: Undead +14 vs DC 18]
+  2. Recite the funeral rites over him  [Sela Finch: Religion +2 vs DC 15]
+       also: korash +0
+```
+
+Korash is the undertaker and he is *worse* at reciting funeral rites than the
+rogue, because both are untrained and she has the Wisdom. Nobody authored
+that; it falls out of two real character sheets meeting one scene. It is the
+clearest evidence so far that the design bet is sound.
+
 ## Next
 
 The gap between importing a character and *running* one is the real work. A
@@ -142,11 +155,16 @@ that made it *their* character quietly breaks.
 ## Development
 
 ```
-cd packages/pf2e_core
+cd packages/pf2e_core   # or packages/game_core
 dart pub get
+dart analyze --fatal-infos
+dart format --output=none --set-exit-if-changed .
 dart test
-dart analyze
 ```
+
+CI runs exactly those three checks on both packages, on the same pinned Dart
+version the SessionStart hook installs, so a local run and a CI run disagree
+about nothing.
 
 ## Licence and attribution
 
