@@ -1,0 +1,43 @@
+{
+  "gear": [
+    {
+      "item_id": "w_001_guard_sword",
+      "name": "Millhaven Guard Sword",
+      "level": 1,
+      "type": "weapon",
+      "traits": ["finesse", "martial"],
+      "description": "A functional longsword issued to town militia.",
+      "stats": { "damage": "1d8", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_006_shadowbane_dagger",
+      "name": "Shadowbane Dagger",
+      "level": 5,
+      "type": "weapon",
+      "traits": ["finesse", "magical", "glowing"],
+      "description": "Dwarven runes run along the fuller. It hums near darkness.",
+      "stats": { "damage": "1d4", "bonus": 1, "magic": true },
+      "special": "Extra 1d4 damage vs. Shadow entities."
+    },
+    {
+      "item_id": "a_011_monarchs_vestment",
+      "name": "The Monarch's Vestment",
+      "level": 14,
+      "type": "armor",
+      "traits": ["heavy", "divine", "authority"],
+      "description": "Golden plate armor fit for a king. It emanates majesty.",
+      "stats": { "ac": 20, "bonus": 2, "magic": true },
+      "special": "+2 to Charisma/Persuasion checks."
+    },
+    {
+      "item_id": "w_018_shadow_ripper",
+      "name": "Shadow Ripper",
+      "level": 18,
+      "type": "weapon",
+      "traits": ["heavy", "magical", "anti-shadow"],
+      "description": "A blade forged to sever the ties between reality and the void.",
+      "stats": { "damage": "1d10", "bonus": 3, "magic": true },
+      "special": "Dispels shadow magic in a 15-foot radius on critical hit."
+    }
+  ]
+}

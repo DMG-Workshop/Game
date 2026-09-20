@@ -1,0 +1,44 @@
+{
+  "world_metadata": {
+    "name": "Valorheim",
+    "theme": "Dark Fantasy",
+    "level_cap": 20,
+    "background_lore": "An ancient kingdom built atop the forgotten ruins of a civilization that worshipped entropy. The Crimson Covenant seeks to break the seals keeping the Shadow Vessel dormant."
+  },
+  "regions": [
+    {
+      "region_id": "r_001_millhaven_valley",
+      "towns": ["Millhaven", "Ravencrest"],
+      "ambiance_echoes": [
+        "A cold wind rustles the leaves, carrying the faint scent of woodsmoke.",
+        "Somewhere in the distance, a dog barks, abruptly silenced.",
+        "The shadows seem to stretch a little further than they should."
+      ],
+      "weather_states": {
+        "clear": "The sky is a pale, crisp blue, though the sun offers little warmth.",
+        "rain": "A cold, driving rain turns the dirt roads into thick mud.",
+        "fog": "Unnatural, thick gray fog rolls in, reducing visibility to mere feet."
+      }
+    },
+    {
+      "region_id": "r_002_valorheim_heartlands",
+      "towns": ["Valorheim Capital", "Thornhaven"],
+      "ambiance_echoes": [
+        "The heavy tolling of the palace bells echoes through the stone streets.",
+        "A patrol of crimson-cloaked guards marches past, their boots striking in unison.",
+        "You feel a sudden, inexplicable drop in temperature. You are being watched."
+      ],
+      "weather_states": {
+        "clear": "Smog from the lower city districts partially obscures the midday sun.",
+        "storm": "Purple-tinged lightning arcs across the black clouds gathering above the palace.",
+        "ash_fall": "Flakes of gray ash drift down from the sky, a byproduct of the corrupted mines."
+      }
+    }
+  ],
+  "time_system": {
+    "day_cycle": 24,
+    "night_penalty": { "stealth_bonus": 2, "perception_penalty": -2 },
+    "global_echo_dawn": "The sun rises, casting long, pale rays across the kingdom.",
+    "global_echo_dusk": "The sun dips below the horizon. The shadows lengthen and deepen."
+  }
+}

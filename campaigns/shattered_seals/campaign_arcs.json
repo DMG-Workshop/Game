@@ -1,0 +1,38 @@
+{
+  "arcs": [
+    {
+      "arc_id": "tier_1_local_threat",
+      "name": "Shadows Over Millhaven",
+      "levels": [1, 10],
+      "start_trigger": "enter_MH_001",
+      "objectives": [
+        { "id": 1, "task": "Speak to Captain Thorne", "condition": "keyword_quest_unlocked" },
+        { "id": 2, "task": "Investigate Old Oak Grove", "condition": "item_acquired_elaras_doll" },
+        { "id": 3, "task": "Slay the Hollow Avatar", "condition": "boss_defeated_hollow_avatar" }
+      ],
+      "world_state_changes_on_completion": [
+        "NPC_Elara_freed",
+        "Town_Millhaven_Saved",
+        "Unlock_Travel_to_Valorheim"
+      ]
+    },
+    {
+      "arc_id": "tier_2_kingdom_threat",
+      "name": "Blood and Thrones",
+      "levels": [11, 20],
+      "start_trigger": "enter_VC_001",
+      "objectives": [
+        { "id": 1, "task": "Navigate Court Politics", "condition": "dialogue_complete_queen_liora" },
+        { "id": 2, "task": "Purge the Mines", "condition": "item_destroyed_bloodstone_geode" },
+        { "id": 3, "task": "Assault Thornhaven Estate", "condition": "enter_TH_002" },
+        { "id": 4, "task": "Prevent the Ascension", "condition": "boss_defeated_malachai_vex" }
+      ],
+      "world_state_changes_on_completion": [
+        "NPC_King_Aldric_cured",
+        "Faction_Covenant_shattered",
+        "Trigger_Sundering_Earthquake_Event",
+        "End_of_Level_20_Campaign"
+      ]
+    }
+  ]
+}

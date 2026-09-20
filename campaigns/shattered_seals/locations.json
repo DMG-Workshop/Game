@@ -1,0 +1,46 @@
+{
+  "towns": {
+    "town_01_millhaven": {
+      "name": "Millhaven",
+      "tier": 1,
+      "level_range": [1, 10],
+      "description": "A peaceful trade town rapidly succumbing to an unseen darkness.",
+      "zones": {
+        "z_01_proper": ["MH_001_Square", "MH_002_GuardHall", "MH_003_Tavern", "MH_004_Temple", "MH_005_Forge"],
+        "z_02_whisperwood": ["WW_001_Edge", "WW_002_Deep", "WW_003_HollowGrove"],
+        "z_03_ravencrest": ["RF_001_Farm", "RF_002_OakGrove"]
+      }
+    },
+    "town_02_valorheim_capital": {
+      "name": "Valorheim Capital",
+      "tier": 2,
+      "level_range": [11, 20],
+      "description": "The grand seat of the monarchy, currently rotting from the inside out due to Covenant infiltration.",
+      "zones": {
+        "z_04_palace_district": ["VC_001_Plaza", "VC_002_ThroneRoom", "VC_003_GrandLibrary"],
+        "z_05_bloodstone_mines": ["BM_001_Entrance", "BM_002_DeepMine"],
+        "z_06_thornhaven": ["TH_001_Gates", "TH_002_RitualChamber"]
+      }
+    }
+  },
+  "rooms": [
+    {
+      "room_id": "MH_001_Square",
+      "title": "The Bustling Market Square",
+      "description": "The heart of Millhaven. The smell of fresh bread and spices fills the air. A stone fountain dedicated to Ashkyr sits in the center.",
+      "exits": { "north": "MH_002_GuardHall", "east": "MH_003_Tavern" }
+    },
+    {
+      "room_id": "VC_002_ThroneRoom",
+      "title": "The Royal Throne Room",
+      "description": "An enormous hall of vaulted ceilings. The air is thick with tension and the smell of heavy perfumes meant to mask the scent of decay.",
+      "exits": { "south": "VC_001_Plaza" }
+    },
+    {
+      "room_id": "TH_002_RitualChamber",
+      "title": "The Grand Ritual Chamber",
+      "description": "A circular room at the estate's peak. The floor is covered in intricate ritual circles drawn in silver and blood. Tall windows overlook the burning city.",
+      "exits": { "down": "TH_001_Gates" }
+    }
+  ]
+}

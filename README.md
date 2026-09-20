@@ -64,8 +64,15 @@ phone. The dice roller is built inside that bound deliberately; see
 ```
 packages/
   pf2e_core/     Rules engine and Pathbuilder importer (pure Dart, no Flutter)
-  game_core/     Scene engine and session state (depends on pf2e_core)
+  game_core/     Scene engine, party store, campaign model (depends on pf2e_core)
+campaigns/
+  shattered_seals/   Campaign I: Shattered Seals — the world of Valorheim
 ```
+
+Campaign content is data, kept out of the packages entirely. That is both a
+practical split (scenes ship without a rebuild) and the licence boundary:
+the engine implements open mechanics, while Valorheim and its cast are
+Reserved Material. See [NOTICE.md](NOTICE.md).
 
 The Flutter app is not started yet, and deliberately so: the game is playable
 in a terminal first. A text log with an input bar *is* the product, so proving
@@ -168,14 +175,14 @@ about nothing.
 
 ## Licence and attribution
 
-**Not distributable yet.** This project implements Pathfinder 2e rules
-mechanics, which Paizo publishes under the ORC License. That licence requires
-the distributed work to carry the licence text and an attribution notice, and
-neither is complete here — `LICENSES/ORC_LICENSE.txt` is a placeholder.
+The ORC License is committed at `LICENSES/ORC_License.pdf`, unaltered, and
+[NOTICE.md](NOTICE.md) carries the four notice statements Section III requires.
+Three are complete; the attribution notice has bracketed fields that must be
+copied from the Paizo books themselves before any distributed build.
 
-See [NOTICE.md](NOTICE.md) for what is outstanding, what must never be included
-(trademarks, Golarion setting material, adventure content, art), and why the
-licence boundary and the engine/content boundary should be the same line.
+NOTICE.md also records what must never be included (trademarks, Golarion
+setting material, adventure content, art), and why the licence boundary and
+the engine/content boundary are the same line.
 
 "Pathfinder" is a trademark of Paizo Inc. This project is unaffiliated with
 Paizo and with Pathbuilder. None of this is legal advice.
