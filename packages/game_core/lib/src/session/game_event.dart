@@ -11,6 +11,8 @@ class GameEvent {
     required this.sceneId,
     required this.optionId,
     required this.optionLabel,
+    required this.actorId,
+    required this.actorName,
     required this.narration,
     this.check,
     this.movedTo,
@@ -26,6 +28,11 @@ class GameEvent {
   final String optionId;
   final String optionLabel;
 
+  /// Who took the action. With a party this is the difference between a check
+  /// that succeeded and one that was never going to.
+  final String actorId;
+  final String actorName;
+
   /// Narration produced by the outcome.
   final String narration;
 
@@ -40,8 +47,9 @@ class GameEvent {
 
   @override
   String toString() => check == null
-      ? '[$index] $sceneId/$optionId'
-      : '[$index] $sceneId/$optionId ${check!.degree.displayName}';
+      ? '[$index] $sceneId/$optionId ($actorName)'
+      : '[$index] $sceneId/$optionId $actorName '
+          '${check!.degree.displayName}';
 }
 
 /// Everything needed to resume a session, or to replay it from the start.

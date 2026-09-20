@@ -1,0 +1,43 @@
+{
+  "npcs": [
+    {
+      "npc_id": "npc_001_thorne",
+      "name": "Captain Thorne Ironhelm",
+      "location": "MH_002_GuardHall",
+      "tier": 1,
+      "appearance": "A grizzled man in dented plate armor stands behind a wooden desk.",
+      "greeting": "Well met. If you're seeking work, you've come at the right time. Dark times are falling on Millhaven.",
+      "keywords": {
+        "quest": "The roads are unsafe. Caravans vanish, and young Elara Whitmore was taken three days ago.",
+        "elara": "Sweet child. Disappeared from her farm. Her mother Marta is beside herself. Fifty gold if you find her.",
+        "creatures": "Farmers speak of shadows moving. Animals found dead, or worse... corrupted. Brother Aldus believes it's dark magic."
+      }
+    },
+    {
+      "npc_id": "npc_005_queen_liora",
+      "name": "Queen Liora",
+      "location": "VC_002_ThroneRoom",
+      "tier": 2,
+      "appearance": "A strikingly beautiful woman in royal silks with a perfectly practiced, cold smile.",
+      "greeting": "Ah, the heroes of Millhaven. How quaint. Perhaps you might join us for wine?",
+      "keywords": {
+        "king": "The King is adjusting to recent pressures. His paranoia is tiresome, but I remain steadfast.",
+        "covenant": "Ah, you know. How delightful. We are not murderers, we are gravediggers for a dead world.",
+        "corruption": "Such an ugly word. I call it 'transformation.' The shadow will purge the weak."
+      }
+    },
+    {
+      "npc_id": "npc_006_malachai",
+      "name": "Malachai Vex",
+      "location": "TH_002_RitualChamber",
+      "tier": 2,
+      "appearance": "A tall, aristocratic man radiating magnetic charisma and faint, unsettling shadow.",
+      "greeting": "At last we meet. Sit with me. Let us discuss the world as it truly is.",
+      "keywords": {
+        "vision": "The old order is a fossil. We will be perfected through the shadow.",
+        "shadow": "Shadow is entropy—the natural force of ending. It grants clarity and power.",
+        "ascension": "I am a Vessel. Soon, I will be consumed, and the true god will wear this flesh."
+      }
+    }
+  ]
+}

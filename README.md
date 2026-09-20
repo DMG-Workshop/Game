@@ -64,8 +64,15 @@ phone. The dice roller is built inside that bound deliberately; see
 ```
 packages/
   pf2e_core/     Rules engine and Pathbuilder importer (pure Dart, no Flutter)
-  game_core/     Scene engine and session state (depends on pf2e_core)
+  game_core/     Scene engine, party store, campaign model (depends on pf2e_core)
+campaigns/
+  shattered_seals/   Campaign I: Shattered Seals — the world of Valorheim
 ```
+
+Campaign content is data, kept out of the packages entirely. That is both a
+practical split (scenes ship without a rebuild) and the licence boundary:
+the engine implements open mechanics, while Valorheim and its cast are
+Reserved Material. See [NOTICE.md](NOTICE.md).
 
 The Flutter app is not started yet, and deliberately so: the game is playable
 in a terminal first. A text log with an input bar *is* the product, so proving
@@ -121,6 +128,19 @@ level-up proposes an update rather than applying one, listing exactly what
 changed, and every import is kept — including its raw payload, so an earlier
 state can always be re-derived.
 
+With a party, the menu names who would roll:
+
+```
+  1. Examine the body properly  [Korash Blackearth: Lore: Undead +14 vs DC 18]
+  2. Recite the funeral rites over him  [Sela Finch: Religion +2 vs DC 15]
+       also: korash +0
+```
+
+Korash is the undertaker and he is *worse* at reciting funeral rites than the
+rogue, because both are untrained and she has the Wisdom. Nobody authored
+that; it falls out of two real character sheets meeting one scene. It is the
+clearest evidence so far that the design bet is sound.
+
 ## Next
 
 The gap between importing a character and *running* one is the real work. A
@@ -128,7 +148,11 @@ level 6 character references roughly 80 distinct rules elements — feats, class
 features, spells, focus spells — and implementing those, not parsing them, is
 the bulk of the project. Near-term order:
 
-1. Zone-based encounters over the derived statblock.
+1. Room navigation and NPC conversation over the campaign map, so Valorheim is
+   walkable rather than only modelled.
+2. Writing the fourteen rooms the map names but nobody has written yet — run
+   `dart run game_core:survey` for the current list.
+3. Zone-based encounters over the derived statblock.
 4. Feat and spell effects, as a growing set with explicit gaps surfaced to the
    player rather than silently ignored. These live in a separate content
    package: rules *text and names* are licensed material, rules *arithmetic* is
@@ -142,22 +166,27 @@ that made it *their* character quietly breaks.
 ## Development
 
 ```
-cd packages/pf2e_core
+cd packages/pf2e_core   # or packages/game_core
 dart pub get
+dart analyze --fatal-infos
+dart format --output=none --set-exit-if-changed .
 dart test
-dart analyze
 ```
+
+CI runs exactly those three checks on both packages, on the same pinned Dart
+version the SessionStart hook installs, so a local run and a CI run disagree
+about nothing.
 
 ## Licence and attribution
 
-**Not distributable yet.** This project implements Pathfinder 2e rules
-mechanics, which Paizo publishes under the ORC License. That licence requires
-the distributed work to carry the licence text and an attribution notice, and
-neither is complete here — `LICENSES/ORC_LICENSE.txt` is a placeholder.
+The ORC License is committed at `LICENSES/ORC_License.pdf`, unaltered, and
+[NOTICE.md](NOTICE.md) carries the four notice statements Section III requires.
+Three are complete; the attribution notice has bracketed fields that must be
+copied from the Paizo books themselves before any distributed build.
 
-See [NOTICE.md](NOTICE.md) for what is outstanding, what must never be included
-(trademarks, Golarion setting material, adventure content, art), and why the
-licence boundary and the engine/content boundary should be the same line.
+NOTICE.md also records what must never be included (trademarks, Golarion
+setting material, adventure content, art), and why the licence boundary and
+the engine/content boundary are the same line.
 
 "Pathfinder" is a trademark of Paizo Inc. This project is unaffiliated with
 Paizo and with Pathbuilder. None of this is legal advice.

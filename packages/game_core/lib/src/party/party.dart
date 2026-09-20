@@ -1,5 +1,6 @@
 import 'package:pf2e_core/pf2e_core.dart';
 
+import '../session/session_actor.dart';
 import 'party_member.dart';
 
 /// Thrown when a roster change would break the party's rules.
@@ -117,6 +118,15 @@ class Party {
     rows.sort((a, b) => b.stat.total.compareTo(a.stat.total));
     return rows;
   }
+
+  /// This roster as session actors, ready to play.
+  ///
+  /// The session takes actors rather than members because it needs sheets, not
+  /// import histories; this is the seam between the store and the game.
+  List<SessionActor> toActors() => [
+        for (final member in _members)
+          SessionActor(id: member.id, character: member.character),
+      ];
 
   Map<String, Object?> toJson() => {
         'id': id,

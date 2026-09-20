@@ -11,9 +11,29 @@ ImportedCharacter loadKorash() => const PathbuilderImporter()
 Adventure loadQuietWake() => const AdventureLoader()
     .fromJson(File('assets/adventures/the_quiet_wake.json').readAsStringSync());
 
-GameSession newSession({int seed = 1, Adventure? adventure}) => GameSession(
+String loadKorashPayload() =>
+    File('../pf2e_core/test/fixtures/korash.json').readAsStringSync();
+
+ImportedCharacter loadSela() => const PathbuilderImporter()
+    .importJson(File('test/fixtures/sela.json').readAsStringSync())
+    .character;
+
+GameSession newSession({int seed = 1, Adventure? adventure}) =>
+    GameSession.solo(
       adventure: adventure ?? loadQuietWake(),
       character: loadKorash(),
+      roller: DiceRoller(seed),
+    );
+
+/// A two-actor session: Korash, who knows the dead, and Sela, who does not but
+/// can sneak. Enough contrast to tell a real ranking from a coincidence.
+GameSession newPartySession({int seed = 1, Adventure? adventure}) =>
+    GameSession(
+      adventure: adventure ?? loadQuietWake(),
+      actors: [
+        SessionActor(id: 'korash', character: loadKorash()),
+        SessionActor(id: 'sela', character: loadSela()),
+      ],
       roller: DiceRoller(seed),
     );
 
