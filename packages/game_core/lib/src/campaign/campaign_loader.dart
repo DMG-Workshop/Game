@@ -118,12 +118,35 @@ class CampaignLoader {
         description: _optional(raw['description']) ?? '',
         exits: {
           for (final e in _map(raw['exits']).entries)
-            e.key.trim().toLowerCase(): e.value.toString(),
+            e.key.trim().toLowerCase():
+                _readExit(e.key.trim().toLowerCase(), e.value, id),
         },
       );
     }
 
     return Locations(towns: towns, rooms: rooms);
+  }
+
+  /// Reads an exit, which may be a bare room id or an object that gates it.
+  ///
+  /// The plain string form stays valid, because most exits are not gated and
+  /// making every author write an object for the common case would be noise.
+  Exit _readExit(String direction, Object? raw, String roomId) {
+    if (raw is Map) {
+      final m = raw.cast<String, Object?>();
+      return Exit(
+        direction: direction,
+        to: _string(m['to'], 'exit target in "$roomId"'),
+        requiredFlags: _strings(m['requires']),
+        blockedMessage: _optional(m['blocked']),
+      );
+    }
+    final to = _optional(raw);
+    if (to == null) {
+      throw CampaignFormatException(
+          'Room "$roomId" has an empty "$direction" exit.');
+    }
+    return Exit(direction: direction, to: to);
   }
 
   // --- npcs ----------------------------------------------------------------

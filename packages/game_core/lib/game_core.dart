@@ -20,3 +20,4 @@ export 'src/scene/scene.dart';
 export 'src/session/game_event.dart';
 export 'src/session/game_session.dart';
 export 'src/session/session_actor.dart';
+export 'src/session/world_session.dart';

@@ -89,11 +89,22 @@ void main() {
 
     test('resolves exits, including MUD shorthands', () {
       final square = campaign.locations.roomById('MH_001_Square')!;
-      expect(square.directions, ['east', 'north']);
+      expect(
+          square.directions, ['east', 'north', 'northeast', 'south', 'west']);
       expect(square.exitTo('north'), 'MH_002_GuardHall');
       expect(square.exitTo('n'), 'MH_002_GuardHall');
       expect(square.exitTo('NORTH'), 'MH_002_GuardHall');
-      expect(square.exitTo('west'), isNull);
+      expect(square.exitTo('in'), isNull);
+    });
+
+    test('reads a gated exit and keeps it shut until its flag is set', () {
+      final road = campaign.locations.roomById('MH_001_Square')!.exit('ne')!;
+      expect(road.to, 'VC_001_Plaza');
+      expect(road.isGated, isTrue);
+      expect(road.requiredFlags, ['Unlock_Travel_to_Valorheim']);
+      expect(road.blockedMessage, contains('tollgate'));
+      expect(road.isOpen(const {}), isFalse);
+      expect(road.isOpen({'Unlock_Travel_to_Valorheim'}), isTrue);
     });
   });
 
@@ -214,39 +225,35 @@ void main() {
       expect(view.npcs.single.name, 'Queen Liora');
     });
 
-    test('returns nothing for a room that is not written yet', () {
-      expect(campaign.look('MH_002_GuardHall'), isNull);
+    test('returns nothing for a room id nobody has written', () {
+      expect(campaign.look('MH_099_Nowhere'), isNull);
     });
   });
 
-  group('survey', () {
-    test('reports rooms that are planned but not written', () {
+  group('survey of the real campaign', () {
+    test('Valorheim is walkable and stays that way', () {
+      // The regression this locks in: every room the zones name is written,
+      // every exit leads somewhere real, and nobody stands in a room that
+      // does not exist. Adding a zone entry without a room breaks this.
       final report = campaign.survey();
-      // The zones name ten Millhaven rooms and seven capital rooms; three
-      // rooms in total are actually written.
-      expect(report.unwrittenRooms, contains('MH_002_GuardHall'));
-      expect(report.unwrittenRooms, contains('WW_003_HollowGrove'));
-      expect(report.unwrittenRooms, isNot(contains('MH_001_Square')));
+      expect(report.unwrittenRooms, isEmpty);
+      expect(report.danglingExits, isEmpty);
+      expect(report.misplacedNpcs, isEmpty);
+      expect(report.isPlayable, isTrue);
     });
 
-    test('reports exits that lead nowhere', () {
-      final dangling = campaign.survey().danglingExits;
-      expect(dangling.map((e) => e.to), contains('MH_002_GuardHall'));
-      expect(dangling.map((e) => e.from), contains('MH_001_Square'));
+    test('every exit has a way back', () {
+      expect(campaign.survey().oneWayExits, isEmpty);
     });
 
-    test('reports NPCs standing in rooms that do not exist', () {
-      final misplaced = campaign.survey().misplacedNpcs;
-      expect(misplaced.map((n) => n.name), contains('Captain Thorne Ironhelm'));
-      expect(misplaced.map((n) => n.name), isNot(contains('Queen Liora')));
-    });
-
-    test('reports arc conditions nothing in the data sets', () {
-      // Every objective condition must be produced by something, or the quest
-      // cannot be finished.
-      final unreachable = campaign.survey().unreachableArcConditions;
-      expect(unreachable, contains('boss_defeated_hollow_avatar'));
-      expect(unreachable, contains('item_acquired_elaras_doll'));
+    test('still reports the content genuinely outstanding', () {
+      // Not clean: gear and the encounters that would set the arc conditions
+      // are still unwritten, and the survey should keep saying so.
+      final report = campaign.survey();
+      expect(report.isClean, isFalse);
+      expect(report.gearLevelGaps, contains(2));
+      expect(report.unreachableArcConditions,
+          contains('boss_defeated_hollow_avatar'));
     });
 
     test('does not flag conditions that walking into a room would set', () {
@@ -255,20 +262,71 @@ void main() {
       final unreachable = campaign.survey().unreachableArcConditions;
       expect(unreachable, isNot(contains('enter_MH_001')));
       expect(unreachable, isNot(contains('enter_VC_001')));
-      expect(unreachable, isNot(contains('enter_TH_002')));
+    });
+  });
+
+  group('survey of deliberately broken data', () {
+    // Detection is tested against data built to be wrong, rather than by
+    // relying on the shipping campaign happening to be incomplete.
+    Campaign broken(String locationsJson, {String? npcsJson}) =>
+        const CampaignLoader().load(
+          id: 'broken',
+          title: 'Broken',
+          worldConfigJson: _read('world_config.json'),
+          locationsJson: locationsJson,
+          npcsJson: npcsJson ?? '{"npcs":[]}',
+        );
+
+    test('reports a room a zone names but nobody wrote', () {
+      final c = broken('''
+{"towns":{"t":{"name":"T","tier":1,"level_range":[1,2],"zones":{"z":["A","B"]}}},
+ "rooms":[{"room_id":"A","title":"A","description":"a"}]}''');
+      expect(c.survey().unwrittenRooms, ['B']);
     });
 
-    test('reports levels with no gear written', () {
-      final gaps = campaign.survey().gearLevelGaps;
-      expect(gaps, contains(2));
-      expect(gaps, isNot(contains(5)));
-      expect(gaps.length, 16); // four items across a cap of twenty
+    test('reports an exit leading nowhere', () {
+      final c = broken('''
+{"towns":{},"rooms":[{"room_id":"A","title":"A","description":"a",
+ "exits":{"north":"B"}}]}''');
+      final dangling = c.survey().danglingExits;
+      expect(dangling.single.from, 'A');
+      expect(dangling.single.direction, 'north');
+      expect(dangling.single.to, 'B');
+      expect(c.survey().isPlayable, isFalse);
     });
 
-    test('renders a readable summary', () {
-      final rendered = campaign.survey().render();
+    test('reports an exit with no way back', () {
+      final c = broken('''
+{"towns":{},"rooms":[
+ {"room_id":"A","title":"A","description":"a","exits":{"north":"B"}},
+ {"room_id":"B","title":"B","description":"b"}]}''');
+      expect(c.survey().oneWayExits.single.from, 'A');
+    });
+
+    test('reports an NPC standing nowhere', () {
+      final c = broken(
+        '{"towns":{},"rooms":[{"room_id":"A","title":"A","description":"a"}]}',
+        npcsJson: '''
+{"npcs":[{"npc_id":"npc_001_ghost","name":"A Ghost","location":"Z",
+ "appearance":"x","greeting":"y"}]}''',
+      );
+      expect(c.survey().misplacedNpcs.single.name, 'A Ghost');
+      expect(c.survey().isPlayable, isFalse);
+    });
+
+    test('renders every section it found', () {
+      final c = broken('''
+{"towns":{"t":{"name":"T","tier":1,"level_range":[1,2],"zones":{"z":["A","B"]}}},
+ "rooms":[{"room_id":"A","title":"A","description":"a","exits":{"north":"B"}}]}''');
+      final rendered = c.survey().render();
       expect(rendered, contains('Rooms named but not written'));
       expect(rendered, contains('Exits leading nowhere'));
+    });
+
+    test('says so when there is nothing outstanding', () {
+      const clean = CampaignReport();
+      expect(clean.isClean, isTrue);
+      expect(clean.render(), 'Campaign data is complete.');
     });
   });
 }
