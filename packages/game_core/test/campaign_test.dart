@@ -171,8 +171,88 @@ void main() {
     });
 
     test('filters by type', () {
-      expect(campaign.gear.ofType('armor'), hasLength(1));
-      expect(campaign.gear.ofType('weapon'), hasLength(3));
+      expect(campaign.gear.ofType('armor'), hasLength(5));
+      expect(campaign.gear.ofType('weapon'), hasLength(10));
+      // Every item lands in exactly one category, so nothing is invisible to
+      // a table that asks by type.
+      final byType = {
+        for (final type in {for (final i in campaign.gear.all) i.type})
+          type: campaign.gear.ofType(type).length,
+      };
+      expect(byType.values.reduce((a, b) => a + b), campaign.gear.length);
+    });
+
+    test('a character of any level has something to find', () {
+      // Loot pacing: twenty levels, twenty items, no dead stretch where the
+      // tables have nothing to offer.
+      expect(
+          campaign.gear.levelGaps(campaign.world.metadata.levelCap), isEmpty);
+      expect(campaign.gear.length, 20);
+      for (var level = 1; level <= 20; level++) {
+        expect(campaign.gear.forLevel(level), isNotEmpty,
+            reason: 'nothing within two levels of $level');
+      }
+    });
+
+    test('every item is identified once and described', () {
+      final ids = campaign.gear.all.map((i) => i.id).toList();
+      expect(ids.toSet(), hasLength(ids.length));
+      for (final item in campaign.gear.all) {
+        expect(item.name.trim(), isNotEmpty);
+        expect(item.description.trim(), isNotEmpty, reason: item.name);
+        expect(item.traits, isNotEmpty, reason: item.name);
+        expect(item.level, inInclusiveRange(1, 20), reason: item.name);
+      }
+    });
+
+    test('every magical item says what the magic does', () {
+      for (final item in campaign.gear.all.where((i) => i.isMagical)) {
+        expect(item.special?.trim(), isNotEmpty, reason: item.name);
+      }
+      // The only mundane item is the militia sword a first-level character
+      // starts with.
+      expect(campaign.gear.all.where((i) => !i.isMagical).map((i) => i.id),
+          ['w_001_guard_sword']);
+    });
+
+    test('every weapon rolls damage the engine can read', () {
+      for (final weapon in campaign.gear.ofType('weapon')) {
+        expect(weapon.damage, isNotNull, reason: weapon.name);
+        expect(DamageExpression.tryParse(weapon.damage!), isNotNull,
+            reason: '${weapon.name}: ${weapon.damage}');
+      }
+    });
+
+    test('armour class climbs with level', () {
+      final armour = campaign.gear.ofType('armor');
+      var previous = 0;
+      for (final piece in armour) {
+        final ac = piece.armorClass;
+        expect(ac, isNotNull, reason: piece.name);
+        expect(ac, greaterThan(previous),
+            reason: '${piece.name} is no better than the level below it');
+        previous = ac!;
+      }
+    });
+
+    test('no item carries a rune earlier than the rules allow', () {
+      // Potency is the one number on these items the engine will eventually
+      // add to a roll, so it follows Pathfinder's own pacing: weapons at 2,
+      // 10 and 16; armour at 5, 11 and 18. An item ahead of that schedule is
+      // a balance bug written in JSON.
+      const weaponUnlocks = {1: 2, 2: 10, 3: 16};
+      const armourUnlocks = {1: 5, 2: 11, 3: 18};
+      for (final item in campaign.gear.all) {
+        final unlocks = switch (item.type) {
+          'weapon' => weaponUnlocks,
+          'armor' => armourUnlocks,
+          _ => null,
+        };
+        if (unlocks == null || item.bonus == 0) continue;
+        expect(item.bonus, inInclusiveRange(1, 3), reason: item.name);
+        expect(item.level, greaterThanOrEqualTo(unlocks[item.bonus]!),
+            reason: '${item.name} is +${item.bonus} at level ${item.level}');
+      }
     });
   });
 
@@ -211,6 +291,24 @@ void main() {
       expect(vestment.special, contains('Diplomacy'));
       expect(vestment.special, contains('item bonus'));
       expect(vestment.special, isNot(contains('Persuasion')));
+    });
+
+    test('every modifier an item grants is typed', () {
+      // Pathfinder stacks one bonus of each type and no more. An untyped "+2
+      // to Diplomacy" would either stack with everything or with nothing,
+      // depending on who implemented it, so the text always says which kind.
+      final signed = RegExp(r'[+-]\d+');
+      final typed = RegExp(r'^[+-]\d+ \w+ (bonus|penalty)\b');
+      final untyped = <String>[];
+      for (final item in campaign.gear.all) {
+        final text = item.special ?? '';
+        for (final match in signed.allMatches(text)) {
+          if (!typed.hasMatch(text.substring(match.start))) {
+            untyped.add('${item.name}: "${match[0]}"');
+          }
+        }
+      }
+      expect(untyped, isEmpty, reason: untyped.join('; '));
     });
 
     test('every skill an item names is one the engine can resolve', () {
@@ -312,12 +410,13 @@ void main() {
       expect(campaign.survey().unreachableArcConditions, isEmpty);
     });
 
-    test('still reports the content genuinely outstanding', () {
-      // Not clean: gear is written for four levels out of twenty, and the
-      // survey should keep saying so rather than calling the job done.
+    test('has nothing outstanding left to report', () {
+      // The survey is the campaign's own to-do list. It is empty, and a
+      // future room, arc or item that arrives half-written will make it
+      // speak up again rather than sliding in unnoticed.
       final report = campaign.survey();
-      expect(report.isClean, isFalse);
-      expect(report.gearLevelGaps, contains(2));
+      expect(report.gearLevelGaps, isEmpty);
+      expect(report.isClean, isTrue, reason: report.render());
     });
 
     test('does not flag conditions that walking into a room would set', () {
