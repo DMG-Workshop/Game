@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "item_id": "i_elaras_doll",
+      "name": "Elara's Doll",
+      "location": "RF_002_OakGrove",
+      "in_room": "At the foot of the largest oak, half pressed into the leaf mould, there is a rag doll with a stitched face.",
+      "description": "Homemade, well-loved, and dry — which it should not be, after three days of rain under an open sky.",
+      "takeable": true,
+      "acquire_flags": ["item_acquired_elaras_doll"],
+      "on_take": "You lift it and the leaf mould comes away in a neat disc, the way turned earth does. The doll is dry. Three days of rain have fallen on this grove and not one of them has touched it.\n\nThe scored bark above you is at the height of a grown man's eye. The marks were made from inside the ring, facing out."
+    },
+    {
+      "item_id": "i_bloodstone_geode",
+      "name": "The Bloodstone Geode",
+      "location": "BM_002_DeepMine",
+      "in_room": "The veins converge on a hollow in the rock the size of a cart, and the hollow is not empty.",
+      "description": "A geode taller than a man, its interior crowded with red crystal. The warmth in the workings comes from here. So does the grain in every wall you have passed.",
+      "takeable": false,
+      "destroyable": true,
+      "destroy_flags": ["item_destroyed_bloodstone_geode"],
+      "on_destroy": "It takes longer than it should, and it does not shatter so much as give up. The red goes out of the crystal from the centre outward, and the warmth goes with it.\n\nSomewhere above, in the palace district, a great many lamps gutter at once and then steady. The veins in the walls around you are grey now, and they are only rock."
+    },
+    {
+      "item_id": "i_harrow_ledger",
+      "name": "The Undertaker's Ledger",
+      "location": "MH_005_Forge",
+      "in_room": "A burial ledger sits among the unclaimed commissions, open at this week's page.",
+      "description": "Four entries this week in a town that usually manages one a month. Against each, in a different hand from the undertaker's, a small mark.",
+      "takeable": true,
+      "acquire_flags": ["item_acquired_harrow_ledger"],
+      "on_take": "You take the ledger. The four marks are identical, and they are not a religious sign. Whoever made them did it after the entries were written, and did it in a hurry."
+    }
+  ]
+}

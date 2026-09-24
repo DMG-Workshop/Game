@@ -79,6 +79,8 @@ Future<void> main(List<String> args) async {
       npcsJson: npcs,
       gearJson: read('gear.json'),
       arcsJson: read('campaign_arcs.json'),
+      bestiaryJson: read('bestiary.json'),
+      itemsJson: read('world_items.json'),
     );
     for (final path in characterPaths) {
       final file = File(path);
@@ -110,6 +112,13 @@ Future<void> main(List<String> args) async {
     roller: DiceRoller(seed),
     roomId: options['room'],
     hour: int.tryParse(options['hour'] ?? '') ?? 8,
+    // Starting from a given state, for trying a later part of the campaign
+    // without replaying everything up to it.
+    flags: (options['flags'] ?? '')
+        .split(',')
+        .map((f) => f.trim())
+        .where((f) => f.isNotEmpty)
+        .toSet(),
   );
 
   stdout
@@ -130,23 +139,31 @@ Future<void> main(List<String> args) async {
       .toList();
   var scriptIndex = 0;
 
+  // One reader for both loops, so a scripted playthrough can walk into a
+  // fight and keep giving orders without the script knowing which mode it is
+  // in.
+  String? nextCommand({String prompt = '> '}) {
+    if (scriptIndex < scripted.length) {
+      final line = scripted[scriptIndex++];
+      stdout.writeln('\n$prompt$line');
+      return line;
+    }
+    if (scripted.isNotEmpty) return null;
+    stdout.write('\n$prompt');
+    return stdin.readLineSync(encoding: utf8)?.trim();
+  }
+
   _renderRoom(session, full: true, showWeather: true);
 
   while (true) {
-    final String? line;
-    if (scriptIndex < scripted.length) {
-      line = scripted[scriptIndex++];
-      stdout.writeln('\n> $line');
-    } else if (scripted.isNotEmpty) {
-      stdout.writeln('\n(script exhausted)');
+    final line = nextCommand();
+    if (line == null) {
+      if (scripted.isNotEmpty) stdout.writeln('\n(script exhausted)');
       break;
-    } else {
-      stdout.write('\n> ');
-      line = stdin.readLineSync(encoding: utf8)?.trim();
-      if (line == null || line == 'quit' || line == 'q') break;
     }
     if (line.isEmpty) continue;
-    if (!_handle(session, line)) break;
+    if (line == 'quit' || line == 'q') break;
+    if (!_handle(session, line, nextCommand)) break;
   }
 
   stdout
@@ -155,7 +172,8 @@ Future<void> main(List<String> args) async {
 }
 
 /// Returns false to end the session.
-bool _handle(WorldSession session, String line) {
+bool _handle(WorldSession session, String line,
+    String? Function({String prompt}) nextCommand) {
   final words = line.split(RegExp(r'\s+'));
   final verb = words.first.toLowerCase();
   final rest = words.skip(1).join(' ');
@@ -196,6 +214,33 @@ bool _handle(WorldSession session, String line) {
     case 'talk':
     case 'ask':
       return _talk(session, rest);
+
+    case 'take':
+    case 'get':
+      return _takeOrDestroy(session, rest, destroy: false);
+
+    case 'destroy':
+    case 'break':
+      return _takeOrDestroy(session, rest, destroy: true);
+
+    case 'examine':
+    case 'x':
+      final item = session
+          .look()
+          .items
+          .where((i) => i.name.toLowerCase().contains(rest.toLowerCase()))
+          .firstOrNull;
+      if (item == null || rest.isEmpty) {
+        stdout.writeln('There is no "$rest" here to examine.');
+      } else {
+        stdout.writeln('\n${_wrap(item.description)}');
+      }
+      return true;
+
+    case 'fight':
+    case 'attack':
+      return _fight(session, nextCommand,
+          encounterId: rest.isEmpty ? null : rest);
 
     case 'wait':
       final hours = int.tryParse(rest) ?? 1;
@@ -317,6 +362,17 @@ void _renderRoom(WorldSession session,
     stdout.writeln('\n${_wrap(npc.appearance)}');
   }
 
+  for (final item in view.items) {
+    if (item.inRoomText != null) {
+      stdout.writeln('\n${_wrap(item.inRoomText!)}');
+    }
+  }
+
+  for (final encounter in view.encounters) {
+    stdout.writeln('\n${_wrap(encounter.description)}');
+    stdout.writeln('\n  (${encounter.name} — type "fight" to begin)');
+  }
+
   stdout.writeln('\nExits: ${view.openDirections.join(', ')}'
       '${view.barredDirections.isEmpty ? '' : '  (barred: '
           '${view.barredDirections.map((b) => b.direction).join(', ')})'}');
@@ -390,8 +446,170 @@ usage: walk [options]
   --seed=N           Dice seed; omit for a random one
   --room=ID          Start somewhere other than the first room
   --hour=N           Start at a given hour (default 8)
+  --flags=a,b        Start with these flags already set
   --commands=a,b,c   Play a scripted sequence instead of reading stdin
   --help             Show this message
 
 Commands:
 $_commands''';
+
+/// Takes or destroys something in the room.
+bool _takeOrDestroy(WorldSession session, String what,
+    {required bool destroy}) {
+  if (what.isEmpty) {
+    stdout.writeln(destroy ? 'Destroy what?' : 'Take what?');
+    return true;
+  }
+  try {
+    final result = destroy ? session.destroy(what) : session.take(what);
+    stdout.writeln('\n${_wrap(result.said)}');
+    for (final flag in result.flagsSet) {
+      stdout.writeln('\n  [$flag]');
+    }
+    _announceArcs(session);
+  } on InvalidMoveException catch (e) {
+    stdout.writeln(_wrap(e.message));
+  }
+  return true;
+}
+
+/// Runs a fight to its end.
+///
+/// A fight is its own mode with its own verbs, so it gets its own loop rather
+/// than being folded into the walking one; a player in initiative should not
+/// be offered directions to stroll in.
+bool _fight(
+  WorldSession session,
+  String? Function({String prompt}) nextCommand, {
+  String? encounterId,
+}) {
+  final EncounterSession fight;
+  try {
+    fight = session.beginEncounter(encounterId: encounterId);
+  } on InvalidMoveException catch (e) {
+    stdout.writeln(_wrap(e.message));
+    return true;
+  }
+
+  stdout
+    ..writeln('\n${'=' * 70}')
+    ..writeln(fight.encounter.name.toUpperCase())
+    ..writeln('=' * 70);
+  if (fight.encounter.description.isNotEmpty) {
+    stdout.writeln('\n${_wrap(fight.encounter.description)}');
+  }
+  _renderCombatants(fight);
+
+  while (!fight.isOver) {
+    if (!fight.isPartyTurn) {
+      _narrate(fight.endTurn());
+      continue;
+    }
+
+    stdout.writeln('\n-- ${fight.current.name}, round ${fight.round}, '
+        '${fight.actionsLeft} action(s) --');
+    final targets = fight.targetsInReach();
+    stdout.writeln(targets.isEmpty
+        ? '   Nothing in reach. Close the distance.'
+        : '   In reach: ${targets.map((t) => '${t.id} (${t.hp}/${t.maxHp})').join(', ')}');
+
+    final line = nextCommand(prompt: 'fight> ');
+    if (line == null) {
+      stdout.writeln('\n(script exhausted mid-fight)');
+      return false;
+    }
+    if (line.isEmpty) continue;
+
+    final words = line.split(RegExp(r'\s+'));
+    final verb = words.first.toLowerCase();
+    final rest = words.skip(1).join(' ');
+
+    try {
+      switch (verb) {
+        case 'strike':
+        case 'hit':
+          final target =
+              rest.isEmpty ? (targets.isEmpty ? null : targets.first.id) : rest;
+          if (target == null) {
+            stdout.writeln('Nothing in reach to strike.');
+            break;
+          }
+          final result = fight.strike(target);
+          stdout.writeln('\n  ${_strikeLine(result)}');
+        case 'close':
+        case 'stride':
+          final moved = fight.stride();
+          stdout.writeln('\n  ${fight.current.name} closes to '
+              '${moved.zone}.');
+        case 'back':
+        case 'withdraw':
+          final moved = fight.stride(closer: false);
+          stdout.writeln('\n  ${fight.current.name} falls back to '
+              '${moved.zone}.');
+        case 'end':
+        case 'done':
+          _narrate(fight.endTurn());
+        case 'flee':
+          fight.flee();
+        case 'status':
+          _renderCombatants(fight);
+        case 'quit':
+        case 'q':
+          return false;
+        default:
+          stdout.writeln('In a fight you can: strike <target>, close, back, '
+              'end, status, flee.');
+      }
+    } on InvalidActionException catch (e) {
+      stdout.writeln('  ${e.message}');
+    }
+
+    if (fight.actionsLeft == 0 && !fight.isOver && fight.isPartyTurn) {
+      _narrate(fight.endTurn());
+    }
+  }
+
+  stdout.writeln('\n${'=' * 70}');
+  switch (fight.outcome!) {
+    case EncounterOutcome.victory:
+      stdout.writeln('The fight is over. You are still standing.');
+      final flags = session.concludeEncounter(fight);
+      for (final flag in flags) {
+        stdout.writeln('\n  [$flag]');
+      }
+      _announceArcs(session);
+    case EncounterOutcome.defeat:
+      stdout.writeln('The party goes down. Valorheim does not stop for it.');
+    case EncounterOutcome.fled:
+      stdout.writeln('You break off and go.');
+  }
+  return true;
+}
+
+void _narrate(List<StrikeResult> log) {
+  for (final result in log) {
+    stdout.writeln('\n  ${_strikeLine(result)}');
+  }
+}
+
+String _strikeLine(StrikeResult r) {
+  final check = r.outcome;
+  final penalty = r.penalty == 0 ? '' : ' (MAP ${r.penalty})';
+  final roll = 'd20(${check.dieRoll}) ${check.modifier >= 0 ? '+' : ''}'
+      '${check.modifier} = ${check.total} vs AC ${check.dc}$penalty';
+  if (!r.isHit) return '${r.attacker.name} misses ${r.target.name} — $roll';
+  final crit = r.isCritical ? ' critically' : '';
+  final dropped = r.targetDropped ? ' ${r.target.name} goes down.' : '';
+  return '${r.attacker.name}$crit hits ${r.target.name} for ${r.damage} — '
+      '$roll.$dropped';
+}
+
+void _renderCombatants(EncounterSession fight) {
+  stdout.writeln('');
+  for (final c in fight.combatants) {
+    final bar = c.isDown ? 'down' : '${c.hp}/${c.maxHp}';
+    final where = fight.zones[c.zoneIndex];
+    stdout.writeln('  ${c.isEnemy ? ' ' : '*'} ${c.id.padRight(22)} '
+        '${bar.padLeft(8)}  $where');
+  }
+}

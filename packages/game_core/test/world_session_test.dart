@@ -44,6 +44,17 @@ void main() {
       expect(() => newWorld(room: 'nowhere'), throwsArgumentError);
     });
 
+    test('copies the flags it is given rather than holding onto them', () {
+      // Passing one session's flags to another is the natural way to carry
+      // progress forward, and session.flags is an unmodifiable view. Keeping
+      // the caller's set meant the next room entered threw, and would also
+      // have let two sessions quietly write to each other's state.
+      final first = newWorld();
+      final second = newWorld(room: 'MH_002_GuardHall', flags: first.flags);
+      expect(second.flags, contains('enter_MH_002_GuardHall'));
+      expect(first.flags, isNot(contains('enter_MH_002_GuardHall')));
+    });
+
     test('marks the starting room as entered, in both id forms', () {
       // The arcs abbreviate — enter_MH_001 means MH_001_Square — so both are
       // recorded and neither convention has to win.
@@ -203,6 +214,130 @@ void main() {
     test('refuses someone who is not here', () {
       expect(() => newWorld().talk('thorne'),
           throwsA(isA<InvalidMoveException>()));
+    });
+  });
+
+  group('objects', () {
+    test('sees what is lying in the room', () {
+      final world = newWorld(room: 'RF_002_OakGrove');
+      expect(world.look().items.single.name, "Elara's Doll");
+    });
+
+    test('taking sets the flag its quest waits on', () {
+      final world = newWorld(room: 'RF_002_OakGrove');
+      final result = world.take('doll');
+      expect(result.said, contains('dry'));
+      expect(result.flagsSet, ['item_acquired_elaras_doll']);
+      expect(world.flags, contains('item_acquired_elaras_doll'));
+    });
+
+    test('finds an object by any word of its name', () {
+      final world = newWorld(room: 'RF_002_OakGrove');
+      expect(world.take('elara').item.id, 'i_elaras_doll');
+    });
+
+    test('a taken object is gone from the room', () {
+      final world = newWorld(room: 'RF_002_OakGrove')..take('doll');
+      expect(world.look().items, isEmpty);
+      expect(() => world.take('doll'), throwsA(isA<InvalidMoveException>()));
+    });
+
+    test('destroying sets its own flag', () {
+      final world = newWorld(room: 'BM_002_DeepMine');
+      final result = world.destroy('geode');
+      expect(result.said, contains('grey'));
+      expect(result.flagsSet, ['item_destroyed_bloodstone_geode']);
+    });
+
+    test('refuses to take something that is not takeable', () {
+      // The geode is the size of a cart; it can be broken, not pocketed.
+      final world = newWorld(room: 'BM_002_DeepMine');
+      expect(
+        () => world.take('geode'),
+        throwsA(isA<InvalidMoveException>().having((e) => e.message, 'message',
+            contains('not something you can take'))),
+      );
+    });
+
+    test('refuses to destroy something that is not destroyable', () {
+      final world = newWorld(room: 'RF_002_OakGrove');
+      expect(() => world.destroy('doll'), throwsA(isA<InvalidMoveException>()));
+    });
+
+    test('refuses something that is not here', () {
+      expect(
+          () => newWorld().take('doll'), throwsA(isA<InvalidMoveException>()));
+    });
+  });
+
+  group('fights', () {
+    test('the Avatar is not waiting until the doll is found', () {
+      expect(
+          newWorld(room: 'WW_003_HollowGrove').availableEncounters(), isEmpty);
+      expect(
+          newWorld(
+            room: 'WW_003_HollowGrove',
+            flags: {'item_acquired_elaras_doll'},
+          ).availableEncounters().single.id,
+          'e_hollow_grove');
+    });
+
+    test('beginning a fight refuses when there is nothing to fight', () {
+      expect(() => newWorld().beginEncounter(),
+          throwsA(isA<InvalidMoveException>()));
+    });
+
+    test('a won fight sets the flag its arc waits on', () {
+      final world = newWorld(
+        room: 'WW_002_Deep',
+        flags: {'item_acquired_elaras_doll'},
+      );
+      final f = world.beginEncounter();
+      // Resolve it by fiat rather than rolling for twenty rounds; what is
+      // under test is that the world records the win, not the dice.
+      while (!f.isOver) {
+        if (f.isPartyTurn) {
+          final targets = f.targetsInReach();
+          if (targets.isEmpty) {
+            f.stride();
+          } else {
+            f.strike(targets.first.id);
+          }
+          if (f.actionsLeft == 0 && !f.isOver) f.endTurn();
+        } else {
+          f.endTurn();
+        }
+      }
+      final set = world.concludeEncounter(f);
+      if (f.outcome == EncounterOutcome.victory) {
+        expect(set, contains('cleared_whisperwood_thralls'));
+      } else {
+        expect(set, isEmpty, reason: 'only a win earns the flag');
+      }
+    });
+
+    test('the whole tier one chain is reachable in order', () {
+      // Thorne names the quest, the grove yields the doll, and the doll opens
+      // the Avatar. Each step is a flag the next one waits on.
+      final world = newWorld(room: 'MH_002_GuardHall');
+      world.talk('thorne', topic: 'quest');
+      expect(world.flags, contains('keyword_quest_unlocked'));
+
+      final grove = newWorld(room: 'RF_002_OakGrove', flags: world.flags)
+        ..take('doll');
+      expect(grove.flags, contains('item_acquired_elaras_doll'));
+
+      final hollow = newWorld(room: 'WW_003_HollowGrove', flags: grove.flags);
+      expect(hollow.availableEncounters(), isNotEmpty);
+
+      // With the Avatar down, tier one is complete and the road opens.
+      final finished = newWorld(
+        room: 'MH_001_Square',
+        flags: {...hollow.flags, 'boss_defeated_hollow_avatar'},
+      );
+      expect(finished.applyPendingWorldState(),
+          contains('Unlock_Travel_to_Valorheim'));
+      expect(finished.look().openDirections, contains('northeast'));
     });
   });
 

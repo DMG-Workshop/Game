@@ -4,7 +4,10 @@ import '../campaign/arc.dart';
 import '../campaign/campaign.dart';
 import '../campaign/locations.dart';
 import '../campaign/npc.dart';
+import '../campaign/creature.dart';
 import '../campaign/world.dart';
+import '../campaign/world_item.dart';
+import 'encounter_session.dart';
 import 'session_actor.dart';
 
 /// Thrown when the party is asked to do something they cannot do here.
@@ -24,6 +27,8 @@ class RoomView {
     required this.openDirections,
     required this.barredDirections,
     required this.npcs,
+    this.items = const [],
+    this.encounters = const [],
     this.town,
     this.region,
     this.weather,
@@ -39,6 +44,13 @@ class RoomView {
   final List<({String direction, String? reason})> barredDirections;
 
   final List<Npc> npcs;
+
+  /// Objects lying here that the party can still do something with.
+  final List<WorldItem> items;
+
+  /// Fights waiting here that have not been resolved.
+  final List<Encounter> encounters;
+
   final Town? town;
   final Region? region;
 
@@ -114,7 +126,9 @@ class WorldSession {
   })  : _actors = List.of(actors),
         _roller = roller,
         _roomId = roomId ?? _firstRoomOf(campaign),
-        _flags = flags ?? <String>{},
+        // Copied rather than kept: callers pass an unmodifiable view or a
+        // set another session owns, and a session must not mutate either.
+        _flags = {...?flags},
         _hour = hour {
     if (_actors.isEmpty) {
       throw ArgumentError.value(actors, 'actors', 'a session needs an actor');
@@ -189,6 +203,8 @@ class WorldSession {
       openDirections: room.openDirections(_flags),
       barredDirections: barred,
       npcs: campaign.npcs.inRoom(_roomId),
+      items: campaign.items.visibleIn(_roomId, _flags),
+      encounters: campaign.bestiary.availableIn(_roomId, _flags),
       town: currentTown,
       region: currentRegion,
       weather: currentWeather,
@@ -305,7 +321,7 @@ class WorldSession {
 
     final exhausted = raised.length == npc.keywords.length;
     if (exhausted) {
-      final completeFlag = 'dialogue_complete_${_npcSlug(npc)}';
+      final completeFlag = 'dialogue_complete_${npc.slug}';
       if (_flags.add(completeFlag)) set.add(completeFlag);
     }
 
@@ -332,15 +348,6 @@ class WorldSession {
     return null;
   }
 
-  /// `npc_005_queen_liora` becomes `queen_liora`.
-  static String _npcSlug(Npc npc) {
-    final parts = npc.id.split('_');
-    if (parts.length > 2 && parts.first == 'npc') {
-      return parts.sublist(2).join('_');
-    }
-    return npc.id;
-  }
-
   /// Topics this NPC will answer that the party has not yet raised.
   List<String> unraisedTopicsFor(Npc npc) {
     final raised = _topicsRaised[npc.id] ?? const <String>{};
@@ -348,6 +355,107 @@ class WorldSession {
       for (final t in npc.topics)
         if (!raised.contains(t)) t
     ];
+  }
+
+  // --- objects -------------------------------------------------------------
+
+  /// Takes an object from the room.
+  ///
+  /// Returns the narration and any flags set. Refuses rather than silently
+  /// no-ops, because "nothing happened" is the worst possible answer to a
+  /// player who typed a specific verb at a specific noun.
+  ({WorldItem item, String said, List<String> flagsSet}) take(String query) {
+    final item = _requireItem(query);
+    if (!item.takeable) {
+      throw InvalidMoveException('${item.name} is not something you can take.');
+    }
+    final set = <String>[];
+    for (final flag in item.acquireFlags) {
+      if (_flags.add(flag)) set.add(flag);
+    }
+    return (
+      item: item,
+      said: item.onTake ?? 'You take ${item.name}.',
+      flagsSet: set..sort(),
+    );
+  }
+
+  /// Destroys an object in the room.
+  ({WorldItem item, String said, List<String> flagsSet}) destroy(String query) {
+    final item = _requireItem(query);
+    if (!item.destroyable) {
+      throw InvalidMoveException(
+          '${item.name} is not something you can destroy.');
+    }
+    final set = <String>[];
+    for (final flag in item.destroyFlags) {
+      if (_flags.add(flag)) set.add(flag);
+    }
+    return (
+      item: item,
+      said: item.onDestroy ?? 'You destroy ${item.name}.',
+      flagsSet: set..sort(),
+    );
+  }
+
+  WorldItem _requireItem(String query) {
+    final item = campaign.items.findInRoom(_roomId, query);
+    if (item == null) {
+      throw InvalidMoveException('There is no "$query" here.');
+    }
+    if (!item.isVisible(_flags)) {
+      throw InvalidMoveException('There is no "$query" here.');
+    }
+    if (item.isResolved(_flags)) {
+      throw InvalidMoveException('You have already dealt with ${item.name}.');
+    }
+    if (!item.isReachable(_flags)) {
+      throw InvalidMoveException('You cannot get at ${item.name} yet.');
+    }
+    return item;
+  }
+
+  // --- fights --------------------------------------------------------------
+
+  /// Fights waiting in this room that have not been resolved.
+  List<Encounter> availableEncounters() =>
+      campaign.bestiary.availableIn(_roomId, _flags);
+
+  /// Starts a fight, by id or by the first one waiting here.
+  ///
+  /// The returned session is separate state: a fight is its own mode, and
+  /// folding initiative and actions into the walking session would make both
+  /// harder to reason about.
+  EncounterSession beginEncounter({String? encounterId}) {
+    final available = availableEncounters();
+    if (available.isEmpty) {
+      throw InvalidMoveException('There is nothing to fight here.');
+    }
+    final encounter = encounterId == null
+        ? available.first
+        : available.where((e) => e.id == encounterId).firstOrNull;
+    if (encounter == null) {
+      throw InvalidMoveException('There is no fight called "$encounterId" '
+          'waiting here.');
+    }
+    return EncounterSession(
+      encounter: encounter,
+      bestiary: campaign.bestiary,
+      actors: _actors,
+      roller: _roller,
+    );
+  }
+
+  /// Records the result of a fight, returning the flags it set.
+  ///
+  /// Called by the client once the fight is over, rather than by the fight
+  /// itself, so that losing and fleeing are the caller's to narrate.
+  List<String> concludeEncounter(EncounterSession fight) {
+    final set = <String>[];
+    for (final flag in fight.victoryFlags) {
+      if (_flags.add(flag)) set.add(flag);
+    }
+    return set..sort();
   }
 
   /// Moves the clock on, wrapping at the end of the day.

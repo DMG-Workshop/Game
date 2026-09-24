@@ -1,11 +1,15 @@
 import 'dart:convert';
 
+import 'package:pf2e_core/pf2e_core.dart';
+
 import 'arc.dart';
 import 'campaign.dart';
+import 'creature.dart';
 import 'gear.dart';
 import 'locations.dart';
 import 'npc.dart';
 import 'world.dart';
+import 'world_item.dart';
 
 /// Thrown when campaign data cannot be read at all.
 class CampaignFormatException implements Exception {
@@ -33,6 +37,8 @@ class CampaignLoader {
     required String npcsJson,
     String? gearJson,
     String? arcsJson,
+    String? bestiaryJson,
+    String? itemsJson,
   }) =>
       Campaign(
         id: id,
@@ -42,6 +48,8 @@ class CampaignLoader {
         npcs: readNpcs(npcsJson),
         gear: gearJson == null ? GearTable(const []) : readGear(gearJson),
         arcs: arcsJson == null ? ArcTrack(const []) : readArcs(arcsJson),
+        bestiary: bestiaryJson == null ? null : readBestiary(bestiaryJson),
+        items: itemsJson == null ? null : readItems(itemsJson),
       );
 
   // --- world ---------------------------------------------------------------
@@ -203,6 +211,121 @@ class CampaignLoader {
       ));
     }
     return GearTable(items);
+  }
+
+  // --- creatures and encounters --------------------------------------------
+
+  Bestiary readBestiary(String json) {
+    final root = _object(json, 'bestiary');
+
+    final creatures = <Creature>[];
+    final seenCreatures = <String>{};
+    for (final entry in _list(root['creatures'])) {
+      if (entry is! Map) continue;
+      final raw = entry.cast<String, Object?>();
+      final id = _string(raw['creature_id'], 'creature_id');
+      if (!seenCreatures.add(id)) {
+        throw CampaignFormatException('Duplicate creature id "$id".');
+      }
+      creatures.add(Creature(
+        id: id,
+        name: _string(raw['name'], 'creature name'),
+        level: _int(raw['level'], fallback: 1),
+        description: _optional(raw['description']) ?? '',
+        armorClass: _int(raw['ac'], fallback: 10),
+        maxHp: _int(raw['hp'], fallback: 1),
+        perception: _int(raw['perception']),
+        fortitude: _int(raw['fortitude']),
+        reflex: _int(raw['reflex']),
+        will: _int(raw['will']),
+        traits: _strings(raw['traits']),
+        speed: _int(raw['speed'], fallback: 25),
+        specials: _strings(raw['specials']),
+        isBoss: raw['boss'] == true,
+        attacks: [
+          for (final a in _list(raw['attacks']))
+            if (a is Map) _readAttack(a.cast<String, Object?>(), id),
+        ],
+      ));
+    }
+
+    final encounters = <Encounter>[];
+    final seenEncounters = <String>{};
+    for (final entry in _list(root['encounters'])) {
+      if (entry is! Map) continue;
+      final raw = entry.cast<String, Object?>();
+      final id = _string(raw['encounter_id'], 'encounter_id');
+      if (!seenEncounters.add(id)) {
+        throw CampaignFormatException('Duplicate encounter id "$id".');
+      }
+      final zones = _strings(raw['zones']);
+      encounters.add(Encounter(
+        id: id,
+        location: _string(raw['location'], 'encounter location'),
+        name: _string(raw['name'], 'encounter name'),
+        description: _optional(raw['description']) ?? '',
+        creatureIds: _strings(raw['creatures']),
+        zones: zones.isEmpty ? const ['engaged', 'near', 'far'] : zones,
+        startZone: _optional(raw['start_zone']) ?? 'near',
+        victoryFlags: _strings(raw['victory_flags']),
+        requiredFlags: _strings(raw['requires']),
+        repeatable: raw['repeatable'] == true,
+      ));
+    }
+
+    return Bestiary(creatures: creatures, encounters: encounters);
+  }
+
+  CreatureAttack _readAttack(Map<String, Object?> raw, String creatureId) {
+    final damage = _string(raw['damage'], 'attack damage on "$creatureId"');
+    // Validated here so a malformed statblock fails when the campaign loads
+    // rather than in the middle of a fight.
+    if (DamageExpression.tryParse(damage) == null) {
+      throw CampaignFormatException(
+          'Creature "$creatureId" has an unreadable damage expression '
+          '"$damage".');
+    }
+    return CreatureAttack(
+      name: _string(raw['name'], 'attack name on "$creatureId"'),
+      attackBonus: _int(raw['bonus']),
+      damage: damage,
+      damageType: _optional(raw['damage_type']) ?? 'B',
+      traits: _strings(raw['traits']),
+      reach: _optional(raw['reach']) ?? 'engaged',
+      onCritical: _optional(raw['on_critical']),
+    );
+  }
+
+  // --- world items ---------------------------------------------------------
+
+  ItemPlacements readItems(String json) {
+    final root = _object(json, 'items');
+    final items = <WorldItem>[];
+    final seen = <String>{};
+    for (final entry in _list(root['items'])) {
+      if (entry is! Map) continue;
+      final raw = entry.cast<String, Object?>();
+      final id = _string(raw['item_id'], 'item_id');
+      if (!seen.add(id)) {
+        throw CampaignFormatException('Duplicate world item id "$id".');
+      }
+      items.add(WorldItem(
+        id: id,
+        name: _string(raw['name'], 'item name'),
+        location: _string(raw['location'], 'item location'),
+        description: _optional(raw['description']) ?? '',
+        inRoomText: _optional(raw['in_room']),
+        takeable: raw['takeable'] != false,
+        destroyable: raw['destroyable'] == true,
+        acquireFlags: _strings(raw['acquire_flags']),
+        destroyFlags: _strings(raw['destroy_flags']),
+        requiredFlags: _strings(raw['requires']),
+        hiddenUntilFlags: _strings(raw['hidden_until']),
+        onTake: _optional(raw['on_take']),
+        onDestroy: _optional(raw['on_destroy']),
+      ));
+    }
+    return ItemPlacements(items);
   }
 
   // --- arcs ----------------------------------------------------------------

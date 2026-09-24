@@ -16,6 +16,8 @@ Campaign loadShatteredSeals() => const CampaignLoader().load(
       npcsJson: _read('npcs_and_dialogue.json'),
       gearJson: _read('gear.json'),
       arcsJson: _read('campaign_arcs.json'),
+      bestiaryJson: _read('bestiary.json'),
+      itemsJson: _read('world_items.json'),
     );
 
 void main() {
@@ -302,14 +304,20 @@ void main() {
       expect(campaign.survey().oneWayExits, isEmpty);
     });
 
+    test('every quest step can actually be completed', () {
+      // The regression this locks in: no objective waits on a flag nothing
+      // can set. Adding an objective without something that produces its
+      // condition breaks this, and a player would only find out by getting
+      // stranded on it.
+      expect(campaign.survey().unreachableArcConditions, isEmpty);
+    });
+
     test('still reports the content genuinely outstanding', () {
-      // Not clean: gear and the encounters that would set the arc conditions
-      // are still unwritten, and the survey should keep saying so.
+      // Not clean: gear is written for four levels out of twenty, and the
+      // survey should keep saying so rather than calling the job done.
       final report = campaign.survey();
       expect(report.isClean, isFalse);
       expect(report.gearLevelGaps, contains(2));
-      expect(report.unreachableArcConditions,
-          contains('boss_defeated_hollow_avatar'));
     });
 
     test('does not flag conditions that walking into a room would set', () {
