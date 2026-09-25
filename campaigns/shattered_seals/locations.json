@@ -28,13 +28,117 @@
       "room_id": "MH_001_Square",
       "title": "The Bustling Market Square",
       "description": "The heart of Millhaven. The smell of fresh bread and spices fills the air. A stone fountain dedicated to Ashkyr sits in the center.",
-      "exits": { "north": "MH_002_GuardHall", "east": "MH_003_Tavern" }
+      "exits": {
+        "north": "MH_002_GuardHall",
+        "east": "MH_003_Tavern",
+        "south": "MH_004_Temple",
+        "west": "MH_005_Forge",
+        "northeast": {
+          "to": "VC_001_Plaza",
+          "requires": ["Unlock_Travel_to_Valorheim"],
+          "blocked": "The king's road runs northeast, and the tollgate is shut. Whatever is happening in Millhaven has to end before anyone here is let out."
+        }
+      }
+    },
+    {
+      "room_id": "MH_002_GuardHall",
+      "title": "The Guard Hall",
+      "description": "A low stone room that smells of oil, wet wool and old iron. Half the weapon racks are empty and nobody has written down why. A duty roster hangs by the door with three names struck through and not replaced.",
+      "exits": { "south": "MH_001_Square" }
+    },
+    {
+      "room_id": "MH_003_Tavern",
+      "title": "The Drowned Sparrow",
+      "description": "Low beams, low voices. The fire is built higher than the season calls for, and the seats nearest the door stay empty however crowded it gets. The landlord keeps a lamp burning at the back stair even at noon.",
+      "exits": { "west": "MH_001_Square" }
+    },
+    {
+      "room_id": "MH_004_Temple",
+      "title": "The Temple of Ashkyr",
+      "description": "Whitewashed walls, a plain stone altar, and a smell of cold ash that no amount of scrubbing lifts. Offerings have been left in unusual numbers this week: bread, coins, milk, and in one case a child's shoe.",
+      "exits": { "north": "MH_001_Square" }
+    },
+    {
+      "room_id": "MH_005_Forge",
+      "title": "Harrow's Forge",
+      "description": "Heat, soot, and the steady ring of a hammer that stops the moment you step inside. Commissions are stacked unclaimed along the back wall. The west door stands open onto the cart track toward the treeline.",
+      "exits": { "east": "MH_001_Square", "west": "WW_001_Edge" }
+    },
+    {
+      "room_id": "WW_001_Edge",
+      "title": "The Edge of Whisperwood",
+      "description": "The cart track gives out where the trees begin. Someone has driven a line of iron nails into the trunks at shoulder height, an old charm against old things, and the nails are new.",
+      "exits": { "east": "MH_005_Forge", "west": "WW_002_Deep", "north": "RF_001_Farm" }
+    },
+    {
+      "room_id": "WW_002_Deep",
+      "title": "Deep Whisperwood",
+      "description": "The canopy closes overhead and the light goes the colour of weak tea. There is no birdsong. Twice now you have heard something keeping pace to the north and stopping when you stop.",
+      "exits": { "east": "WW_001_Edge", "west": "WW_003_HollowGrove" }
+    },
+    {
+      "room_id": "WW_003_HollowGrove",
+      "title": "The Hollow Grove",
+      "description": "A clearing where nothing grows and the ground gives underfoot like the crust on a healing wound. The trees around it lean inward. In the center the earth has been turned recently, by hands rather than tools.",
+      "exits": { "east": "WW_002_Deep" }
+    },
+    {
+      "room_id": "RF_001_Farm",
+      "title": "Ravencrest Farm",
+      "description": "A working farm gone quiet. The stock are penned when they should be grazing and none of them will face the treeline. A child's washing still hangs on the line, stiff with three days of rain.",
+      "exits": { "south": "WW_001_Edge", "east": "RF_002_OakGrove" }
+    },
+    {
+      "room_id": "RF_002_OakGrove",
+      "title": "The Old Oak Grove",
+      "description": "Nine oaks in a ring, older than the farm and older than the town. Children play here, or did. The bark of the largest has been scored through at eye height in a pattern that is not a word in any language spoken in Millhaven.",
+      "exits": { "west": "RF_001_Farm" }
+    },
+    {
+      "room_id": "VC_001_Plaza",
+      "title": "The Palace Plaza",
+      "description": "Flagstones wide enough to drill a regiment on, and half of them cracked. Crimson banners hang from every third lamp post, newer than the buildings they cover. Nobody crosses the open middle of the square; the traffic keeps to the walls.",
+      "exits": {
+        "north": "VC_002_ThroneRoom",
+        "east": "VC_003_GrandLibrary",
+        "south": "BM_001_Entrance",
+        "west": "TH_001_Gates",
+        "southwest": {
+          "to": "MH_001_Square",
+          "requires": ["Unlock_Travel_to_Valorheim"],
+          "blocked": "The southwest road is closed to traffic by order of the crown."
+        }
+      }
     },
     {
       "room_id": "VC_002_ThroneRoom",
       "title": "The Royal Throne Room",
       "description": "An enormous hall of vaulted ceilings. The air is thick with tension and the smell of heavy perfumes meant to mask the scent of decay.",
       "exits": { "south": "VC_001_Plaza" }
+    },
+    {
+      "room_id": "VC_003_GrandLibrary",
+      "title": "The Grand Library",
+      "description": "Eight floors of shelving around an open well of air, and a silence that feels enforced rather than kept. Whole sections have been emptied within the last year. The catalogue still lists what is missing, which is either an oversight or a message.",
+      "exits": { "west": "VC_001_Plaza" }
+    },
+    {
+      "room_id": "BM_001_Entrance",
+      "title": "The Bloodstone Mine Head",
+      "description": "Winch gear, spoil heaps, and a shift bell that rings on a schedule nobody works to any more. The rock at the cut face has a red grain running through it that catches the light wrong. The tally board shows more men going down than coming up.",
+      "exits": { "north": "VC_001_Plaza", "down": "BM_002_DeepMine" }
+    },
+    {
+      "room_id": "BM_002_DeepMine",
+      "title": "The Deep Workings",
+      "description": "The air is warm here, which it has no business being. The red grain in the walls has thickened into veins, and the veins run in the direction you are walking, whichever way you turn. Somewhere below, water is moving.",
+      "exits": { "up": "BM_001_Entrance" }
+    },
+    {
+      "room_id": "TH_001_Gates",
+      "title": "The Gates of Thornhaven",
+      "description": "Wrought iron worked into a briar pattern, standing open. The gravel of the drive has been raked this morning and shows no wheel tracks, no hoof prints, and no footprints leading out. Above, the estate's upper windows are lit.",
+      "exits": { "east": "VC_001_Plaza", "up": "TH_002_RitualChamber" }
     },
     {
       "room_id": "TH_002_RitualChamber",

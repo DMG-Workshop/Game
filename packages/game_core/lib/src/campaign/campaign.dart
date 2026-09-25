@@ -1,12 +1,14 @@
 import 'arc.dart';
+import 'creature.dart';
 import 'gear.dart';
 import 'locations.dart';
 import 'npc.dart';
 import 'world.dart';
+import 'world_item.dart';
 
 /// A whole campaign: its world, map, cast, loot and arcs.
 class Campaign {
-  const Campaign({
+  Campaign({
     required this.id,
     required this.title,
     required this.world,
@@ -14,7 +16,10 @@ class Campaign {
     required this.npcs,
     required this.gear,
     required this.arcs,
-  });
+    Bestiary? bestiary,
+    ItemPlacements? items,
+  })  : bestiary = bestiary ?? Bestiary(),
+        items = items ?? ItemPlacements(const []);
 
   final String id;
   final String title;
@@ -23,6 +28,12 @@ class Campaign {
   final NpcDirectory npcs;
   final GearTable gear;
   final ArcTrack arcs;
+
+  /// Creatures and the fights they appear in.
+  final Bestiary bestiary;
+
+  /// Objects lying in rooms, as opposed to equipment.
+  final ItemPlacements items;
 
   /// Everything a player could see in a room: its text, exits, and who is
   /// standing there.
@@ -50,27 +61,47 @@ class Campaign {
             .toList(),
         gearLevelGaps: gear.levelGaps(world.metadata.levelCap),
         unreachableArcConditions: _unreachableArcConditions(),
+        misplacedEncounters: bestiary.misplacedIn(locations.rooms.keys.toSet()),
+        misplacedItems: items.misplacedIn(locations.rooms.keys.toSet()),
+        encountersMissingCreatures: bestiary.missingCreatures,
       );
 
-  /// Arc conditions no objective, world-state change, or movement could set.
+  /// Arc conditions nothing in the campaign could ever set.
   ///
-  /// These are the quest steps that would strand a player: a condition
-  /// nothing can produce is a step that can never be ticked off.
+  /// A condition nothing can produce is a quest step that can never be ticked
+  /// off, which strands a player. Working out what *can* produce one means
+  /// knowing what the engine does as well as what the data declares, so all
+  /// five sources are accounted for:
   ///
-  /// Conditions of the form `enter_<room>` are excluded, because walking into
-  /// a room is how they get set and no data file declares them. The room part
-  /// is matched as a prefix, since triggers abbreviate ids — `enter_MH_001`
-  /// means `MH_001_Square`.
+  /// - flags a completed arc awards;
+  /// - flags a won fight awards, and flags an item awards when taken or
+  ///   destroyed;
+  /// - `enter_<room>`, set by walking in — matched as a prefix, since the
+  ///   triggers abbreviate and `enter_MH_001` means `MH_001_Square`;
+  /// - `keyword_<topic>_unlocked`, set by raising a topic somebody answers;
+  /// - `dialogue_complete_<npc>`, set by raising every topic an NPC has.
+  ///
+  /// Leaving the last three out made this report cry wolf on conditions that
+  /// ordinary play already reaches.
   List<String> _unreachableArcConditions() {
-    final produced = <String>{};
-    for (final arc in arcs.all) {
-      produced.addAll(arc.worldStateChanges);
-    }
+    final produced = <String>{
+      for (final arc in arcs.all) ...arc.worldStateChanges,
+      ...bestiary.victoryFlags,
+      ...items.producibleFlags,
+    };
 
     final knownRooms = <String>{
       ...locations.rooms.keys,
       ...locations.unwrittenRoomIds,
     };
+    final keywordFlags = <String>{
+      for (final npc in npcs.all)
+        for (final topic in npc.keywords.keys) 'keyword_${topic}_unlocked',
+    };
+    final dialogueFlags = <String>{
+      for (final npc in npcs.all) 'dialogue_complete_${npc.slug}',
+    };
+
     bool isMovement(String condition) {
       if (!condition.startsWith('enter_')) return false;
       final prefix = condition.substring('enter_'.length);
@@ -85,7 +116,13 @@ class Campaign {
         needed.add(objective.condition);
       }
     }
-    return needed.difference(produced).where((c) => !isMovement(c)).toList()
+
+    return needed
+        .difference(produced)
+        .difference(keywordFlags)
+        .difference(dialogueFlags)
+        .where((c) => !isMovement(c))
+        .toList()
       ..sort();
   }
 
@@ -102,6 +139,9 @@ class CampaignReport {
     this.misplacedNpcs = const [],
     this.gearLevelGaps = const [],
     this.unreachableArcConditions = const [],
+    this.misplacedEncounters = const [],
+    this.misplacedItems = const [],
+    this.encountersMissingCreatures = const [],
   });
 
   /// Rooms a zone or an exit names but nobody has written.
@@ -122,17 +162,35 @@ class CampaignReport {
   /// Arc conditions nothing in the data can set.
   final List<String> unreachableArcConditions;
 
+  /// Fights placed in rooms that do not exist.
+  final List<Encounter> misplacedEncounters;
+
+  /// Objects lying in rooms that do not exist.
+  final List<WorldItem> misplacedItems;
+
+  /// Fights naming a creature the bestiary does not have.
+  final List<({Encounter encounter, String creatureId})>
+      encountersMissingCreatures;
+
   bool get isClean =>
       unwrittenRooms.isEmpty &&
       danglingExits.isEmpty &&
       oneWayExits.isEmpty &&
       misplacedNpcs.isEmpty &&
       gearLevelGaps.isEmpty &&
-      unreachableArcConditions.isEmpty;
+      unreachableArcConditions.isEmpty &&
+      misplacedEncounters.isEmpty &&
+      misplacedItems.isEmpty &&
+      encountersMissingCreatures.isEmpty;
 
   /// Problems that would strand a player right now, as opposed to content
   /// that is merely unfinished.
-  bool get isPlayable => danglingExits.isEmpty && misplacedNpcs.isEmpty;
+  bool get isPlayable =>
+      danglingExits.isEmpty &&
+      misplacedNpcs.isEmpty &&
+      misplacedEncounters.isEmpty &&
+      misplacedItems.isEmpty &&
+      encountersMissingCreatures.isEmpty;
 
   String render() {
     if (isClean) return 'Campaign data is complete.';
@@ -165,6 +223,19 @@ class CampaignReport {
         ..writeln('Levels with no gear (${gearLevelGaps.length}):')
         ..writeln('  ${gearLevelGaps.join(', ')}');
     }
+    section(
+      'Fights in rooms that do not exist',
+      misplacedEncounters.map((e) => '${e.name} in ${e.location}'),
+    );
+    section(
+      'Objects in rooms that do not exist',
+      misplacedItems.map((i) => '${i.name} in ${i.location}'),
+    );
+    section(
+      'Fights naming a creature that does not exist',
+      encountersMissingCreatures
+          .map((e) => '${e.encounter.name} wants "${e.creatureId}"'),
+    );
     section('Arc conditions nothing sets', unreachableArcConditions);
     return b.toString().trimRight();
   }

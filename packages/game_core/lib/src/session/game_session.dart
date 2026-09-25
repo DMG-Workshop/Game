@@ -35,7 +35,9 @@ class GameSession {
   })  : _actors = List.of(actors),
         _roller = roller,
         _sceneId = sceneId ?? adventure.startSceneId,
-        _flags = flags ?? <String>{} {
+        // Copied rather than kept, for the same reason as WorldSession: a
+        // caller's set may be unmodifiable, or owned by someone else.
+        _flags = {...?flags} {
     if (_actors.isEmpty) {
       throw ArgumentError.value(actors, 'actors', 'a session needs an actor');
     }

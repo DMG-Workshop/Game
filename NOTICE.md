@@ -39,11 +39,11 @@ same place, and are easy to miss.
 **How this project wishes to be credited** (Section III.b.ii):
 
 ```
-[Project name], [Copyright Notice], DMG Workshop
+Marching Order, [Copyright Notice], DMG Workshop
 ```
 
-The product has no public name yet. Fill this in before the first distributed
-build; a placeholder shipped in a licence notice is a defect.
+Only the copyright line is still outstanding, and it needs a year and a
+holder rather than a guess.
 
 ## (c) Reserved Material Notice
 

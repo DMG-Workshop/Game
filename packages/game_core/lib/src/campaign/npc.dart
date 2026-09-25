@@ -58,6 +58,18 @@ class Npc {
   /// Whether this NPC responds to [topic] at all.
   bool knows(String topic) => replyTo(topic) != null;
 
+  /// `npc_005_queen_liora` becomes `queen_liora`.
+  ///
+  /// Used to name the flag set when every one of this NPC's topics has been
+  /// raised, so the survey and the session agree on what that flag is called.
+  String get slug {
+    final parts = id.split('_');
+    if (parts.length > 2 && parts.first == 'npc') {
+      return parts.sublist(2).join('_');
+    }
+    return id;
+  }
+
   @override
   String toString() => '$name @ $location';
 }

@@ -1,3 +1,38 @@
+/// A way out of a room, possibly barred until something has happened.
+///
+/// Gating lives on the exit rather than the room because a road can open
+/// mid-campaign: the arcs award `Unlock_Travel_to_Valorheim`, and that is
+/// exactly what should turn a wall into a way out.
+class Exit {
+  const Exit({
+    required this.direction,
+    required this.to,
+    this.requiredFlags = const [],
+    this.blockedMessage,
+  });
+
+  final String direction;
+
+  /// Room id this leads to.
+  final String to;
+
+  /// Flags that must all be set before this exit opens.
+  final List<String> requiredFlags;
+
+  /// What the player is told when it is barred. A closed road should say why,
+  /// not pretend it was never there.
+  final String? blockedMessage;
+
+  bool get isGated => requiredFlags.isNotEmpty;
+
+  bool isOpen(Set<String> flags) =>
+      requiredFlags.every((flag) => flags.contains(flag));
+
+  @override
+  String toString() =>
+      isGated ? '$direction -> $to (gated)' : '$direction -> $to';
+}
+
 /// A single place a party can stand in.
 class Room {
   const Room({
@@ -11,12 +46,22 @@ class Room {
   final String title;
   final String description;
 
-  /// Direction to the room it leads to, e.g. `{"north": "MH_002_GuardHall"}`.
-  final Map<String, String> exits;
+  /// Direction to the exit leading that way.
+  final Map<String, Exit> exits;
 
+  /// Every direction out, gated or not.
   List<String> get directions => exits.keys.toList()..sort();
 
-  String? exitTo(String direction) => exits[_normalise(direction)];
+  /// Directions the party can actually take right now.
+  List<String> openDirections(Set<String> flags) => [
+        for (final e in exits.entries)
+          if (e.value.isOpen(flags)) e.key
+      ]..sort();
+
+  Exit? exit(String direction) => exits[_normalise(direction)];
+
+  /// The room a direction leads to, ignoring whether it is currently open.
+  String? exitTo(String direction) => exit(direction)?.to;
 
   /// Accepts the usual MUD shorthands, so `n` reaches north.
   static String _normalise(String direction) {
@@ -127,7 +172,7 @@ class Locations {
       referenced.addAll(town.roomIds);
     }
     for (final room in rooms.values) {
-      referenced.addAll(room.exits.values);
+      referenced.addAll(room.exits.values.map((e) => e.to));
     }
     return referenced.where((id) => !rooms.containsKey(id)).toList()..sort();
   }
@@ -137,8 +182,8 @@ class Locations {
     final out = <({String from, String direction, String to})>[];
     for (final room in rooms.values) {
       for (final entry in room.exits.entries) {
-        if (!rooms.containsKey(entry.value)) {
-          out.add((from: room.id, direction: entry.key, to: entry.value));
+        if (!rooms.containsKey(entry.value.to)) {
+          out.add((from: room.id, direction: entry.key, to: entry.value.to));
         }
       }
     }
@@ -166,12 +211,12 @@ class Locations {
     final out = <({String from, String direction, String to})>[];
     for (final room in rooms.values) {
       for (final entry in room.exits.entries) {
-        final target = rooms[entry.value];
+        final target = rooms[entry.value.to];
         if (target == null) continue; // already reported as dangling
         final back = opposites[entry.key];
         if (back == null) continue;
-        if (target.exits[back] != room.id) {
-          out.add((from: room.id, direction: entry.key, to: entry.value));
+        if (target.exits[back]?.to != room.id) {
+          out.add((from: room.id, direction: entry.key, to: entry.value.to));
         }
       }
     }

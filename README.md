@@ -1,7 +1,11 @@
-# Game
+# Marching Order
 
 A text-first Pathfinder 2e RPG for phones, tablets, and the browser, built
 around importing a character you already play.
+
+The name says the thing that makes it different: this is a *party*, not a
+hero. It is also deliberately world-agnostic — Campaign I is Shattered Seals,
+and Campaign II will not have to fight the app for its name.
 
 ## The idea
 
@@ -141,6 +145,39 @@ rogue, because both are untrained and she has the Wisdom. Nobody authored
 that; it falls out of two real character sheets meeting one scene. It is the
 clearest evidence so far that the design bet is sound.
 
+**Valorheim is walkable.** Seventeen rooms, bidirectional exits, NPCs who
+answer keywords, weather and a day cycle:
+
+```
+$ dart run game_core:walk --seed=12 --room=MH_001_Square
+
+## The Guard Hall
+   Millhaven
+
+A low stone room that smells of oil, wet wool and old iron. Half the
+weapon racks are empty and nobody has written down why.
+
+A grizzled man in dented plate armor stands behind a wooden desk.
+
+Exits: south
+
+> ask thorne about quest
+
+Captain Thorne Ironhelm:
+  "The roads are unsafe. Caravans vanish, and young Elara Whitmore was
+  taken three days ago."
+
+  [keyword_quest_unlocked]
+```
+
+That flag is not decoration. `keyword_quest_unlocked` is the condition on the
+first objective of *Shadows Over Millhaven*, so asking the right question
+advances the arc — quests run on the same flag set as everything else, rather
+than through a second mechanism bolted alongside.
+
+Exits can be gated on flags, which is how the road out of Millhaven stays shut
+until the arc that opens it completes.
+
 ## Next
 
 The gap between importing a character and *running* one is the real work. A
@@ -148,11 +185,10 @@ level 6 character references roughly 80 distinct rules elements — feats, class
 features, spells, focus spells — and implementing those, not parsing them, is
 the bulk of the project. Near-term order:
 
-1. Room navigation and NPC conversation over the campaign map, so Valorheim is
-   walkable rather than only modelled.
-2. Writing the fourteen rooms the map names but nobody has written yet — run
-   `dart run game_core:survey` for the current list.
-3. Zone-based encounters over the derived statblock.
+1. Zone-based encounters over the derived statblock — the last six arc
+   conditions all wait on fights and items, which `dart run game_core:survey`
+   lists.
+2. Gear for the sixteen levels that have none.
 4. Feat and spell effects, as a growing set with explicit gaps surfaced to the
    player rather than silently ignored. These live in a separate content
    package: rules *text and names* are licensed material, rules *arithmetic* is

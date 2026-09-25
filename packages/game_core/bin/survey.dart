@@ -42,6 +42,8 @@ void main(List<String> args) {
       npcsJson: npcs,
       gearJson: read('gear.json'),
       arcsJson: read('campaign_arcs.json'),
+      bestiaryJson: read('bestiary.json'),
+      itemsJson: read('world_items.json'),
     );
   } on CampaignFormatException catch (e) {
     stderr.writeln('Could not read the campaign: ${e.message}');
@@ -58,7 +60,10 @@ void main(List<String> args) {
         '${campaign.locations.rooms.length} rooms written, '
         '${campaign.npcs.length} NPCs, '
         '${campaign.gear.length} items, '
-        '${campaign.arcs.length} arcs')
+        '${campaign.arcs.length} arcs, '
+        '${campaign.bestiary.creatures.length} creatures, '
+        '${campaign.bestiary.encounters.length} fights, '
+        '${campaign.items.length} objects')
     ..writeln('=' * 68)
     ..writeln()
     ..writeln(report.render());

@@ -1,0 +1,170 @@
+{
+  "creatures": [
+    {
+      "creature_id": "c_hollow_thrall",
+      "name": "Hollow Thrall",
+      "level": 3,
+      "description": "A villager three days dead and still wearing their own boots. The eyes are gone and the sockets are packed with grave soil.",
+      "ac": 19,
+      "hp": 35,
+      "perception": 9,
+      "fortitude": 11,
+      "reflex": 6,
+      "will": 8,
+      "speed": 20,
+      "traits": ["undead", "mindless", "shadow"],
+      "attacks": [
+        {
+          "name": "grasping hands",
+          "bonus": 12,
+          "damage": "1d8+5",
+          "damage_type": "B",
+          "reach": "engaged",
+          "traits": ["agile"]
+        }
+      ],
+      "specials": [
+        "Cannot be commanded away from the tether that raised it.",
+        "Takes no action of its own if the Avatar falls."
+      ]
+    },
+    {
+      "creature_id": "c_hollow_avatar",
+      "name": "The Hollow Avatar",
+      "level": 8,
+      "description": "A standing absence in the shape of a tall man, wearing the grove's shadows like a coat. Where it has walked, the ground has not sprung back.",
+      "ac": 26,
+      "hp": 140,
+      "perception": 17,
+      "fortitude": 19,
+      "reflex": 14,
+      "will": 18,
+      "speed": 25,
+      "traits": ["undead", "incorporeal", "shadow", "boss"],
+      "boss": true,
+      "attacks": [
+        {
+          "name": "unmaking touch",
+          "bonus": 18,
+          "damage": "2d12+9",
+          "damage_type": "negative",
+          "reach": "engaged",
+          "on_critical": "The target's most recent memory of daylight goes out."
+        },
+        {
+          "name": "reaching shadow",
+          "bonus": 16,
+          "damage": "2d8+7",
+          "damage_type": "negative",
+          "reach": "near"
+        }
+      ],
+      "specials": [
+        "Draws one Hollow Thrall upright again at the start of each round while any remain standing.",
+        "Cannot leave the Hollow Grove while the turned earth at its centre is undisturbed."
+      ]
+    },
+    {
+      "creature_id": "c_covenant_acolyte",
+      "name": "Crimson Covenant Acolyte",
+      "level": 5,
+      "description": "A well-fed young person in good boots and a borrowed cloak, holding a knife they have clearly been taught to hold and never taught to use.",
+      "ac": 21,
+      "hp": 60,
+      "perception": 12,
+      "fortitude": 11,
+      "reflex": 13,
+      "will": 15,
+      "speed": 25,
+      "traits": ["human", "covenant"],
+      "attacks": [
+        {
+          "name": "ritual dagger",
+          "bonus": 14,
+          "damage": "1d10+6",
+          "damage_type": "P",
+          "reach": "engaged",
+          "traits": ["agile", "magical"]
+        },
+        {
+          "name": "shadow bolt",
+          "bonus": 13,
+          "damage": "2d6+4",
+          "damage_type": "negative",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Flees the chamber if Malachai falls, and is not pursued."
+      ]
+    },
+    {
+      "creature_id": "c_malachai_vex",
+      "name": "Malachai Vex",
+      "level": 12,
+      "description": "Still aristocratic, still unhurried, and no longer entirely occupying his own outline. The shadow behind him moves a half-beat before he does.",
+      "ac": 32,
+      "hp": 220,
+      "perception": 23,
+      "fortitude": 24,
+      "reflex": 21,
+      "will": 26,
+      "speed": 25,
+      "traits": ["human", "covenant", "shadow", "boss"],
+      "boss": true,
+      "attacks": [
+        {
+          "name": "vessel's grasp",
+          "bonus": 24,
+          "damage": "2d12+14",
+          "damage_type": "negative",
+          "reach": "engaged"
+        },
+        {
+          "name": "entropy lance",
+          "bonus": 22,
+          "damage": "3d8+10",
+          "damage_type": "negative",
+          "reach": "far",
+          "on_critical": "The ritual circles brighten. Something below the floor answers."
+        }
+      ],
+      "specials": [
+        "While the ritual circles are intact, damage that would drop him instead leaves him at 1 Hit Point once per fight.",
+        "Speaks throughout, and will stop to answer a genuine question."
+      ]
+    }
+  ],
+  "encounters": [
+    {
+      "encounter_id": "e_whisperwood_thralls",
+      "location": "WW_002_Deep",
+      "name": "Something Keeping Pace",
+      "description": "The thing that has been matching your steps stops pretending to.",
+      "creatures": ["c_hollow_thrall", "c_hollow_thrall"],
+      "start_zone": "near",
+      "repeatable": false,
+      "victory_flags": ["cleared_whisperwood_thralls"]
+    },
+    {
+      "encounter_id": "e_hollow_grove",
+      "location": "WW_003_HollowGrove",
+      "name": "The Hollow Avatar",
+      "description": "The turned earth at the centre of the clearing shifts, and the thing that has been wearing Millhaven's dead stands up out of it.",
+      "creatures": ["c_hollow_avatar", "c_hollow_thrall", "c_hollow_thrall"],
+      "start_zone": "far",
+      "requires": ["item_acquired_elaras_doll"],
+      "victory_flags": ["boss_defeated_hollow_avatar"]
+    },
+    {
+      "encounter_id": "e_ritual_chamber",
+      "location": "TH_002_RitualChamber",
+      "name": "Prevent the Ascension",
+      "description": "He closes the ledger, sets it down with care, and stands. The two acolytes move to the edges of the circle without being told.",
+      "creatures": ["c_malachai_vex", "c_covenant_acolyte", "c_covenant_acolyte"],
+      "start_zone": "near",
+      "requires": ["item_destroyed_bloodstone_geode"],
+      "victory_flags": ["boss_defeated_malachai_vex"]
+    }
+  ]
+}

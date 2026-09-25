@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:game_core/game_core.dart';
+import 'package:pf2e_core/pf2e_core.dart';
 import 'package:test/test.dart';
 
 const _dir = '../../campaigns/shattered_seals';
@@ -15,6 +16,8 @@ Campaign loadShatteredSeals() => const CampaignLoader().load(
       npcsJson: _read('npcs_and_dialogue.json'),
       gearJson: _read('gear.json'),
       arcsJson: _read('campaign_arcs.json'),
+      bestiaryJson: _read('bestiary.json'),
+      itemsJson: _read('world_items.json'),
     );
 
 void main() {
@@ -89,11 +92,22 @@ void main() {
 
     test('resolves exits, including MUD shorthands', () {
       final square = campaign.locations.roomById('MH_001_Square')!;
-      expect(square.directions, ['east', 'north']);
+      expect(
+          square.directions, ['east', 'north', 'northeast', 'south', 'west']);
       expect(square.exitTo('north'), 'MH_002_GuardHall');
       expect(square.exitTo('n'), 'MH_002_GuardHall');
       expect(square.exitTo('NORTH'), 'MH_002_GuardHall');
-      expect(square.exitTo('west'), isNull);
+      expect(square.exitTo('in'), isNull);
+    });
+
+    test('reads a gated exit and keeps it shut until its flag is set', () {
+      final road = campaign.locations.roomById('MH_001_Square')!.exit('ne')!;
+      expect(road.to, 'VC_001_Plaza');
+      expect(road.isGated, isTrue);
+      expect(road.requiredFlags, ['Unlock_Travel_to_Valorheim']);
+      expect(road.blockedMessage, contains('tollgate'));
+      expect(road.isOpen(const {}), isFalse);
+      expect(road.isOpen({'Unlock_Travel_to_Valorheim'}), isTrue);
     });
   });
 
@@ -157,8 +171,161 @@ void main() {
     });
 
     test('filters by type', () {
-      expect(campaign.gear.ofType('armor'), hasLength(1));
-      expect(campaign.gear.ofType('weapon'), hasLength(3));
+      expect(campaign.gear.ofType('armor'), hasLength(5));
+      expect(campaign.gear.ofType('weapon'), hasLength(10));
+      // Every item lands in exactly one category, so nothing is invisible to
+      // a table that asks by type.
+      final byType = {
+        for (final type in {for (final i in campaign.gear.all) i.type})
+          type: campaign.gear.ofType(type).length,
+      };
+      expect(byType.values.reduce((a, b) => a + b), campaign.gear.length);
+    });
+
+    test('a character of any level has something to find', () {
+      // Loot pacing: twenty levels, twenty items, no dead stretch where the
+      // tables have nothing to offer.
+      expect(
+          campaign.gear.levelGaps(campaign.world.metadata.levelCap), isEmpty);
+      expect(campaign.gear.length, 20);
+      for (var level = 1; level <= 20; level++) {
+        expect(campaign.gear.forLevel(level), isNotEmpty,
+            reason: 'nothing within two levels of $level');
+      }
+    });
+
+    test('every item is identified once and described', () {
+      final ids = campaign.gear.all.map((i) => i.id).toList();
+      expect(ids.toSet(), hasLength(ids.length));
+      for (final item in campaign.gear.all) {
+        expect(item.name.trim(), isNotEmpty);
+        expect(item.description.trim(), isNotEmpty, reason: item.name);
+        expect(item.traits, isNotEmpty, reason: item.name);
+        expect(item.level, inInclusiveRange(1, 20), reason: item.name);
+      }
+    });
+
+    test('every magical item says what the magic does', () {
+      for (final item in campaign.gear.all.where((i) => i.isMagical)) {
+        expect(item.special?.trim(), isNotEmpty, reason: item.name);
+      }
+      // The only mundane item is the militia sword a first-level character
+      // starts with.
+      expect(campaign.gear.all.where((i) => !i.isMagical).map((i) => i.id),
+          ['w_001_guard_sword']);
+    });
+
+    test('every weapon rolls damage the engine can read', () {
+      for (final weapon in campaign.gear.ofType('weapon')) {
+        expect(weapon.damage, isNotNull, reason: weapon.name);
+        expect(DamageExpression.tryParse(weapon.damage!), isNotNull,
+            reason: '${weapon.name}: ${weapon.damage}');
+      }
+    });
+
+    test('armour class climbs with level', () {
+      final armour = campaign.gear.ofType('armor');
+      var previous = 0;
+      for (final piece in armour) {
+        final ac = piece.armorClass;
+        expect(ac, isNotNull, reason: piece.name);
+        expect(ac, greaterThan(previous),
+            reason: '${piece.name} is no better than the level below it');
+        previous = ac!;
+      }
+    });
+
+    test('no item carries a rune earlier than the rules allow', () {
+      // Potency is the one number on these items the engine will eventually
+      // add to a roll, so it follows Pathfinder's own pacing: weapons at 2,
+      // 10 and 16; armour at 5, 11 and 18. An item ahead of that schedule is
+      // a balance bug written in JSON.
+      const weaponUnlocks = {1: 2, 2: 10, 3: 16};
+      const armourUnlocks = {1: 5, 2: 11, 3: 18};
+      for (final item in campaign.gear.all) {
+        final unlocks = switch (item.type) {
+          'weapon' => weaponUnlocks,
+          'armor' => armourUnlocks,
+          _ => null,
+        };
+        if (unlocks == null || item.bonus == 0) continue;
+        expect(item.bonus, inInclusiveRange(1, 3), reason: item.name);
+        expect(item.level, greaterThanOrEqualTo(unlocks[item.bonus]!),
+            reason: '${item.name} is +${item.bonus} at level ${item.level}');
+      }
+    });
+  });
+
+  group('system vocabulary', () {
+    // Pathfinder and D&D 5e name several skills differently, and 5e wording
+    // slips into notes written from memory. An item promising a bonus to a
+    // skill that does not exist is a rule nothing can ever apply, so the
+    // mechanical text is checked rather than trusted.
+    const fiveEditionOnly = {
+      'persuasion': 'Diplomacy',
+      'animal handling': 'Nature',
+      'sleight of hand': 'Thievery',
+      'investigation': 'Perception, or Recall Knowledge',
+      'insight': 'Perception',
+    };
+
+    test('gear rules text uses Pathfinder skill names', () {
+      final offences = <String>[];
+      for (final item in campaign.gear.all) {
+        final text =
+            '${item.special ?? ''} ${item.traits.join(' ')}'.toLowerCase();
+        for (final entry in fiveEditionOnly.entries) {
+          if (text.contains(entry.key)) {
+            offences.add('${item.name}: "${entry.key}" should be '
+                '${entry.value}');
+          }
+        }
+      }
+      expect(offences, isEmpty, reason: offences.join('; '));
+    });
+
+    test("the Monarch's Vestment grants a typed Diplomacy bonus", () {
+      // Bonuses in Pathfinder are typed, and an untyped one would stack where
+      // it should not, so the item says which kind it is.
+      final vestment = campaign.gear.byId('a_011_monarchs_vestment')!;
+      expect(vestment.special, contains('Diplomacy'));
+      expect(vestment.special, contains('item bonus'));
+      expect(vestment.special, isNot(contains('Persuasion')));
+    });
+
+    test('every modifier an item grants is typed', () {
+      // Pathfinder stacks one bonus of each type and no more. An untyped "+2
+      // to Diplomacy" would either stack with everything or with nothing,
+      // depending on who implemented it, so the text always says which kind.
+      final signed = RegExp(r'[+-]\d+');
+      final typed = RegExp(r'^[+-]\d+ \w+ (bonus|penalty)\b');
+      final untyped = <String>[];
+      for (final item in campaign.gear.all) {
+        final text = item.special ?? '';
+        for (final match in signed.allMatches(text)) {
+          if (!typed.hasMatch(text.substring(match.start))) {
+            untyped.add('${item.name}: "${match[0]}"');
+          }
+        }
+      }
+      expect(untyped, isEmpty, reason: untyped.join('; '));
+    });
+
+    test('every skill an item names is one the engine can resolve', () {
+      // Korash stands in as any imported character: the skill list is the
+      // same for all of them.
+      final stats = DerivedStats(const PathbuilderImporter()
+          .importJson(
+              File('../pf2e_core/test/fixtures/korash.json').readAsStringSync())
+          .character);
+      for (final item in campaign.gear.all) {
+        for (final skill in CoreSkill.values) {
+          if ((item.special ?? '').contains(skill.displayName)) {
+            expect(stats.statByKey(skill.key), isNotNull,
+                reason: '${item.name} names ${skill.displayName}');
+          }
+        }
+      }
     });
   });
 
@@ -214,39 +381,42 @@ void main() {
       expect(view.npcs.single.name, 'Queen Liora');
     });
 
-    test('returns nothing for a room that is not written yet', () {
-      expect(campaign.look('MH_002_GuardHall'), isNull);
+    test('returns nothing for a room id nobody has written', () {
+      expect(campaign.look('MH_099_Nowhere'), isNull);
     });
   });
 
-  group('survey', () {
-    test('reports rooms that are planned but not written', () {
+  group('survey of the real campaign', () {
+    test('Valorheim is walkable and stays that way', () {
+      // The regression this locks in: every room the zones name is written,
+      // every exit leads somewhere real, and nobody stands in a room that
+      // does not exist. Adding a zone entry without a room breaks this.
       final report = campaign.survey();
-      // The zones name ten Millhaven rooms and seven capital rooms; three
-      // rooms in total are actually written.
-      expect(report.unwrittenRooms, contains('MH_002_GuardHall'));
-      expect(report.unwrittenRooms, contains('WW_003_HollowGrove'));
-      expect(report.unwrittenRooms, isNot(contains('MH_001_Square')));
+      expect(report.unwrittenRooms, isEmpty);
+      expect(report.danglingExits, isEmpty);
+      expect(report.misplacedNpcs, isEmpty);
+      expect(report.isPlayable, isTrue);
     });
 
-    test('reports exits that lead nowhere', () {
-      final dangling = campaign.survey().danglingExits;
-      expect(dangling.map((e) => e.to), contains('MH_002_GuardHall'));
-      expect(dangling.map((e) => e.from), contains('MH_001_Square'));
+    test('every exit has a way back', () {
+      expect(campaign.survey().oneWayExits, isEmpty);
     });
 
-    test('reports NPCs standing in rooms that do not exist', () {
-      final misplaced = campaign.survey().misplacedNpcs;
-      expect(misplaced.map((n) => n.name), contains('Captain Thorne Ironhelm'));
-      expect(misplaced.map((n) => n.name), isNot(contains('Queen Liora')));
+    test('every quest step can actually be completed', () {
+      // The regression this locks in: no objective waits on a flag nothing
+      // can set. Adding an objective without something that produces its
+      // condition breaks this, and a player would only find out by getting
+      // stranded on it.
+      expect(campaign.survey().unreachableArcConditions, isEmpty);
     });
 
-    test('reports arc conditions nothing in the data sets', () {
-      // Every objective condition must be produced by something, or the quest
-      // cannot be finished.
-      final unreachable = campaign.survey().unreachableArcConditions;
-      expect(unreachable, contains('boss_defeated_hollow_avatar'));
-      expect(unreachable, contains('item_acquired_elaras_doll'));
+    test('has nothing outstanding left to report', () {
+      // The survey is the campaign's own to-do list. It is empty, and a
+      // future room, arc or item that arrives half-written will make it
+      // speak up again rather than sliding in unnoticed.
+      final report = campaign.survey();
+      expect(report.gearLevelGaps, isEmpty);
+      expect(report.isClean, isTrue, reason: report.render());
     });
 
     test('does not flag conditions that walking into a room would set', () {
@@ -255,20 +425,71 @@ void main() {
       final unreachable = campaign.survey().unreachableArcConditions;
       expect(unreachable, isNot(contains('enter_MH_001')));
       expect(unreachable, isNot(contains('enter_VC_001')));
-      expect(unreachable, isNot(contains('enter_TH_002')));
+    });
+  });
+
+  group('survey of deliberately broken data', () {
+    // Detection is tested against data built to be wrong, rather than by
+    // relying on the shipping campaign happening to be incomplete.
+    Campaign broken(String locationsJson, {String? npcsJson}) =>
+        const CampaignLoader().load(
+          id: 'broken',
+          title: 'Broken',
+          worldConfigJson: _read('world_config.json'),
+          locationsJson: locationsJson,
+          npcsJson: npcsJson ?? '{"npcs":[]}',
+        );
+
+    test('reports a room a zone names but nobody wrote', () {
+      final c = broken('''
+{"towns":{"t":{"name":"T","tier":1,"level_range":[1,2],"zones":{"z":["A","B"]}}},
+ "rooms":[{"room_id":"A","title":"A","description":"a"}]}''');
+      expect(c.survey().unwrittenRooms, ['B']);
     });
 
-    test('reports levels with no gear written', () {
-      final gaps = campaign.survey().gearLevelGaps;
-      expect(gaps, contains(2));
-      expect(gaps, isNot(contains(5)));
-      expect(gaps.length, 16); // four items across a cap of twenty
+    test('reports an exit leading nowhere', () {
+      final c = broken('''
+{"towns":{},"rooms":[{"room_id":"A","title":"A","description":"a",
+ "exits":{"north":"B"}}]}''');
+      final dangling = c.survey().danglingExits;
+      expect(dangling.single.from, 'A');
+      expect(dangling.single.direction, 'north');
+      expect(dangling.single.to, 'B');
+      expect(c.survey().isPlayable, isFalse);
     });
 
-    test('renders a readable summary', () {
-      final rendered = campaign.survey().render();
+    test('reports an exit with no way back', () {
+      final c = broken('''
+{"towns":{},"rooms":[
+ {"room_id":"A","title":"A","description":"a","exits":{"north":"B"}},
+ {"room_id":"B","title":"B","description":"b"}]}''');
+      expect(c.survey().oneWayExits.single.from, 'A');
+    });
+
+    test('reports an NPC standing nowhere', () {
+      final c = broken(
+        '{"towns":{},"rooms":[{"room_id":"A","title":"A","description":"a"}]}',
+        npcsJson: '''
+{"npcs":[{"npc_id":"npc_001_ghost","name":"A Ghost","location":"Z",
+ "appearance":"x","greeting":"y"}]}''',
+      );
+      expect(c.survey().misplacedNpcs.single.name, 'A Ghost');
+      expect(c.survey().isPlayable, isFalse);
+    });
+
+    test('renders every section it found', () {
+      final c = broken('''
+{"towns":{"t":{"name":"T","tier":1,"level_range":[1,2],"zones":{"z":["A","B"]}}},
+ "rooms":[{"room_id":"A","title":"A","description":"a","exits":{"north":"B"}}]}''');
+      final rendered = c.survey().render();
       expect(rendered, contains('Rooms named but not written'));
       expect(rendered, contains('Exits leading nowhere'));
+    });
+
+    test('says so when there is nothing outstanding', () {
+      const clean = CampaignReport();
+      expect(clean.isClean, isTrue);
+      expect(clean.render(), 'Campaign data is complete.');
     });
   });
 }
