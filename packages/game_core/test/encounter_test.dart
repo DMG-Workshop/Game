@@ -44,13 +44,57 @@ EncounterSession fight({
   required Encounter encounter,
   List<Creature> creatures = const [_straw],
   int seed = 1,
+  GearTable? gear,
 }) =>
     EncounterSession(
       encounter: encounter,
       bestiary: Bestiary(creatures: creatures, encounters: [encounter]),
       actors: _party(),
       roller: DiceRoller(seed),
+      gear: gear,
     );
+
+/// A table where the straw dummy carries one certainty and one long shot.
+GearTable _lootTable() => GearTable(const [
+      GearItem(
+        id: 'i_certain',
+        name: 'Certain Thing',
+        level: 1,
+        type: 'weapon',
+        description: 'Always on it.',
+        rarity: ItemRarity.unique,
+        drops: [DropSource(creatureId: 'c_straw', chance: 100)],
+      ),
+      GearItem(
+        id: 'i_longshot',
+        name: 'Long Shot',
+        level: 1,
+        type: 'weapon',
+        description: 'Hardly ever on it.',
+        rarity: ItemRarity.rare,
+        drops: [DropSource(creatureId: 'c_straw', chance: 1)],
+      ),
+    ]);
+
+/// Plays a winnable fight to its end. The dummy strikes at -10 against AC 25,
+/// so the only question is how many swings it takes.
+EncounterSession _playOut(EncounterSession f) {
+  var guard = 0;
+  while (!f.isOver && guard++ < 100) {
+    if (f.isPartyTurn) {
+      final targets = f.targetsInReach();
+      if (targets.isEmpty) {
+        f.stride();
+      } else {
+        f.strike(targets.first.id);
+      }
+      if (f.actionsLeft == 0 && !f.isOver) f.endTurn();
+    } else {
+      f.endTurn();
+    }
+  }
+  return f;
+}
 
 const _adjacent = Encounter(
   id: 'e_test',
@@ -243,6 +287,83 @@ void main() {
       f.strike('c_straw_1');
       expect(f.outcome, EncounterOutcome.victory);
       expect(f.victoryFlags, ['test_won']);
+    });
+  });
+
+  group('loot', () {
+    test('a fight with no loot table drops nothing', () {
+      final f = _playOut(fight(encounter: _adjacent, seed: 3));
+      expect(f.outcome, EncounterOutcome.victory);
+      expect(f.loot, isEmpty);
+      expect(f.lootFlags, isEmpty);
+    });
+
+    test('a guaranteed drop is on every one of them', () {
+      for (var seed = 1; seed <= 12; seed++) {
+        final f = _playOut(
+            fight(encounter: _adjacent, seed: seed, gear: _lootTable()));
+        expect(f.outcome, EncounterOutcome.victory);
+        expect(f.loot.map((i) => i.id), contains('i_certain'),
+            reason: 'seed $seed');
+      }
+    });
+
+    test('a long shot stays a long shot', () {
+      // One percent, so across forty fights it should turn up rarely or not
+      // at all. A drop table that ignored its own chances would show here.
+      var found = 0;
+      for (var seed = 1; seed <= 40; seed++) {
+        final f = _playOut(
+            fight(encounter: _adjacent, seed: seed, gear: _lootTable()));
+        if (f.loot.any((i) => i.id == 'i_longshot')) found++;
+      }
+      expect(found, lessThan(5));
+    });
+
+    test('two of the same creature is two chances, not two copies', () {
+      final f = _playOut(fight(
+        encounter: const Encounter(
+          id: 'e',
+          location: 'anywhere',
+          name: 'T',
+          creatureIds: ['c_straw', 'c_straw'],
+          startZone: 'engaged',
+        ),
+        gear: _lootTable(),
+      ));
+      expect(f.outcome, EncounterOutcome.victory);
+      expect(f.loot.where((i) => i.id == 'i_certain'), hasLength(1));
+    });
+
+    test('the same seed drops the same things', () {
+      // Replayability: a phone and a browser must agree about what was on
+      // the body, or a saved game is not the same game.
+      final a =
+          _playOut(fight(encounter: _adjacent, seed: 7, gear: _lootTable()));
+      final b =
+          _playOut(fight(encounter: _adjacent, seed: 7, gear: _lootTable()));
+      expect(a.loot.map((i) => i.id), b.loot.map((i) => i.id));
+    });
+
+    test('reading the loot twice does not roll it again', () {
+      final f =
+          _playOut(fight(encounter: _adjacent, seed: 4, gear: _lootTable()));
+      expect(
+          f.loot.map((i) => i.id).toList(), f.loot.map((i) => i.id).toList());
+    });
+
+    test('nothing is carried off a fight that was not won', () {
+      final f = fight(
+          encounter: _standoff, creatures: const [_wall], gear: _lootTable());
+      f.flee();
+      expect(f.outcome, EncounterOutcome.fled);
+      expect(f.loot, isEmpty);
+    });
+
+    test('loot is recorded as flags, like everything else', () {
+      final f =
+          _playOut(fight(encounter: _adjacent, seed: 3, gear: _lootTable()));
+      expect(f.lootFlags, contains('loot_i_certain'));
     });
   });
 

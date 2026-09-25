@@ -256,6 +256,22 @@ bool _handle(WorldSession session, String line,
       _renderArcs(session);
       return true;
 
+    case 'loot':
+    case 'recovered':
+      final found = session.recoveredGear;
+      if (found.isEmpty) {
+        stdout.writeln('You have taken nothing off anything yet.');
+      } else {
+        for (final item in found) {
+          stdout.writeln('  ${item.name.padRight(30)} '
+              'level ${item.level} ${item.rarity.name} ${item.type}');
+          if (item.special != null) {
+            stdout.writeln(_wrap(item.special!, indent: '    '));
+          }
+        }
+      }
+      return true;
+
     case 'flags':
       final flags = session.flags.toList()..sort();
       stdout.writeln(flags.isEmpty ? '(none)' : flags.join('\n'));
@@ -434,6 +450,7 @@ const _commands = '''
   talk <name>                                     greet someone
   ask <name> about <topic>                        raise a topic
   quests                                          arc progress
+  loot                                            what you have taken so far
   wait [hours]                                    let time pass
   quit                                            stop
 ''';
@@ -574,6 +591,14 @@ bool _fight(
     case EncounterOutcome.victory:
       stdout.writeln('The fight is over. You are still standing.');
       final flags = session.concludeEncounter(fight);
+      if (fight.loot.isNotEmpty) {
+        stdout.writeln('\nAmong what is left:');
+        for (final item in fight.loot) {
+          stdout.writeln('\n  ${item.name} '
+              '(level ${item.level} ${item.rarity.name} ${item.type})');
+          stdout.writeln(_wrap(item.description, indent: '    '));
+        }
+      }
       for (final flag in flags) {
         stdout.writeln('\n  [$flag]');
       }

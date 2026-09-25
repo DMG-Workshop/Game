@@ -5,6 +5,7 @@ import '../campaign/campaign.dart';
 import '../campaign/locations.dart';
 import '../campaign/npc.dart';
 import '../campaign/creature.dart';
+import '../campaign/gear.dart';
 import '../campaign/world.dart';
 import '../campaign/world_item.dart';
 import 'encounter_session.dart';
@@ -443,20 +444,31 @@ class WorldSession {
       bestiary: campaign.bestiary,
       actors: _actors,
       roller: _roller,
+      gear: campaign.gear,
     );
   }
 
   /// Records the result of a fight, returning the flags it set.
   ///
   /// Called by the client once the fight is over, rather than by the fight
-  /// itself, so that losing and fleeing are the caller's to narrate.
+  /// itself, so that losing and fleeing are the caller's to narrate. Loot is
+  /// recorded here too: a drop the party never went back for is not theirs.
   List<String> concludeEncounter(EncounterSession fight) {
     final set = <String>[];
-    for (final flag in fight.victoryFlags) {
+    for (final flag in [...fight.victoryFlags, ...fight.lootFlags]) {
       if (_flags.add(flag)) set.add(flag);
     }
     return set..sort();
   }
+
+  /// Gear the party has taken off something it killed.
+  ///
+  /// Held as flags rather than as an inventory, because there is no inventory
+  /// yet: this records what has been found, not what anyone is wearing.
+  List<GearItem> get recoveredGear => [
+        for (final item in campaign.gear.all)
+          if (_flags.contains('loot_${item.id}')) item,
+      ];
 
   /// Moves the clock on, wrapping at the end of the day.
   void advanceTime(int hours) {

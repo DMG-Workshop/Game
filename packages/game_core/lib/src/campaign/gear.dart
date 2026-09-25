@@ -1,3 +1,53 @@
+/// How hard an item is to come by.
+///
+/// Pathfinder's rarity traits, used here for what they actually mean: not how
+/// powerful an item is, but how available. Most magic gear in Pathfinder is
+/// common, including the expensive kind, so an item says otherwise only when
+/// the campaign means it to be unobtainable by ordinary means.
+enum ItemRarity {
+  common,
+  uncommon,
+  rare,
+  unique;
+
+  /// Reads a rarity, returning null when [source] is not one.
+  ///
+  /// Null rather than a default, so a misspelt rarity is caught by whoever
+  /// is reading the file instead of quietly making a rare item buyable.
+  static ItemRarity? tryParse(String? source) {
+    final needle = source?.trim().toLowerCase();
+    for (final rarity in values) {
+      if (rarity.name == needle) return rarity;
+    }
+    return null;
+  }
+
+  /// Rare and unique items are the ones that must be found rather than bought.
+  bool get mustBeFound => index >= ItemRarity.rare.index;
+
+  String get label => name[0].toUpperCase() + name.substring(1);
+}
+
+/// A creature that may be carrying an item, and how often it is.
+///
+/// The chance is a percentage rolled on the session's own dice, so a
+/// playthrough replays identically from its seed — a rare drop that changed
+/// between a phone and a browser would not be a rare drop, it would be a bug.
+class DropSource {
+  const DropSource({required this.creatureId, required this.chance});
+
+  /// Creature whose defeat rolls for this item.
+  final String creatureId;
+
+  /// Percentage chance, 1 to 100. 100 is a guaranteed reward.
+  final int chance;
+
+  bool get isGuaranteed => chance >= 100;
+
+  @override
+  String toString() => '$creatureId ($chance%)';
+}
+
 /// An item in the campaign's loot tables.
 ///
 /// Traits are Pathfinder traits and stay as written strings: the engine does
@@ -13,6 +63,8 @@ class GearItem {
     this.traits = const [],
     this.stats = const {},
     this.special,
+    this.rarity = ItemRarity.common,
+    this.drops = const [],
   });
 
   final String id;
@@ -30,7 +82,24 @@ class GearItem {
   /// Free-text rule this item adds, not yet machine-readable.
   final String? special;
 
+  /// How available it is.
+  final ItemRarity rarity;
+
+  /// Creatures that may be carrying it, if it is something to be found.
+  final List<DropSource> drops;
+
   bool get isMagical => stats['magic'] == true;
+
+  /// True when this can only be had by killing something for it.
+  bool get isDrop => drops.isNotEmpty;
+
+  /// The chance [creatureId] is carrying this, or null when it never is.
+  DropSource? dropFrom(String creatureId) {
+    for (final drop in drops) {
+      if (drop.creatureId == creatureId) return drop;
+    }
+    return null;
+  }
 
   bool hasTrait(String trait) {
     final needle = trait.trim().toLowerCase();
@@ -53,7 +122,9 @@ class GearItem {
       };
 
   @override
-  String toString() => '$name (level $level $type)';
+  String toString() => rarity == ItemRarity.common
+      ? '$name (level $level $type)'
+      : '$name (level $level ${rarity.name} $type)';
 }
 
 /// The campaign's items, with a little reporting over the whole table.
@@ -77,6 +148,52 @@ class GearTable {
   List<GearItem> forLevel(int level, {int slack = 2}) => [
         for (final item in _items)
           if ((item.level - level).abs() <= slack) item,
+      ]..sort((a, b) => a.level.compareTo(b.level));
+
+  List<GearItem> ofRarity(ItemRarity rarity) => [
+        for (final item in _items)
+          if (item.rarity == rarity) item,
+      ]..sort((a, b) => a.level.compareTo(b.level));
+
+  /// Items that have to be found rather than bought.
+  List<GearItem> get rareDrops => [
+        for (final item in _items)
+          if (item.rarity.mustBeFound) item,
+      ]..sort((a, b) => a.level.compareTo(b.level));
+
+  /// Items [creatureId] may be carrying, cheapest chance last.
+  List<GearItem> droppedBy(String creatureId) => [
+        for (final item in _items)
+          if (item.dropFrom(creatureId) != null) item,
+      ]..sort((a, b) {
+          final byChance = b
+              .dropFrom(creatureId)!
+              .chance
+              .compareTo(a.dropFrom(creatureId)!.chance);
+          return byChance != 0 ? byChance : a.level.compareTo(b.level);
+        });
+
+  /// Drops naming a creature the bestiary does not have.
+  ///
+  /// A drop table pointing at a creature nobody wrote is an item that can
+  /// never be found, which is the same bug as a quest step nothing can set.
+  List<({GearItem item, String creatureId})> danglingDrops(
+      Set<String> knownCreatureIds) {
+    final out = <({GearItem item, String creatureId})>[];
+    for (final item in _items) {
+      for (final drop in item.drops) {
+        if (!knownCreatureIds.contains(drop.creatureId)) {
+          out.add((item: item, creatureId: drop.creatureId));
+        }
+      }
+    }
+    return out;
+  }
+
+  /// Rare items nothing drops, which no amount of playing would turn up.
+  List<GearItem> get unobtainableRarities => [
+        for (final item in _items)
+          if (item.rarity.mustBeFound && item.drops.isEmpty) item,
       ]..sort((a, b) => a.level.compareTo(b.level));
 
   List<GearItem> ofType(String type) {

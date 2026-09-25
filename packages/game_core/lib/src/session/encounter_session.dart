@@ -1,6 +1,7 @@
 import 'package:pf2e_core/pf2e_core.dart';
 
 import '../campaign/creature.dart';
+import '../campaign/gear.dart';
 import 'session_actor.dart';
 
 /// Thrown when an action is not legal right now.
@@ -127,7 +128,9 @@ class EncounterSession {
     required Bestiary bestiary,
     required List<SessionActor> actors,
     required DiceRoller roller,
+    GearTable? gear,
   })  : _roller = roller,
+        _gear = gear,
         _resolver = CheckResolver(roller) {
     if (actors.isEmpty) {
       throw ArgumentError.value(actors, 'actors', 'a fight needs a party');
@@ -159,11 +162,15 @@ class EncounterSession {
   final DiceRoller _roller;
   final CheckResolver _resolver;
 
+  /// The campaign's loot tables, when the caller wants drops rolled.
+  final GearTable? _gear;
+
   final List<Combatant> _combatants = [];
   int _turnIndex = 0;
   int _round = 1;
   int _actionsLeft = actionsPerTurn;
   EncounterOutcome? _outcome;
+  List<GearItem> _loot = const [];
 
   /// Pathfinder gives three actions a turn, which is what makes a third
   /// attack a real choice rather than a free one.
@@ -192,6 +199,17 @@ class EncounterSession {
   /// Flags the party earns by winning.
   List<String> get victoryFlags =>
       _outcome == EncounterOutcome.victory ? encounter.victoryFlags : const [];
+
+  /// What the defeated were carrying.
+  ///
+  /// Rolled once, at the moment the fight is won, rather than each time this
+  /// is read — a drop that changed depending on how often the client asked
+  /// about it would be no drop at all.
+  List<GearItem> get loot => _loot;
+
+  /// The loot as flags, so recovering something is recorded the same way as
+  /// everything else the party has done.
+  List<String> get lootFlags => [for (final item in _loot) 'loot_${item.id}'];
 
   Combatant? combatantById(String id) {
     for (final c in _combatants) {
@@ -393,9 +411,34 @@ class EncounterSession {
     if (_outcome != null) return;
     if (enemies.every((c) => c.isDown)) {
       _outcome = EncounterOutcome.victory;
+      _rollLoot();
     } else if (party.every((c) => c.isDown)) {
       _outcome = EncounterOutcome.defeat;
     }
+  }
+
+  /// Rolls each defeated creature's drop table.
+  ///
+  /// Rolled on the session's own dice, so a seed replays the same loot on a
+  /// phone as in a browser. The same item never drops twice from one fight:
+  /// three thralls is three chances at the nail, not three nails.
+  void _rollLoot() {
+    final gear = _gear;
+    if (gear == null) return;
+
+    final found = <String, GearItem>{};
+    for (final enemy in enemies) {
+      final creatureId = enemy.creature?.id;
+      if (creatureId == null) continue;
+      for (final item in gear.droppedBy(creatureId)) {
+        if (found.containsKey(item.id)) continue;
+        if (_roller.rollDie(100) <= item.dropFrom(creatureId)!.chance) {
+          found[item.id] = item;
+        }
+      }
+    }
+
+    _loot = found.values.toList()..sort((a, b) => a.level.compareTo(b.level));
   }
 
   void _rollInitiative() {

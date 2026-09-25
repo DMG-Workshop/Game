@@ -64,6 +64,9 @@ class Campaign {
         misplacedEncounters: bestiary.misplacedIn(locations.rooms.keys.toSet()),
         misplacedItems: items.misplacedIn(locations.rooms.keys.toSet()),
         encountersMissingCreatures: bestiary.missingCreatures,
+        danglingDrops: gear.danglingDrops(
+            {for (final creature in bestiary.creatures) creature.id}),
+        unobtainableGear: gear.unobtainableRarities,
       );
 
   /// Arc conditions nothing in the campaign could ever set.
@@ -142,6 +145,8 @@ class CampaignReport {
     this.misplacedEncounters = const [],
     this.misplacedItems = const [],
     this.encountersMissingCreatures = const [],
+    this.danglingDrops = const [],
+    this.unobtainableGear = const [],
   });
 
   /// Rooms a zone or an exit names but nobody has written.
@@ -172,6 +177,12 @@ class CampaignReport {
   final List<({Encounter encounter, String creatureId})>
       encountersMissingCreatures;
 
+  /// Loot tables naming a creature the bestiary does not have.
+  final List<({GearItem item, String creatureId})> danglingDrops;
+
+  /// Rare items nothing in the campaign drops.
+  final List<GearItem> unobtainableGear;
+
   bool get isClean =>
       unwrittenRooms.isEmpty &&
       danglingExits.isEmpty &&
@@ -181,7 +192,9 @@ class CampaignReport {
       unreachableArcConditions.isEmpty &&
       misplacedEncounters.isEmpty &&
       misplacedItems.isEmpty &&
-      encountersMissingCreatures.isEmpty;
+      encountersMissingCreatures.isEmpty &&
+      danglingDrops.isEmpty &&
+      unobtainableGear.isEmpty;
 
   /// Problems that would strand a player right now, as opposed to content
   /// that is merely unfinished.
@@ -235,6 +248,15 @@ class CampaignReport {
       'Fights naming a creature that does not exist',
       encountersMissingCreatures
           .map((e) => '${e.encounter.name} wants "${e.creatureId}"'),
+    );
+    section(
+      'Loot naming a creature that does not exist',
+      danglingDrops.map((d) => '${d.item.name} drops from "${d.creatureId}"'),
+    );
+    section(
+      'Rare items nothing drops',
+      unobtainableGear
+          .map((i) => '${i.name} (level ${i.level} ${i.rarity.name})'),
     );
     section('Arc conditions nothing sets', unreachableArcConditions);
     return b.toString().trimRight();

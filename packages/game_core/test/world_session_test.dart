@@ -316,6 +316,50 @@ void main() {
       }
     });
 
+    test('what the thralls were carrying is recorded as the party takes it',
+        () {
+      // Drops are a roll, so this hunts for a seed where something turned up
+      // rather than pretending a particular seed is meaningful. Finding none
+      // at all would mean the loot table never fires.
+      final campaign = loadShatteredSeals();
+      for (var seed = 1; seed <= 60; seed++) {
+        final world = newWorld(
+          seed: seed,
+          room: 'WW_002_Deep',
+          campaign: campaign,
+        );
+        final f = world.beginEncounter();
+        var guard = 0;
+        while (!f.isOver && guard++ < 200) {
+          if (f.isPartyTurn) {
+            final targets = f.targetsInReach();
+            if (targets.isEmpty) {
+              f.stride();
+            } else {
+              f.strike(targets.first.id);
+            }
+            if (f.actionsLeft == 0 && !f.isOver) f.endTurn();
+          } else {
+            f.endTurn();
+          }
+        }
+        if (f.outcome != EncounterOutcome.victory || f.loot.isEmpty) continue;
+
+        final set = world.concludeEncounter(f);
+        expect(set, containsAll(f.lootFlags));
+        expect(world.recoveredGear.map((i) => i.id),
+            containsAll(f.loot.map((i) => i.id)));
+        // It survives a save, because it is a flag like any other.
+        expect(world.snapshot()['flags'], containsAll(f.lootFlags));
+        return;
+      }
+      fail('sixty fights with the thralls and nothing ever dropped');
+    });
+
+    test('nothing is recovered before anything has been killed', () {
+      expect(newWorld().recoveredGear, isEmpty);
+    });
+
     test('the whole tier one chain is reachable in order', () {
       // Thorne names the quest, the grove yields the doll, and the doll opens
       // the Avatar. Each step is a flag the next one waits on.

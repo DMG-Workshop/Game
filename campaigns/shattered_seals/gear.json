@@ -30,6 +30,18 @@
       "special": "Activate when you fail a save against a shadow effect to reroll it with a +1 item bonus. The charm is spent."
     },
     {
+      "item_id": "w_021_thralls_nail",
+      "name": "The Thrall's Nail",
+      "level": 3,
+      "type": "weapon",
+      "rarity": "rare",
+      "traits": ["finesse", "agile", "magical", "warding"],
+      "description": "Thralls come out of the Whisperwood with these in them, driven in at the base of the skull and long since grown over. Pulling one free is easy. Deciding to keep it is the part people regret.",
+      "stats": { "damage": "1d4", "bonus": 1, "magic": true },
+      "special": "+1 item bonus to saves against effects that would control you, while you hold it. On a critical hit, the target cannot become concealed until the end of your next turn.",
+      "drops": [{ "from": "c_hollow_thrall", "chance": 8 }]
+    },
+    {
       "item_id": "w_004_whisperwood_bow",
       "name": "Whisperwood Longbow",
       "level": 4,
@@ -38,6 +50,18 @@
       "description": "Cut from a tree that grew inside the ring and cured for nine years. It is quiet in a way that has nothing to do with craftsmanship.",
       "stats": { "damage": "1d8", "bonus": 1, "magic": true },
       "special": "Striking rune. Ignores the concealment granted by natural darkness."
+    },
+    {
+      "item_id": "g_022_hollow_ash",
+      "name": "Handful of Hollow Ash",
+      "level": 4,
+      "type": "talisman",
+      "rarity": "uncommon",
+      "traits": ["magical", "consumable", "shadow"],
+      "description": "What a thrall leaves when it finally stops. It does not scatter in wind, and it is cold in a way ash has no business being.",
+      "stats": { "bonus": 1, "magic": true },
+      "special": "Activate when a creature with the shadow trait would become incorporeal to prevent it until the end of your next turn. The ash is spent.",
+      "drops": [{ "from": "c_hollow_thrall", "chance": 25 }]
     },
     {
       "item_id": "w_006_shadowbane_dagger",
@@ -90,6 +114,30 @@
       "special": "On a successful Strike against a creature raised by another's will, that creature is cut off from whoever raised it until the end of your next turn."
     },
     {
+      "item_id": "w_023_regrown_branch",
+      "name": "The Branch That Grew Back",
+      "level": 9,
+      "type": "weapon",
+      "rarity": "rare",
+      "traits": ["simple", "magical", "two-hand d8", "wood"],
+      "description": "The bowyers cut from the tree inside the ring every ninth year, and never twice from the same limb. This is the limb they took first, back again, and longer than it was.",
+      "stats": { "damage": "1d4", "bonus": 1, "magic": true },
+      "special": "Striking rune. On a critical hit, roots hold the target in place until the end of your next turn, whether or not there is any soil.",
+      "drops": [{ "from": "c_hollow_avatar", "chance": 25 }]
+    },
+    {
+      "item_id": "w_024_crown_spike",
+      "name": "The Avatar's Crown-Spike",
+      "level": 10,
+      "type": "weapon",
+      "rarity": "unique",
+      "traits": ["finesse", "magical", "shadow", "deadly d8"],
+      "description": "The Avatar wears a ring of these and is not wearing a crown. When it goes down one of them stays behind — always one, never the same one twice.",
+      "stats": { "damage": "1d6", "bonus": 2, "magic": true },
+      "special": "Striking rune. Ignores the resistance an incorporeal creature has to physical damage. While it is drawn, you can see the shadow of anything that is keeping one hidden.",
+      "drops": [{ "from": "c_hollow_avatar", "chance": 100 }]
+    },
+    {
       "item_id": "w_010_inquisitors_blade",
       "name": "Covenant Inquisitor's Blade",
       "level": 10,
@@ -110,6 +158,18 @@
       "special": "+1 item bonus to Society checks made inside the Palace District."
     },
     {
+      "item_id": "w_025_censer_chain",
+      "name": "Covenant Censer-Chain",
+      "level": 11,
+      "type": "weapon",
+      "rarity": "rare",
+      "traits": ["martial", "magical", "sweep", "covenant"],
+      "description": "Acolytes swing these at the head of a procession, and the smoke is the point: it is what keeps a congregation from noticing what the singing is doing to them.",
+      "stats": { "damage": "1d6", "bonus": 2, "magic": true },
+      "special": "+1 item bonus to Deception checks made among Covenant members. On a successful Strike, the target takes a -1 status penalty to Will saves until the end of your next turn.",
+      "drops": [{ "from": "c_covenant_acolyte", "chance": 15 }]
+    },
+    {
       "item_id": "w_012_bloodstone_pick",
       "name": "Bloodstone Pick",
       "level": 12,
@@ -118,6 +178,30 @@
       "description": "A mining pick whose head has taken up the red grain from the rock it was used on. It is warm at the haft, always, and the warmth is going the wrong way.",
       "stats": { "damage": "1d6", "bonus": 2, "magic": true },
       "special": "Greater striking rune. Deals 2d6 additional damage to objects and to crystalline creatures."
+    },
+    {
+      "item_id": "w_026_confessors_needle",
+      "name": "The Confessor's Needle",
+      "level": 12,
+      "type": "weapon",
+      "rarity": "rare",
+      "traits": ["finesse", "agile", "magical", "deadly d8"],
+      "description": "Long, fine, and kept in a velvet roll with eleven others. The Covenant does not call what it does with these torture, and it is technically correct: the needle does the asking.",
+      "stats": { "damage": "1d4", "bonus": 2, "magic": true },
+      "special": "+2 item bonus to Intimidation checks. A creature critically hit by it answers the next question it is asked truthfully, though nothing makes it answer at length.",
+      "drops": [{ "from": "c_covenant_acolyte", "chance": 8 }]
+    },
+    {
+      "item_id": "w_027_ascension_rod",
+      "name": "Vex's Ascension Rod",
+      "level": 13,
+      "type": "weapon",
+      "rarity": "unique",
+      "traits": ["martial", "magical", "occult", "shadow"],
+      "description": "Malachai Vex did not carry a weapon. He carried the thing he intended to become, and used it on whoever stood between him and that.",
+      "stats": { "damage": "1d6", "bonus": 2, "magic": true },
+      "special": "Greater striking rune. Once per day you may trade places with a creature within 30 feet that you can see, each of you appearing where the other stood. The rod was built for this and does not care that you are the one holding it.",
+      "drops": [{ "from": "c_malachai_vex", "chance": 100 }]
     },
     {
       "item_id": "g_013_fourth_name_ledger",
@@ -138,6 +222,18 @@
       "description": "Golden plate armor fit for a king. It emanates majesty.",
       "stats": { "ac": 20, "bonus": 2, "magic": true },
       "special": "+2 item bonus to Diplomacy checks."
+    },
+    {
+      "item_id": "w_028_seal_breakers_athame",
+      "name": "The Seal-Breaker's Athame",
+      "level": 14,
+      "type": "weapon",
+      "rarity": "rare",
+      "traits": ["finesse", "magical", "occult", "versatile s"],
+      "description": "The knife the Covenant opens seals with. It is not sharp and does not need to be: the edge is an argument rather than a blade.",
+      "stats": { "damage": "1d4", "bonus": 2, "magic": true },
+      "special": "+2 item bonus to Occultism checks made to identify or undo a seal. It deals no damage at all to an unwarded object, and double damage to a warded one.",
+      "drops": [{ "from": "c_malachai_vex", "chance": 30 }]
     },
     {
       "item_id": "a_015_seal_wardens_regalia",

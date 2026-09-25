@@ -208,9 +208,48 @@ class CampaignLoader {
         traits: _strings(raw['traits']),
         stats: _map(raw['stats']),
         special: _optional(raw['special']),
+        rarity: _readRarity(_optional(raw['rarity']), id),
+        drops: [
+          for (final d in _list(raw['drops']))
+            if (d is Map) _readDrop(d.cast<String, Object?>(), id),
+        ],
       ));
     }
     return GearTable(items);
+  }
+
+  /// Reads an item's rarity, defaulting to common where it says nothing.
+  ///
+  /// Most magic gear in Pathfinder is common, so the default is the honest
+  /// one; a value that is not a rarity at all is a typo, and a typo that
+  /// silently made a rare item ordinary would never be noticed.
+  ItemRarity _readRarity(String? raw, String itemId) {
+    if (raw == null) return ItemRarity.common;
+    final rarity = ItemRarity.tryParse(raw);
+    if (rarity == null) {
+      throw CampaignFormatException('Item "$itemId" has rarity "$raw", which '
+          'is not one of: ${ItemRarity.values.map((r) => r.name).join(', ')}.');
+    }
+    return rarity;
+  }
+
+  /// Reads one entry of an item's drop table.
+  ///
+  /// A chance outside 1–100 is rejected rather than clamped: 0 would be an
+  /// item nobody can ever find and 1000 is a typo, and both are the sort of
+  /// thing a content author wants told to them now rather than after a
+  /// hundred fights that dropped nothing.
+  DropSource _readDrop(Map<String, Object?> raw, String itemId) {
+    final chance = _int(raw['chance'], fallback: 100);
+    if (chance < 1 || chance > 100) {
+      throw CampaignFormatException(
+          'Item "$itemId" has a drop chance of $chance, which is not a '
+          'percentage between 1 and 100.');
+    }
+    return DropSource(
+      creatureId: _string(raw['from'], 'drop source on "$itemId"'),
+      chance: chance,
+    );
   }
 
   // --- creatures and encounters --------------------------------------------
