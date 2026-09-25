@@ -7,6 +7,7 @@ import '../campaign/npc.dart';
 import '../campaign/creature.dart';
 import '../campaign/gear.dart';
 import '../campaign/world.dart';
+import '../party/equipment.dart';
 import '../campaign/world_item.dart';
 import 'encounter_session.dart';
 import 'session_actor.dart';
@@ -124,18 +125,30 @@ class WorldSession {
     String? roomId,
     Set<String>? flags,
     int hour = 8,
+    PartyInventory? inventory,
   })  : _actors = List.of(actors),
         _roller = roller,
         _roomId = roomId ?? _firstRoomOf(campaign),
         // Copied rather than kept: callers pass an unmodifiable view or a
         // set another session owns, and a session must not mutate either.
         _flags = {...?flags},
-        _hour = hour {
+        _hour = hour,
+        _inventory = inventory ?? PartyInventory(gear: campaign.gear) {
     if (_actors.isEmpty) {
       throw ArgumentError.value(actors, 'actors', 'a session needs an actor');
     }
     if (campaign.locations.roomById(_roomId) == null) {
       throw ArgumentError.value(_roomId, 'roomId', 'no such room');
+    }
+    // Without a pack of its own, a session works out what it is carrying from
+    // the flags, which is how everything else here describes progress. It
+    // also means a save written before the pack existed still has its loot.
+    if (inventory == null) {
+      for (final flag in _flags) {
+        if (!flag.startsWith('loot_')) continue;
+        final id = flag.substring('loot_'.length);
+        if (campaign.gear.byId(id) != null) _inventory.add(id);
+      }
     }
     _enter(_roomId);
   }
@@ -146,6 +159,7 @@ class WorldSession {
   String _roomId;
   final Set<String> _flags;
   int _hour;
+  final PartyInventory _inventory;
 
   /// Topics already raised, keyed by npc id, so a conversation does not
   /// re-award a flag every time the same question is asked.
@@ -165,6 +179,9 @@ class WorldSession {
 
   List<SessionActor> get actors => List.unmodifiable(_actors);
   SessionActor get primary => _actors.first;
+
+  /// What the party is carrying and who is wearing what.
+  PartyInventory get inventory => _inventory;
 
   Set<String> get flags => Set.unmodifiable(_flags);
 
@@ -445,6 +462,7 @@ class WorldSession {
       actors: _actors,
       roller: _roller,
       gear: campaign.gear,
+      loadouts: _inventory.loadouts(),
     );
   }
 
@@ -458,17 +476,86 @@ class WorldSession {
     for (final flag in [...fight.victoryFlags, ...fight.lootFlags]) {
       if (_flags.add(flag)) set.add(flag);
     }
+    for (final item in fight.loot) {
+      _inventory.add(item.id);
+    }
     return set..sort();
   }
 
-  /// Gear the party has taken off something it killed.
+  /// Gear the party is carrying.
   ///
-  /// Held as flags rather than as an inventory, because there is no inventory
-  /// yet: this records what has been found, not what anyone is wearing.
-  List<GearItem> get recoveredGear => [
-        for (final item in campaign.gear.all)
-          if (_flags.contains('loot_${item.id}')) item,
-      ];
+  /// The flags record that a thing was *found*, which arcs can watch; the
+  /// pack records that it is still had. They are set together and only the
+  /// pack is authoritative.
+  List<GearItem> get recoveredGear => _inventory.carried;
+
+  // --- equipment -----------------------------------------------------------
+
+  /// Puts a carried item on an actor, returning what it displaced.
+  ///
+  /// [who] may be an actor id or any word of their name, and [what] an item
+  /// id or any word of its name, because that is what a player types.
+  ({SessionActor actor, GearItem item, EquipSlot slot, GearItem? replaced})
+      equip(String what, {String? who}) {
+    final actor = actorFor(who);
+    final item = _inventory.find(what);
+    if (item == null) {
+      throw InvalidMoveException('You are not carrying a "$what".');
+    }
+    final result = _inventory.equip(actor.id, item.id);
+    return (
+      actor: actor,
+      item: result.item,
+      slot: result.slot,
+      replaced: result.replaced,
+    );
+  }
+
+  /// Takes whatever is in [slot] off an actor, returning it.
+  ({SessionActor actor, GearItem? removed}) unequip(
+    String slot, {
+    String? who,
+  }) {
+    final actor = actorFor(who);
+    final parsed = EquipSlot.tryParse(slot);
+    if (parsed == null) {
+      throw InvalidMoveException('There is no "$slot" to take off. Try '
+          '${EquipSlot.values.map((s) => s.label).join(' or ')}.');
+    }
+    return (actor: actor, removed: _inventory.unequip(actor.id, parsed));
+  }
+
+  /// An actor's numbers with what they are wearing and wielding applied.
+  EquippedStats statsFor(String actorId) => EquippedStats(
+        actorFor(actorId).stats,
+        _inventory.loadoutFor(actorFor(actorId).id),
+      );
+
+  /// Whether [who] names somebody in the party.
+  bool knowsActor(String who) {
+    try {
+      actorFor(who);
+      return true;
+    } on InvalidMoveException {
+      return false;
+    }
+  }
+
+  /// Resolves an actor by id or by any word of their name, defaulting to the
+  /// one at the front of the marching order.
+  SessionActor actorFor(String? who) {
+    if (who == null || who.trim().isEmpty) return primary;
+    final needle = who.trim().toLowerCase();
+    for (final actor in _actors) {
+      if (actor.id.toLowerCase() == needle) return actor;
+    }
+    for (final actor in _actors) {
+      if (actor.name.toLowerCase().split(RegExp(r'\s+')).contains(needle)) {
+        return actor;
+      }
+    }
+    throw InvalidMoveException('Nobody here is called "$who".');
+  }
 
   /// Moves the clock on, wrapping at the end of the day.
   void advanceTime(int hours) {
@@ -499,6 +586,7 @@ class WorldSession {
         'roomId': _roomId,
         'hour': _hour,
         'flags': (_flags.toList()..sort()),
+        'inventory': _inventory.toJson(),
         'rollerState': _roller.state,
         'weather': Map<String, String>.from(_weatherByRegion),
         'topicsRaised': {
@@ -518,15 +606,24 @@ class WorldSession {
       throw ArgumentError('Snapshot belongs to campaign "$id", not '
           '"${campaign.id}".');
     }
+    final flags = {
+      for (final f in (snapshot['flags'] as List? ?? const [])) f.toString(),
+    };
+
+    // No pack in the snapshot means a save from before there was one; the
+    // session rebuilds it from the loot flags instead.
+    final inventory = snapshot.containsKey('inventory')
+        ? PartyInventory.fromJson(campaign.gear, snapshot['inventory'])
+        : null;
+
     final session = WorldSession(
       campaign: campaign,
       actors: actors,
       roller: DiceRoller.fromState((snapshot['rollerState'] as num).toInt()),
       roomId: snapshot['roomId']!.toString(),
-      flags: {
-        for (final f in (snapshot['flags'] as List? ?? const [])) f.toString(),
-      },
+      flags: flags,
       hour: (snapshot['hour'] as num?)?.toInt() ?? 8,
+      inventory: inventory,
     );
     for (final e in (snapshot['weather'] as Map? ?? const {}).entries) {
       session._weatherByRegion[e.key.toString()] = e.value.toString();

@@ -257,20 +257,25 @@ bool _handle(WorldSession session, String line,
       return true;
 
     case 'loot':
-    case 'recovered':
-      final found = session.recoveredGear;
-      if (found.isEmpty) {
-        stdout.writeln('You have taken nothing off anything yet.');
-      } else {
-        for (final item in found) {
-          stdout.writeln('  ${item.name.padRight(30)} '
-              'level ${item.level} ${item.rarity.name} ${item.type}');
-          if (item.special != null) {
-            stdout.writeln(_wrap(item.special!, indent: '    '));
-          }
-        }
-      }
+    case 'inventory':
+    case 'inv':
+    case 'i':
+      _renderInventory(session);
       return true;
+
+    case 'sheet':
+    case 'stats':
+      _renderSheet(session, rest);
+      return true;
+
+    case 'equip':
+    case 'wield':
+    case 'wear':
+      return _equip(session, rest);
+
+    case 'unequip':
+    case 'remove':
+      return _unequip(session, rest);
 
     case 'flags':
       final flags = session.flags.toList()..sort();
@@ -335,6 +340,106 @@ bool _talk(WorldSession session, String rest) {
   }
   return true;
 }
+
+void _renderInventory(WorldSession session) {
+  final carried = session.inventory.carried;
+  if (carried.isEmpty) {
+    stdout.writeln('The pack is empty. You have what you arrived with.');
+    return;
+  }
+  stdout.writeln('');
+  for (final item in carried) {
+    final holder = session.inventory.holderOf(item.id);
+    final worn = holder == null ? '' : '  (on $holder)';
+    stdout.writeln('  ${item.name.padRight(30)} '
+        'level ${item.level} ${item.rarity.name} ${item.type}$worn');
+    if (item.special != null) {
+      stdout.writeln(_wrap(item.special!, indent: '    '));
+    }
+  }
+}
+
+void _renderSheet(WorldSession session, String who) {
+  try {
+    final actor = who.isEmpty ? session.primary : session.actorFor(who);
+    final stats = session.statsFor(actor.id);
+    stdout.writeln('\n$actor');
+    for (final line in stats.describe()) {
+      stdout.writeln('  $line');
+    }
+    stdout.writeln('  HP ${actor.stats.maxHp}  '
+        'Perception ${actor.stats.perception.formatted}  '
+        'Class DC ${actor.stats.classDc}');
+  } on InvalidMoveException catch (e) {
+    stdout.writeln(e.message);
+  }
+}
+
+/// Accepts "equip nail" and "equip korash nail".
+bool _equip(WorldSession session, String rest) {
+  if (rest.isEmpty) {
+    stdout.writeln('Equip what?');
+    return true;
+  }
+  final words = rest.split(RegExp(r'\s+'));
+  String? who;
+  var what = rest;
+  if (words.length > 1 && session.knowsActor(words.first)) {
+    who = words.first;
+    what = words.skip(1).join(' ');
+  }
+
+  try {
+    final before = session.statsFor(session.actorFor(who ?? '').id);
+    final beforeAc = before.armorClass;
+    final beforeAttack = before.attackBonus;
+    final beforeDamage = before.damage.toString();
+
+    final result = session.equip(what, who: who);
+    final after = session.statsFor(result.actor.id);
+
+    stdout.writeln('\n${result.actor.name} takes up ${result.item.name}'
+        '${result.replaced == null ? '' : ', putting away '
+            '${result.replaced!.name}'}.');
+    if (result.slot == EquipSlot.armor) {
+      stdout.writeln('  AC $beforeAc -> ${after.armorClass}');
+    } else {
+      stdout.writeln('  Strike ${_signed(beforeAttack)} $beforeDamage'
+          ' -> ${_signed(after.attackBonus)} ${after.damage}');
+    }
+  } on EquipException catch (e) {
+    stdout.writeln(_wrap(e.message));
+  } on InvalidMoveException catch (e) {
+    stdout.writeln(_wrap(e.message));
+  }
+  return true;
+}
+
+bool _unequip(WorldSession session, String rest) {
+  if (rest.isEmpty) {
+    stdout.writeln('Take off what — weapon or armour?');
+    return true;
+  }
+  final words = rest.split(RegExp(r'\s+'));
+  String? who;
+  var slot = rest;
+  if (words.length > 1 && session.knowsActor(words.first)) {
+    who = words.first;
+    slot = words.skip(1).join(' ');
+  }
+
+  try {
+    final result = session.unequip(slot, who: who);
+    stdout.writeln(result.removed == null
+        ? '${result.actor.name} had nothing there.'
+        : '${result.actor.name} puts away ${result.removed!.name}.');
+  } on InvalidMoveException catch (e) {
+    stdout.writeln(_wrap(e.message));
+  }
+  return true;
+}
+
+String _signed(int value) => value >= 0 ? '+$value' : '$value';
 
 void _announceArcs(WorldSession session) {
   final changes = session.applyPendingWorldState();
@@ -450,7 +555,10 @@ const _commands = '''
   talk <name>                                     greet someone
   ask <name> about <topic>                        raise a topic
   quests                                          arc progress
-  loot                                            what you have taken so far
+  inventory (i)                                   what the party is carrying
+  sheet [who]                                     AC, Strike, HP as equipped
+  equip [who] <item>                              wield or wear something
+  unequip [who] weapon|armour                     put it away again
   wait [hours]                                    let time pass
   quit                                            stop
 ''';

@@ -2,6 +2,7 @@ import 'package:pf2e_core/pf2e_core.dart';
 
 import '../campaign/creature.dart';
 import '../campaign/gear.dart';
+import '../party/equipment.dart';
 import 'session_actor.dart';
 
 /// Thrown when an action is not legal right now.
@@ -129,8 +130,10 @@ class EncounterSession {
     required List<SessionActor> actors,
     required DiceRoller roller,
     GearTable? gear,
+    Map<String, Loadout> loadouts = const {},
   })  : _roller = roller,
         _gear = gear,
+        _loadouts = loadouts,
         _resolver = CheckResolver(roller) {
     if (actors.isEmpty) {
       throw ArgumentError.value(actors, 'actors', 'a fight needs a party');
@@ -164,6 +167,10 @@ class EncounterSession {
 
   /// The campaign's loot tables, when the caller wants drops rolled.
   final GearTable? _gear;
+
+  /// What each actor is wielding and wearing, keyed by actor id. An actor
+  /// with no entry fights with the kit their sheet was imported with.
+  final Map<String, Loadout> _loadouts;
 
   final List<Combatant> _combatants = [];
   int _turnIndex = 0;
@@ -467,26 +474,24 @@ class EncounterSession {
   }
 
   Combatant _combatantFor(SessionActor actor) {
-    final stats = actor.stats;
-    final weapon =
-        actor.character.weapons.isEmpty ? null : actor.character.weapons.first;
-
-    final damage = weapon == null
-        ? DamageExpression.parse('1d4')
-        : DamageExpression.tryParse(weapon.damageFormula) ??
-            DamageExpression.parse('1d4');
+    // Equipment is applied here rather than baked into the sheet: what a
+    // character is holding changes between fights, and the import does not.
+    final equipped = EquippedStats(
+      actor.stats,
+      _loadouts[actor.id] ?? const Loadout(),
+    );
 
     return Combatant(
       id: actor.id,
       name: actor.name,
       isEnemy: false,
-      armorClass: stats.armorClass,
-      maxHp: stats.maxHp,
-      attackBonus: weapon?.attackBonus ?? stats.perception.total,
-      damage: damage,
-      perception: stats.perception.total,
+      armorClass: equipped.armorClass,
+      maxHp: actor.stats.maxHp,
+      attackBonus: equipped.attackBonus,
+      damage: equipped.damage,
+      perception: actor.stats.perception.total,
       zoneIndex: 0,
-      agile: weapon?.runes.any((r) => r.toLowerCase() == 'agile') ?? false,
+      agile: equipped.isAgile,
       actor: actor,
     );
   }

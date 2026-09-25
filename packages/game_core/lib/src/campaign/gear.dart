@@ -1,3 +1,5 @@
+import 'package:pf2e_core/pf2e_core.dart';
+
 /// How hard an item is to come by.
 ///
 /// Pathfinder's rarity traits, used here for what they actually mean: not how
@@ -115,9 +117,25 @@ class GearItem {
 
   String? get damage => stats['damage']?.toString();
 
-  int? get armorClass => switch (stats['ac']) {
-        final int ac => ac,
-        final num ac => ac.round(),
+  /// The armour class as the campaign author wrote it.
+  ///
+  /// Kept for display. The engine computes AC from [acBonus], [dexCap] and
+  /// the potency rune instead, because Pathfinder armour is a bonus and a
+  /// Dexterity cap rather than a number that replaces the total.
+  int? get armorClass => _asInt(stats['ac']);
+
+  /// The armour's own bonus to AC, before any potency rune.
+  int? get acBonus => _asInt(stats['ac_bonus']);
+
+  /// The most Dexterity this armour lets through.
+  int? get dexCap => _asInt(stats['dex_cap']);
+
+  /// Weapon damage dice, which a striking rune multiplies.
+  StrikingRune get striking => StrikingRune.parse(stats['striking']);
+
+  static int? _asInt(Object? raw) => switch (raw) {
+        final int value => value,
+        final num value => value.round(),
         _ => null,
       };
 

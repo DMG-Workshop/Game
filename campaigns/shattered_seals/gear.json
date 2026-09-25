@@ -48,7 +48,7 @@
       "type": "weapon",
       "traits": ["martial", "magical", "propulsive"],
       "description": "Cut from a tree that grew inside the ring and cured for nine years. It is quiet in a way that has nothing to do with craftsmanship.",
-      "stats": { "damage": "1d8", "bonus": 1, "magic": true },
+      "stats": { "damage": "1d8", "bonus": 1, "magic": true, "striking": "striking" },
       "special": "Striking rune. Ignores the concealment granted by natural darkness."
     },
     {
@@ -70,7 +70,7 @@
       "type": "weapon",
       "traits": ["finesse", "magical", "glowing"],
       "description": "Dwarven runes run along the fuller. It hums near darkness.",
-      "stats": { "damage": "1d4", "bonus": 1, "magic": true },
+      "stats": { "damage": "1d4", "bonus": 1, "magic": true, "striking": "striking" },
       "special": "Extra 1d4 damage vs. Shadow entities."
     },
     {
@@ -80,7 +80,7 @@
       "type": "armor",
       "traits": ["light", "magical"],
       "description": "Farm leather, patched and re-patched, still smelling faintly of the byre. The previous owner's name is inked inside the collar and has been crossed through once.",
-      "stats": { "ac": 15, "bonus": 1, "magic": true },
+      "stats": { "ac": 15, "bonus": 1, "magic": true, "ac_bonus": 2, "dex_cap": 3 },
       "special": "+1 item bonus to Survival checks made within a day's walk of Millhaven."
     },
     {
@@ -100,7 +100,7 @@
       "type": "armor",
       "traits": ["medium", "magical", "resilient"],
       "description": "Mail worn by whoever in a parish is expected to stand between the living and whatever comes up. Millhaven has not appointed one in sixty years.",
-      "stats": { "ac": 16, "bonus": 1, "magic": true },
+      "stats": { "ac": 16, "bonus": 1, "magic": true, "ac_bonus": 4, "dex_cap": 1 },
       "special": "Resilient rune. +1 item bonus to saves against effects that would make you grabbed or restrained by an undead creature."
     },
     {
@@ -110,7 +110,7 @@
       "type": "weapon",
       "traits": ["martial", "magical", "shove", "anti-shadow"],
       "description": "A blacksmith's maul with the head re-cast around a broken seal-stone. Harrow's Forge made three and finished only this one.",
-      "stats": { "damage": "1d10", "bonus": 1, "magic": true },
+      "stats": { "damage": "1d10", "bonus": 1, "magic": true, "striking": "striking" },
       "special": "On a successful Strike against a creature raised by another's will, that creature is cut off from whoever raised it until the end of your next turn."
     },
     {
@@ -121,7 +121,7 @@
       "rarity": "rare",
       "traits": ["simple", "magical", "two-hand d8", "wood"],
       "description": "The bowyers cut from the tree inside the ring every ninth year, and never twice from the same limb. This is the limb they took first, back again, and longer than it was.",
-      "stats": { "damage": "1d4", "bonus": 1, "magic": true },
+      "stats": { "damage": "1d4", "bonus": 1, "magic": true, "striking": "striking" },
       "special": "Striking rune. On a critical hit, roots hold the target in place until the end of your next turn, whether or not there is any soil.",
       "drops": [{ "from": "c_hollow_avatar", "chance": 25 }]
     },
@@ -133,7 +133,7 @@
       "rarity": "unique",
       "traits": ["finesse", "magical", "shadow", "deadly d8"],
       "description": "The Avatar wears a ring of these and is not wearing a crown. When it goes down one of them stays behind — always one, never the same one twice.",
-      "stats": { "damage": "1d6", "bonus": 2, "magic": true },
+      "stats": { "damage": "1d6", "bonus": 2, "magic": true, "striking": "striking" },
       "special": "Striking rune. Ignores the resistance an incorporeal creature has to physical damage. While it is drawn, you can see the shadow of anything that is keeping one hidden.",
       "drops": [{ "from": "c_hollow_avatar", "chance": 100 }]
     },
@@ -144,7 +144,7 @@
       "type": "weapon",
       "traits": ["martial", "magical", "versatile", "covenant"],
       "description": "Well balanced, well kept, and engraved along the ricasso with a line of scripture that the Covenant no longer reads the same way it used to.",
-      "stats": { "damage": "1d8", "bonus": 2, "magic": true },
+      "stats": { "damage": "1d8", "bonus": 2, "magic": true, "striking": "striking" },
       "special": "+1 item bonus to Deception checks made while openly carrying it among Covenant members."
     },
     {
@@ -154,7 +154,7 @@
       "type": "armor",
       "traits": ["heavy", "magical"],
       "description": "Crown issue, crimson-lacquered, and newer than the man who was wearing it. The quartermaster's stamp inside is dated after his funeral.",
-      "stats": { "ac": 18, "bonus": 2, "magic": true },
+      "stats": { "ac": 18, "bonus": 2, "magic": true, "ac_bonus": 5, "dex_cap": 1 },
       "special": "+1 item bonus to Society checks made inside the Palace District."
     },
     {
@@ -165,7 +165,7 @@
       "rarity": "rare",
       "traits": ["martial", "magical", "sweep", "covenant"],
       "description": "Acolytes swing these at the head of a procession, and the smoke is the point: it is what keeps a congregation from noticing what the singing is doing to them.",
-      "stats": { "damage": "1d6", "bonus": 2, "magic": true },
+      "stats": { "damage": "1d6", "bonus": 2, "magic": true, "striking": "striking" },
       "special": "+1 item bonus to Deception checks made among Covenant members. On a successful Strike, the target takes a -1 status penalty to Will saves until the end of your next turn.",
       "drops": [{ "from": "c_covenant_acolyte", "chance": 15 }]
     },
@@ -176,7 +176,7 @@
       "type": "weapon",
       "traits": ["martial", "magical", "fatal d10"],
       "description": "A mining pick whose head has taken up the red grain from the rock it was used on. It is warm at the haft, always, and the warmth is going the wrong way.",
-      "stats": { "damage": "1d6", "bonus": 2, "magic": true },
+      "stats": { "damage": "1d6", "bonus": 2, "magic": true, "striking": "greaterStriking" },
       "special": "Greater striking rune. Deals 2d6 additional damage to objects and to crystalline creatures."
     },
     {
@@ -187,7 +187,7 @@
       "rarity": "rare",
       "traits": ["finesse", "agile", "magical", "deadly d8"],
       "description": "Long, fine, and kept in a velvet roll with eleven others. The Covenant does not call what it does with these torture, and it is technically correct: the needle does the asking.",
-      "stats": { "damage": "1d4", "bonus": 2, "magic": true },
+      "stats": { "damage": "1d4", "bonus": 2, "magic": true, "striking": "greaterStriking" },
       "special": "+2 item bonus to Intimidation checks. A creature critically hit by it answers the next question it is asked truthfully, though nothing makes it answer at length.",
       "drops": [{ "from": "c_covenant_acolyte", "chance": 8 }]
     },
@@ -199,7 +199,7 @@
       "rarity": "unique",
       "traits": ["martial", "magical", "occult", "shadow"],
       "description": "Malachai Vex did not carry a weapon. He carried the thing he intended to become, and used it on whoever stood between him and that.",
-      "stats": { "damage": "1d6", "bonus": 2, "magic": true },
+      "stats": { "damage": "1d6", "bonus": 2, "magic": true, "striking": "greaterStriking" },
       "special": "Greater striking rune. Once per day you may trade places with a creature within 30 feet that you can see, each of you appearing where the other stood. The rod was built for this and does not care that you are the one holding it.",
       "drops": [{ "from": "c_malachai_vex", "chance": 100 }]
     },
@@ -220,7 +220,7 @@
       "type": "armor",
       "traits": ["heavy", "divine", "authority"],
       "description": "Golden plate armor fit for a king. It emanates majesty.",
-      "stats": { "ac": 20, "bonus": 2, "magic": true },
+      "stats": { "ac": 20, "bonus": 2, "magic": true, "ac_bonus": 6, "dex_cap": 0 },
       "special": "+2 item bonus to Diplomacy checks."
     },
     {
@@ -231,7 +231,7 @@
       "rarity": "rare",
       "traits": ["finesse", "magical", "occult", "versatile s"],
       "description": "The knife the Covenant opens seals with. It is not sharp and does not need to be: the edge is an argument rather than a blade.",
-      "stats": { "damage": "1d4", "bonus": 2, "magic": true },
+      "stats": { "damage": "1d4", "bonus": 2, "magic": true, "striking": "greaterStriking" },
       "special": "+2 item bonus to Occultism checks made to identify or undo a seal. It deals no damage at all to an unwarded object, and double damage to a warded one.",
       "drops": [{ "from": "c_malachai_vex", "chance": 30 }]
     },
@@ -242,7 +242,7 @@
       "type": "armor",
       "traits": ["medium", "magical", "warding"],
       "description": "Vestments of an office that predates the monarchy and was quietly dissolved by it. The seals worked into the hem are the same shape as the ones the Covenant is trying to break, drawn the other way round.",
-      "stats": { "ac": 21, "bonus": 2, "magic": true },
+      "stats": { "ac": 21, "bonus": 2, "magic": true, "ac_bonus": 4, "dex_cap": 1 },
       "special": "+2 item bonus to saves against effects with the shadow trait. Once per day, when reduced to 0 Hit Points by such an effect, you are instead reduced to 1."
     },
     {
@@ -252,7 +252,7 @@
       "type": "weapon",
       "traits": ["advanced", "magical", "anti-shadow", "deadly d10"],
       "description": "Forged for the last Seal-Warden and buried with her, on the reasoning that the thing it was made to cut was already dealt with.",
-      "stats": { "damage": "1d10", "bonus": 3, "magic": true },
+      "stats": { "damage": "1d10", "bonus": 3, "magic": true, "striking": "greaterStriking" },
       "special": "Treats a creature's resistance to physical damage as 5 lower. On a critical hit against a creature with the shadow trait, that creature cannot become incorporeal until the end of your next turn."
     },
     {
@@ -272,7 +272,7 @@
       "type": "weapon",
       "traits": ["heavy", "magical", "anti-shadow"],
       "description": "A blade forged to sever the ties between reality and the void.",
-      "stats": { "damage": "1d10", "bonus": 3, "magic": true },
+      "stats": { "damage": "1d10", "bonus": 3, "magic": true, "striking": "greaterStriking" },
       "special": "Dispels shadow magic in a 15-foot radius on critical hit."
     },
     {
@@ -282,7 +282,7 @@
       "type": "weapon",
       "traits": ["simple", "magical", "anti-shadow", "warding"],
       "description": "One charm-nail out of the Whisperwood treeline, grown to the length of a short sword and still bearing the hammer marks of whoever drove it in. It has been holding something shut for a long time, and it is tired.",
-      "stats": { "damage": "1d6", "bonus": 3, "magic": true },
+      "stats": { "damage": "1d6", "bonus": 3, "magic": true, "striking": "majorStriking" },
       "special": "Major striking rune. A creature critically hit by it cannot leave the room it currently occupies until the end of your next turn."
     },
     {

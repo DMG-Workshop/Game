@@ -235,6 +235,39 @@ void main() {
       }
     });
 
+    test('every suit of armour says what it is worth', () {
+      // The engine builds AC from the armour's own bonus and its Dexterity
+      // cap, so a suit that declares neither is worth only its rune.
+      for (final piece in campaign.gear.ofType('armor')) {
+        expect(piece.acBonus, isNotNull, reason: piece.name);
+        expect(piece.dexCap, isNotNull, reason: piece.name);
+        expect(piece.acBonus, inInclusiveRange(1, 6), reason: piece.name);
+        expect(piece.dexCap, inInclusiveRange(0, 5), reason: piece.name);
+        expect(
+          piece.traits.map((t) => t.toLowerCase()),
+          anyElement(isIn(EquippedStats.armorDefaults.keys)),
+          reason: '${piece.name} does not say if it is light, medium '
+              'or heavy',
+        );
+      }
+    });
+
+    test('striking follows the same schedule potency does', () {
+      // Striking at 4, greater at 12, major at 19. A magical weapon without
+      // it would be strictly worse than a level 4 one.
+      for (final weapon in campaign.gear.ofType('weapon')) {
+        final expected = switch (weapon.level) {
+          _ when !weapon.isMagical => StrikingRune.none,
+          >= 19 => StrikingRune.majorStriking,
+          >= 12 => StrikingRune.greaterStriking,
+          >= 4 => StrikingRune.striking,
+          _ => StrikingRune.none,
+        };
+        expect(weapon.striking, expected,
+            reason: '${weapon.name} at level ${weapon.level}');
+      }
+    });
+
     test('no item carries a rune earlier than the rules allow', () {
       // Potency is the one number on these items the engine will eventually
       // add to a roll, so it follows Pathfinder's own pacing: weapons at 2,
