@@ -7,6 +7,9 @@ pubspec.lock
 .flutter-plugins
 .flutter-plugins-dependencies
 
+# Python (the campaign's content scripts)
+__pycache__/
+
 # IDE
 .idea/
 .vscode/
