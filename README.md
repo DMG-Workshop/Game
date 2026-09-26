@@ -66,6 +66,8 @@ phone. The dice roller is built inside that bound deliberately; see
 ## Layout
 
 ```
+apps/
+  marching_order/  The Flutter app: Android, iOS and the web
 packages/
   pf2e_core/     Rules engine and Pathbuilder importer (pure Dart, no Flutter)
   game_core/     Scene engine, party store, campaign model (depends on pf2e_core)
@@ -79,10 +81,21 @@ practical split (scenes ship without a rebuild) and the licence boundary:
 the engine implements open mechanics, while Valorheim and its cast are
 Reserved Material. See [NOTICE.md](NOTICE.md).
 
-The Flutter app is not started yet, and deliberately so: the game is playable
-in a terminal first. A text log with an input bar *is* the product, so proving
-the loop costs a CLI rather than an app shell. If it is not good in a terminal,
-a UI will not save it.
+The game was proved in a terminal first: a text log with an input bar *is*
+the product, so proving the loop cost a CLI rather than an app shell. The app
+in `apps/marching_order` is that same loop on a screen. Both clients drive one
+`GameConsole` from `game_core`, so the app and the terminal can never tell the
+game differently; the app adds tappable chips for the exits, people and
+fights in front of you, and saves on the device after every command.
+
+```
+cd apps/marching_order
+dart run tool/sync_assets.dart   # bundle the campaign from the repository
+flutter run                       # or: flutter build web --no-web-resources-cdn
+```
+
+Start a new game with the JSON Pathbuilder 2e exports, or with the sample
+character.
 
 `pf2e_core` proves that a Pathbuilder export contains enough to rebuild a full
 character sheet. `game_core` proves the loop on top of it.

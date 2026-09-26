@@ -1,0 +1,138 @@
+{
+  "shops": [
+    {
+      "shop_id": "s_001_tallows_cart",
+      "name": "Tallow's Cart",
+      "keeper": "npc_009_jory",
+      "location": "MH_001_Square",
+      "stock": [
+        { "item": "w_001_guard_sword" },
+        { "item": "w_002_nail_iron_spade" },
+        { "item": "w_004_whisperwood_bow" },
+        { "item": "w_006_shadowbane_dagger" },
+        { "item": "a_006_ravencrest_hide" },
+        {
+          "item": "g_007_last_shift_lamp",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "a_008_grave_wardens_mail",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_010_inquisitors_blade",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "a_011_palace_cuirass",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_012_bloodstone_pick",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        { "item": "g_033_hearth_water_minor" },
+        { "item": "g_034_hearth_water_lesser" },
+        { "item": "g_035_hearth_water_moderate" },
+        {
+          "item": "g_036_hearth_water_greater",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "g_037_hearth_water_major",
+          "requires": ["boss_defeated_malachai_vex"]
+        }
+      ],
+      "price_modifiers": [
+        { "flag": "jory_discount", "percent": -10 },
+        { "flag": "jory_discount_large", "percent": -20 },
+        { "flag": "jory_offended", "percent": 10 }
+      ],
+      "lines": {
+        "greet": [
+          "Capital goods at capital prices! Well. Nearly capital prices.",
+          "Have a look. Take your time. I have nothing but time."
+        ],
+        "buy": [
+          "A fine choice. A fine, fine choice.",
+          "Sold! You are the first customer I have had in a week.",
+          "Look after it. They do not make many like that out here."
+        ],
+        "sell": [
+          "Hm. I can move that. Eventually.",
+          "I will give you what it is worth to me, which is half. Sorry."
+        ],
+        "broke": [
+          "Ah. Not quite. Come back when your purse has caught up with your taste."
+        ]
+      }
+    },
+    {
+      "shop_id": "s_002_mercys_mule",
+      "name": "Sal Mercy's Mule",
+      "keeper": "npc_010_sal",
+      "carries": 3,
+      "stock": [
+        { "item": "w_029_drovers_goad" },
+        { "item": "g_022_hollow_ash" },
+        { "item": "a_030_oilskin_brigandine" },
+        { "item": "w_031_tollkeepers_hook" },
+        { "item": "a_032_mourners_mail" },
+        {
+          "item": "g_013_fourth_name_ledger",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "a_015_seal_wardens_regalia",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_016_sundering_edge",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_018_shadow_ripper",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "a_011_monarchs_vestment",
+          "requires": ["dialogue_complete_queen_liora"]
+        },
+        {
+          "item": "g_017_vessels_chain",
+          "requires": ["boss_defeated_malachai_vex"]
+        },
+        {
+          "item": "w_019_the_last_nail",
+          "requires": ["boss_defeated_hollow_avatar"]
+        },
+        {
+          "item": "g_020_quiet_crown",
+          "requires": ["deception_revealed_under_archive"]
+        }
+      ],
+      "lines": {
+        "greet": [
+          "Don't touch the mule. Look all you like at the rest.",
+          "Different stock every time. Buy it now or never see it again."
+        ],
+        "buy": [
+          "Sold. No refunds, and don't ask me where I got it.",
+          "Good eye. Patience here was sorry to see it go."
+        ],
+        "sell": [
+          "I'll take it off your hands. Half, and not a copper more.",
+          "Hm. Somebody on the road will want this. Deal."
+        ],
+        "broke": [
+          "Mercy's the name, not charity. Come back with coin."
+        ]
+      }
+    }
+  ],
+  "rewards": [
+    { "flag": "thorne_paid_fifty", "gp": 50, "from": "Captain Thorne" },
+    { "flag": "thorne_paid_seventy_five", "gp": 75, "from": "Captain Thorne" },
+    { "flag": "thorne_paid_hundred", "gp": 100, "from": "Captain Thorne" }
+  ]
+}

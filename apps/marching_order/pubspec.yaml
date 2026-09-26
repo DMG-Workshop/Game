@@ -1,0 +1,30 @@
+name: marching_order
+description: "Marching Order: a text-first Pathfinder 2e RPG for phones, tablets and the browser."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  game_core:
+    path: ../../packages/game_core
+  pf2e_core:
+    path: ../../packages/pf2e_core
+  shared_preferences: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  # Copied in from the repository by tool/sync_assets.dart, so the app and
+  # the terminal read the very same files. Not committed.
+  assets:
+    - assets/campaign/
+    - assets/content/
+    - assets/characters/
