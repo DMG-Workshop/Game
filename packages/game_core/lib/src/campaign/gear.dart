@@ -1,5 +1,21 @@
 import 'package:pf2e_core/pf2e_core.dart';
 
+/// Gold pieces for a permanent magic item of each level, 1 to 20.
+///
+/// Anchored on the fundamental runes, which the rest of Pathfinder's item
+/// prices are built around: a +1 weapon is level 2 at 35 gp; +1 striking,
+/// level 4 at 100; +1 armour, level 5 at 160; +1 resilient armour, level 8 at
+/// 500; +2 striking, level 10 at 1,000; and so on to +3 major resilient armour
+/// at level 20 for 70,000.
+const List<int> permanentItemGold = [
+  20, 35, 60, 100, 160, 250, 360, 500, 700, 1000, //
+  1400, 2000, 3000, 4500, 6500, 10000, 15000, 24000, 40000, 70000,
+];
+
+/// The price in copper of a permanent magic item of [level].
+int permanentItemPrice(int level) =>
+    permanentItemGold[level.clamp(1, permanentItemGold.length) - 1] * 100;
+
 /// How hard an item is to come by.
 ///
 /// Pathfinder's rarity traits, used here for what they actually mean: not how
@@ -67,6 +83,7 @@ class GearItem {
     this.special,
     this.rarity = ItemRarity.common,
     this.drops = const [],
+    this.listedPrice,
   });
 
   final String id;
@@ -90,7 +107,23 @@ class GearItem {
   /// Creatures that may be carrying it, if it is something to be found.
   final List<DropSource> drops;
 
+  /// The price the campaign set, in copper, if it set one.
+  final int? listedPrice;
+
   bool get isMagical => stats['magic'] == true;
+
+  bool get isConsumable => hasTrait('consumable');
+
+  /// What it costs to buy, in copper.
+  ///
+  /// The campaign's own price if it gave one; otherwise Pathfinder's usual
+  /// price for a permanent magic item of this level. Consumables and mundane
+  /// gear cost a small fraction of that, which is why those should always
+  /// carry a price of their own.
+  int get price => listedPrice ?? permanentItemPrice(level);
+
+  /// What a merchant pays for it: half, as Pathfinder has it.
+  int get resalePrice => price ~/ 2;
 
   /// True when this can only be had by killing something for it.
   bool get isDrop => drops.isNotEmpty;

@@ -442,6 +442,20 @@ void main() {
           throwsA(isA<InvalidMoveException>()));
     });
 
+    test('finds an item however its punctuation is typed', () {
+      // "The Avatar's Crown-Spike": the hyphen and the apostrophe are the
+      // author's, not something a player should have to reproduce.
+      for (final typed in [
+        'crown spike',
+        'crown-spike',
+        'avatars',
+        "avatar's"
+      ]) {
+        final world = withPack(['w_024_crown_spike']);
+        expect(world.equip(typed).item.id, 'w_024_crown_spike', reason: typed);
+      }
+    });
+
     test('refuses a slot that does not exist', () {
       expect(() => newWorld(campaign: campaign).unequip('hat'),
           throwsA(isA<InvalidMoveException>()));

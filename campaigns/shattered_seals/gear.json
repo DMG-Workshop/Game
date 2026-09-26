@@ -5,6 +5,7 @@
       "name": "Millhaven Guard Sword",
       "level": 1,
       "type": "weapon",
+      "price": 1,
       "traits": ["finesse", "martial"],
       "description": "A functional longsword issued to town militia.",
       "stats": { "damage": "1d8", "bonus": 0, "magic": false }
@@ -24,6 +25,7 @@
       "name": "Charm of Iron Nails",
       "level": 3,
       "type": "talisman",
+      "price": 10,
       "traits": ["magical", "consumable", "warding"],
       "description": "Four nails bound in waxed thread, of the kind somebody has been hammering into trunks at shoulder height all along the wood's edge. Nobody in Millhaven will say who.",
       "stats": { "bonus": 1, "magic": true },
@@ -56,6 +58,7 @@
       "name": "Handful of Hollow Ash",
       "level": 4,
       "type": "talisman",
+      "price": 15,
       "rarity": "uncommon",
       "traits": ["magical", "consumable", "shadow"],
       "description": "What a thrall leaves when it finally stops. It does not scatter in wind, and it is cold in a way ash has no business being.",

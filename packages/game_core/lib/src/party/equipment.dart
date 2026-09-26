@@ -257,23 +257,27 @@ class EquippedStats {
       ];
 }
 
-/// What the party is carrying, and who is wearing what.
+/// What the party is carrying, who is wearing what, and what is in the purse.
 ///
 /// Party-wide rather than per-character: a marching order shares a pack, and
 /// loot belongs to the party rather than to whoever happened to swing last.
-/// Equipping is per character, and one item can only be on one of them.
+/// The pack holds copies, because a party of four may well want four swords;
+/// each copy can be on one person at a time.
 class PartyInventory {
   PartyInventory({
     required GearTable gear,
     Iterable<String> carried = const [],
     Map<String, Map<EquipSlot, String>> equipped = const {},
-  }) : _gear = gear {
+    int coin = 0,
+  })  : _gear = gear,
+        _coin = coin < 0 ? 0 : coin {
     for (final id in carried) {
-      if (_gear.byId(id) != null) _carried.add(id);
+      if (_gear.byId(id) == null) continue;
+      _counts.update(id, (n) => n + 1, ifAbsent: () => 1);
     }
     for (final entry in equipped.entries) {
       for (final slot in entry.value.entries) {
-        if (_carried.contains(slot.value)) {
+        if (_spareCopies(slot.value, forActor: entry.key) > 0) {
           _equipped.putIfAbsent(entry.key, () => {})[slot.key] = slot.value;
         }
       }
@@ -281,62 +285,140 @@ class PartyInventory {
   }
 
   final GearTable _gear;
-  final Set<String> _carried = {};
+  final Map<String, int> _counts = {};
   final Map<String, Map<EquipSlot, String>> _equipped = {};
 
-  bool get isEmpty => _carried.isEmpty;
-  int get length => _carried.length;
+  /// Coin in copper, which is exact where gold pieces would not be.
+  int _coin;
 
-  /// Everything the party has, lowest level first.
+  bool get isEmpty => _counts.isEmpty;
+
+  /// Distinct items carried.
+  int get length => _counts.length;
+
+  /// One of each item the party has, lowest level first.
   List<GearItem> get carried => [
-        for (final id in _carried)
+        for (final id in _counts.keys)
           if (_gear.byId(id) case final item?) item,
       ]..sort((a, b) {
           final byLevel = a.level.compareTo(b.level);
           return byLevel != 0 ? byLevel : a.name.compareTo(b.name);
         });
 
-  bool isCarrying(String itemId) => _carried.contains(itemId);
+  bool isCarrying(String itemId) => _counts.containsKey(itemId);
 
-  /// Puts an item in the pack. Returns false when it was already there.
-  bool add(String itemId) {
+  /// How many copies of [itemId] the party has, worn or not.
+  int countOf(String itemId) => _counts[itemId] ?? 0;
+
+  /// Puts a copy in the pack, returning how many there are now.
+  int add(String itemId) {
     if (_gear.byId(itemId) == null) {
       throw ArgumentError.value(itemId, 'itemId', 'no such item in this gear');
     }
-    return _carried.add(itemId);
+    return _counts.update(itemId, (n) => n + 1, ifAbsent: () => 1);
   }
+
+  /// Takes a copy out of the pack, as selling does.
+  ///
+  /// Refuses to take one somebody is wearing: selling the armour off a
+  /// character's back should be a decision they make by taking it off first.
+  GearItem remove(String itemId) {
+    final item = _gear.byId(itemId);
+    if (item == null || !isCarrying(itemId)) {
+      throw EquipException('You are not carrying that.');
+    }
+    if (_spareCopies(itemId) < 1) {
+      throw EquipException('${holdersOf(itemId).join(' and ')} '
+          '${holdersOf(itemId).length == 1 ? 'is' : 'are'} using '
+          '${item.name}. Take it off first.');
+    }
+    final left = _counts[itemId]! - 1;
+    if (left == 0) {
+      _counts.remove(itemId);
+    } else {
+      _counts[itemId] = left;
+    }
+    return item;
+  }
+
+  // --- the purse -----------------------------------------------------------
+
+  /// What the party has to spend, in copper.
+  int get coin => _coin;
+
+  void earn(int copper) {
+    if (copper < 0) {
+      throw ArgumentError.value(copper, 'copper', 'must not be negative');
+    }
+    _coin += copper;
+  }
+
+  /// Spends [copper], or refuses without spending anything.
+  void spend(int copper) {
+    if (copper < 0) {
+      throw ArgumentError.value(copper, 'copper', 'must not be negative');
+    }
+    if (copper > _coin) {
+      throw EquipException('That is ${formatCoin(copper)}, and the party has '
+          '${formatCoin(_coin)}.');
+    }
+    _coin -= copper;
+  }
+
+  // --- wearing things ------------------------------------------------------
 
   /// Finds a carried item by id, or by any word of its name.
   ///
   /// A player types "equip nail", not an item id, and being told there is no
   /// such thing when it is in the pack is the worst answer available.
-  GearItem? find(String query) {
-    final needle = query.trim().toLowerCase();
+  GearItem? find(String query) => findIn(carried, query);
+
+  /// Finds an item in [candidates] by id, exact name, or part of a name.
+  static GearItem? findIn(Iterable<GearItem> candidates, String query) {
+    final needle = _plain(query);
     if (needle.isEmpty) return null;
 
-    final candidates = carried;
     for (final item in candidates) {
-      if (item.id.toLowerCase() == needle) return item;
+      if (item.id.toLowerCase() == query.trim().toLowerCase()) return item;
     }
     for (final item in candidates) {
-      if (item.name.toLowerCase() == needle) return item;
+      if (_plain(item.name) == needle) return item;
     }
     // Longest name first, so "nail" does not match "The Last Nail" ahead of
     // an exact-ish shorter one by accident of ordering.
     final byLength = candidates.toList()
       ..sort((a, b) => b.name.length.compareTo(a.name.length));
     for (final item in byLength) {
-      if (item.name.toLowerCase().contains(needle)) return item;
+      if (_plain(item.name).contains(needle)) return item;
     }
     return null;
   }
 
+  /// A name as a player types it: no case, no apostrophes, and hyphens and
+  /// other punctuation as spaces. "The Avatar's Crown-Spike" becomes
+  /// "the avatars crown spike", so "crown spike" and "avatars" both find it.
+  static String _plain(String text) => text
+      .toLowerCase()
+      .replaceAll(RegExp(r"['’]"), '')
+      .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+      .trim();
+
+  /// Everyone wearing or wielding a copy of [itemId].
+  List<String> holdersOf(String itemId) => [
+        for (final entry in _equipped.entries)
+          if (entry.value.values.contains(itemId)) entry.key,
+      ];
+
   /// Who is carrying [itemId] on their person, if anyone.
   String? holderOf(String itemId) {
-    for (final entry in _equipped.entries) {
-      if (entry.value.values.contains(itemId)) return entry.key;
-    }
-    return null;
+    final holders = holdersOf(itemId);
+    return holders.isEmpty ? null : holders.first;
+  }
+
+  /// Copies nobody is using; [forActor]'s own copy counts as spare to them.
+  int _spareCopies(String itemId, {String? forActor}) {
+    final using = holdersOf(itemId).where((h) => h != forActor).length;
+    return countOf(itemId) - using;
   }
 
   Loadout loadoutFor(String actorId) {
@@ -357,7 +439,7 @@ class PartyInventory {
     String itemId,
   ) {
     final item = _gear.byId(itemId);
-    if (item == null || !_carried.contains(itemId)) {
+    if (item == null || !isCarrying(itemId)) {
       throw EquipException('You are not carrying that.');
     }
 
@@ -367,9 +449,10 @@ class PartyInventory {
           'wear. It stays in the pack.');
     }
 
-    final holder = holderOf(itemId);
-    if (holder != null && holder != actorId) {
-      throw EquipException('$holder already has ${item.name}.');
+    if (_spareCopies(itemId, forActor: actorId) < 1) {
+      throw EquipException('${holdersOf(itemId).join(' and ')} already '
+          '${holdersOf(itemId).length == 1 ? 'has' : 'have'} ${item.name}, '
+          'and the party has no other.');
     }
 
     final slots = _equipped.putIfAbsent(actorId, () => {});
@@ -385,8 +468,14 @@ class PartyInventory {
     return _gear.byId(removed ?? '');
   }
 
+  /// Written as a list with one entry per copy, so a save from before copies
+  /// existed — one entry per item — still reads correctly.
   Map<String, Object?> toJson() => {
-        'carried': _carried.toList()..sort(),
+        'carried': [
+          for (final id in (_counts.keys.toList()..sort()))
+            for (var i = 0; i < _counts[id]!; i++) id,
+        ],
+        'coin': _coin,
         'equipped': {
           for (final entry in _equipped.entries)
             entry.key: {
@@ -403,6 +492,7 @@ class PartyInventory {
     final root = json is Map ? json.cast<String, Object?>() : const {};
     return PartyInventory(
       gear: gear,
+      coin: (root['coin'] as num?)?.toInt() ?? 0,
       carried: [
         for (final id in (root['carried'] as List? ?? const [])) id.toString(),
       ],
@@ -420,6 +510,23 @@ class PartyInventory {
   }
 
   @override
-  String toString() => '${_carried.length} carried, '
-      '${_equipped.length} equipped';
+  String toString() => '${_counts.length} carried, '
+      '${_equipped.length} equipped, ${formatCoin(_coin)}';
+}
+
+/// Copper as a player would say it: "12 gp 5 sp", or "nothing".
+///
+/// Platinum is left out on purpose. Pathfinder prices are quoted in gold
+/// right up to the top of the level range, and "4 pp 5 gp" reads as a
+/// puzzle where "45 gp" reads as a price.
+String formatCoin(int copper) {
+  if (copper <= 0) return 'nothing';
+  final gp = copper ~/ 100;
+  final sp = (copper % 100) ~/ 10;
+  final cp = copper % 10;
+  return [
+    if (gp > 0) '$gp gp',
+    if (sp > 0) '$sp sp',
+    if (cp > 0) '$cp cp',
+  ].join(' ');
 }

@@ -1,6 +1,7 @@
 import 'arc.dart';
 import 'conversation.dart';
 import 'creature.dart';
+import 'economy.dart';
 import 'gear.dart';
 import 'locations.dart';
 import 'npc.dart';
@@ -20,9 +21,11 @@ class Campaign {
     Bestiary? bestiary,
     ItemPlacements? items,
     Conversations? conversations,
+    Economy? economy,
   })  : bestiary = bestiary ?? Bestiary(),
         items = items ?? ItemPlacements(const []),
-        conversations = conversations ?? Conversations(const []);
+        conversations = conversations ?? Conversations(const []),
+        economy = economy ?? Economy();
 
   final String id;
   final String title;
@@ -40,6 +43,9 @@ class Campaign {
 
   /// What the cast says when properly talked to.
   final Conversations conversations;
+
+  /// Where gear is bought and sold, and the coin paid for deeds.
+  final Economy economy;
 
   /// Everything a player could see in a room: its text, exits, and who is
   /// standing there.
@@ -75,6 +81,11 @@ class Campaign {
         unobtainableGear: gear.unobtainableRarities,
         orphanedConversations:
             conversations.orphanedFrom({for (final n in npcs.all) n.id}),
+        shopProblems: economy.problems(
+          gear: gear,
+          npcs: npcs,
+          roomIds: locations.rooms.keys.toSet(),
+        ),
       );
 
   /// Arc conditions nothing in the campaign could ever set.
@@ -158,6 +169,7 @@ class CampaignReport {
     this.danglingDrops = const [],
     this.unobtainableGear = const [],
     this.orphanedConversations = const [],
+    this.shopProblems = const [],
   });
 
   /// Rooms a zone or an exit names but nobody has written.
@@ -197,6 +209,9 @@ class CampaignReport {
   /// Conversations written for an NPC the campaign does not have.
   final List<Conversation> orphanedConversations;
 
+  /// Shops selling what they should not, or kept by nobody.
+  final List<String> shopProblems;
+
   bool get isClean =>
       unwrittenRooms.isEmpty &&
       danglingExits.isEmpty &&
@@ -209,7 +224,8 @@ class CampaignReport {
       encountersMissingCreatures.isEmpty &&
       danglingDrops.isEmpty &&
       unobtainableGear.isEmpty &&
-      orphanedConversations.isEmpty;
+      orphanedConversations.isEmpty &&
+      shopProblems.isEmpty;
 
   /// Problems that would strand a player right now, as opposed to content
   /// that is merely unfinished.
@@ -268,6 +284,7 @@ class CampaignReport {
       'Loot naming a creature that does not exist',
       danglingDrops.map((d) => '${d.item.name} drops from "${d.creatureId}"'),
     );
+    section('Shops that need attention', shopProblems);
     section(
       'Conversations for somebody who does not exist',
       orphanedConversations.map((c) => c.npcId),

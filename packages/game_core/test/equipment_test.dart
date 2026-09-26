@@ -276,9 +276,86 @@ void main() {
 
     test('starts empty and takes what it is given', () {
       expect(pack.isEmpty, isTrue);
-      expect(pack.add('w_axe'), isTrue);
-      expect(pack.add('w_axe'), isFalse, reason: 'already in the pack');
+      expect(pack.add('w_axe'), 1);
+      expect(pack.add('w_axe'), 2, reason: 'a second copy, not a no-op');
       expect(pack.carried.single.id, 'w_axe');
+      expect(pack.countOf('w_axe'), 2);
+    });
+
+    test('two copies can be on two people', () {
+      // The reason the pack holds copies: a party of four may want four
+      // swords, and buying the second should not quietly do nothing.
+      pack
+        ..add('w_axe')
+        ..add('w_axe');
+      pack.equip('korash', 'w_axe');
+      expect(pack.equip('sela', 'w_axe').item.id, 'w_axe');
+      expect(pack.holdersOf('w_axe'), unorderedEquals(['korash', 'sela']));
+    });
+
+    test('a third person cannot use a copy that does not exist', () {
+      pack
+        ..add('w_axe')
+        ..add('w_axe');
+      pack
+        ..equip('korash', 'w_axe')
+        ..equip('sela', 'w_axe');
+      expect(
+        () => pack.equip('elara', 'w_axe'),
+        throwsA(isA<EquipException>()
+            .having((e) => e.message, 'message', contains('korash and sela'))),
+      );
+    });
+
+    test('re-equipping your own copy is not taking somebody else\'s', () {
+      pack.add('w_axe');
+      pack.equip('korash', 'w_axe');
+      expect(pack.equip('korash', 'w_axe').item.id, 'w_axe');
+    });
+
+    test('taking a copy out leaves the rest', () {
+      pack
+        ..add('w_axe')
+        ..add('w_axe');
+      expect(pack.remove('w_axe').id, 'w_axe');
+      expect(pack.countOf('w_axe'), 1);
+      pack.remove('w_axe');
+      expect(pack.isCarrying('w_axe'), isFalse);
+      expect(() => pack.remove('w_axe'), throwsA(isA<EquipException>()));
+    });
+
+    test('will not take the only copy off somebody\'s back', () {
+      pack.add('w_axe');
+      pack.equip('korash', 'w_axe');
+      expect(
+        () => pack.remove('w_axe'),
+        throwsA(isA<EquipException>()
+            .having((e) => e.message, 'message', contains('Take it off'))),
+      );
+      pack.add('w_axe');
+      expect(pack.remove('w_axe').id, 'w_axe',
+          reason: 'the spare can go; the worn one stays');
+      expect(pack.holderOf('w_axe'), 'korash');
+    });
+
+    test('keeps a purse, and will not spend what it has not got', () {
+      pack.earn(1250);
+      expect(pack.coin, 1250);
+      pack.spend(250);
+      expect(pack.coin, 1000);
+      expect(
+        () => pack.spend(1001),
+        throwsA(isA<EquipException>()
+            .having((e) => e.message, 'message', contains('10 gp'))),
+      );
+      expect(pack.coin, 1000, reason: 'a refused purchase costs nothing');
+    });
+
+    test('says an amount the way a player would', () {
+      expect(formatCoin(0), 'nothing');
+      expect(formatCoin(27000), '270 gp');
+      expect(formatCoin(1255), '12 gp 5 sp 5 cp');
+      expect(formatCoin(50), '5 sp');
     });
 
     test('refuses an item the campaign does not have', () {
@@ -363,6 +440,36 @@ void main() {
           PartyInventory.fromJson(table, jsonDecode(jsonEncode(pack.toJson())));
       expect(restored.carried.map((i) => i.id), pack.carried.map((i) => i.id));
       expect(restored.loadoutFor('korash').weapon?.id, 'w_axe');
+    });
+
+    test('keeps every copy and every coin across a save', () {
+      pack
+        ..add('w_axe')
+        ..add('w_axe')
+        ..add('w_axe')
+        ..earn(4321);
+      pack
+        ..equip('korash', 'w_axe')
+        ..equip('sela', 'w_axe');
+
+      final restored =
+          PartyInventory.fromJson(table, jsonDecode(jsonEncode(pack.toJson())));
+      expect(restored.countOf('w_axe'), 3);
+      expect(restored.coin, 4321);
+      expect(restored.holdersOf('w_axe'), unorderedEquals(['korash', 'sela']));
+    });
+
+    test('a save cannot put more people in a sword than there are swords', () {
+      // Hand-edited or corrupted: two wearers, one copy. The second claim is
+      // dropped rather than letting one axe be in two places.
+      final restored = PartyInventory.fromJson(table, {
+        'carried': ['w_axe'],
+        'equipped': {
+          'korash': {'weapon': 'w_axe'},
+          'sela': {'weapon': 'w_axe'},
+        },
+      });
+      expect(restored.holdersOf('w_axe'), hasLength(1));
     });
 
     test('drops what the campaign no longer has rather than throwing', () {

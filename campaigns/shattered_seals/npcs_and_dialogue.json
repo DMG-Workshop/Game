@@ -103,6 +103,19 @@
         "missing": "Removed for conservation, by order of the Crown.",
         "seals": "Not here. Not in front of the shelves. Ask me properly."
       }
+    },
+    {
+      "npc_id": "npc_009_jory",
+      "name": "Jory Tallow",
+      "location": "MH_001_Square",
+      "tier": 1,
+      "appearance": "A pedlar's cart stands against the fountain with its shutters propped open on more stock than a market town can afford. Its owner leans on the wheel, reading the same broadsheet for what is clearly the fifth time.",
+      "greeting": "Customers! Actual customers.",
+      "keywords": {
+        "road": "Tollgate's shut till the Captain says the roads are safe, and the roads are not safe, so here I sit.",
+        "nails": "Plenty of call for iron nails in this town, and nobody will buy mine. Somebody local is selling them cheaper, and I'd dearly like to know who.",
+        "prices": "Capital prices. But they're fair capital prices."
+      }
     }
   ]
 }

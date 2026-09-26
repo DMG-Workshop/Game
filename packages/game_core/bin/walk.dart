@@ -82,6 +82,7 @@ Future<void> main(List<String> args) async {
       bestiaryJson: read('bestiary.json'),
       itemsJson: read('world_items.json'),
       conversationsJson: read('conversations.json'),
+      economyJson: read('economy.json'),
     );
     for (final path in characterPaths) {
       final file = File(path);
@@ -164,7 +165,14 @@ Future<void> main(List<String> args) async {
     }
     if (line.isEmpty) continue;
     if (line == 'quit' || line == 'q') break;
-    if (!_handle(session, line, nextCommand)) break;
+    final coinBefore = session.inventory.coin;
+    final keepGoing = _handle(session, line, nextCommand);
+    final gained = session.inventory.coin - coinBefore;
+    if (gained > 0 && !line.toLowerCase().startsWith('sell')) {
+      stdout.writeln('\n  [+${formatCoin(gained)} — the party has '
+          '${formatCoin(session.inventory.coin)}]');
+    }
+    if (!keepGoing) break;
   }
 
   stdout
@@ -262,6 +270,34 @@ bool _handle(WorldSession session, String line,
     case 'inv':
     case 'i':
       _renderInventory(session);
+      return true;
+
+    case 'list':
+    case 'wares':
+      _renderWares(session);
+      return true;
+
+    case 'buy':
+      return _trade(session, rest, buying: true);
+
+    case 'sell':
+      return _trade(session, rest, buying: false);
+
+    case 'value':
+    case 'appraise':
+      try {
+        final quote = session.valueOf(rest);
+        stdout.writeln('${_keeper(session)} would give you '
+            '${formatCoin(quote.price)} for ${quote.item.name}.');
+      } on InvalidMoveException catch (e) {
+        stdout.writeln(_wrap(e.message));
+      }
+      return true;
+
+    case 'purse':
+    case 'coin':
+    case 'money':
+      stdout.writeln('The party has ${formatCoin(session.inventory.coin)}.');
       return true;
 
     case 'sheet':
@@ -466,21 +502,73 @@ String _checkHint(GameSession talk, SceneOption option, {required bool solo}) {
 }
 
 void _renderInventory(WorldSession session) {
-  final carried = session.inventory.carried;
+  final pack = session.inventory;
+  final carried = pack.carried;
   if (carried.isEmpty) {
     stdout.writeln('The pack is empty. You have what you arrived with.');
-    return;
-  }
-  stdout.writeln('');
-  for (final item in carried) {
-    final holder = session.inventory.holderOf(item.id);
-    final worn = holder == null ? '' : '  (on $holder)';
-    stdout.writeln('  ${item.name.padRight(30)} '
-        'level ${item.level} ${item.rarity.name} ${item.type}$worn');
-    if (item.special != null) {
-      stdout.writeln(_wrap(item.special!, indent: '    '));
+  } else {
+    stdout.writeln('');
+    for (final item in carried) {
+      final count = pack.countOf(item.id);
+      final holders = pack.holdersOf(item.id);
+      final worn = holders.isEmpty ? '' : '  (on ${holders.join(', ')})';
+      final name = count > 1 ? '${item.name} x$count' : item.name;
+      stdout.writeln('  ${name.padRight(30)} '
+          'level ${item.level} ${item.rarity.name} ${item.type}$worn');
+      if (item.special != null) {
+        stdout.writeln(_wrap(item.special!, indent: '    '));
+      }
     }
   }
+  stdout.writeln('\nPurse: ${formatCoin(pack.coin)}');
+}
+
+void _renderWares(WorldSession session) {
+  final shop = session.shopHere;
+  if (shop == null) {
+    stdout.writeln('There is nobody here to trade with.');
+    return;
+  }
+  final percent = shop.percentFor(session.flags);
+  stdout.writeln('\n${shop.name} — ${_keeper(session)}'
+      '${percent == 0 ? '' : percent < 0 ? '  (${-percent}% off, for you)' : '  (+$percent%, for you)'}');
+  for (final row in session.wares()) {
+    final dear = row.price > session.inventory.coin ? '  *' : '';
+    stdout.writeln('  ${row.item.name.padRight(32)} '
+        '${'level ${row.item.level}'.padRight(9)} '
+        '${formatCoin(row.price).padLeft(12)}$dear');
+  }
+  stdout.writeln('\nThe party has ${formatCoin(session.inventory.coin)}.'
+      '${session.wares().any((r) => r.price > session.inventory.coin) ? '  (* more than that)' : ''}');
+}
+
+bool _trade(WorldSession session, String what, {required bool buying}) {
+  if (what.isEmpty) {
+    stdout.writeln(buying ? 'Buy what?' : 'Sell what?');
+    return true;
+  }
+  try {
+    if (buying) {
+      final bought = session.buy(what);
+      stdout.writeln('\nYou buy ${bought.item.name} for '
+          '${formatCoin(bought.price)}. The party has '
+          '${formatCoin(session.inventory.coin)} left.');
+    } else {
+      final sold = session.sell(what);
+      stdout.writeln('\n${_keeper(session)} gives you '
+          '${formatCoin(sold.price)} for ${sold.item.name}. The party has '
+          '${formatCoin(session.inventory.coin)}.');
+    }
+  } on InvalidMoveException catch (e) {
+    stdout.writeln(_wrap(e.message));
+  }
+  return true;
+}
+
+String _keeper(WorldSession session) {
+  final shop = session.shopHere;
+  if (shop == null) return 'Nobody';
+  return session.campaign.npcs.byId(shop.keeperId)?.name ?? shop.name;
 }
 
 void _renderSheet(WorldSession session, String who) {
@@ -606,6 +694,10 @@ void _renderRoom(WorldSession session,
   for (final npc in view.npcs) {
     stdout.writeln('\n${_wrap(npc.appearance)}');
   }
+  final shop = session.shopHere;
+  if (shop != null) {
+    stdout.writeln('\n  (${shop.name} — "list" to see what is for sale)');
+  }
 
   for (final item in view.items) {
     if (item.inRoomText != null) {
@@ -682,6 +774,10 @@ const _commands = '''
   ask <name> about <topic>                        raise a single topic
   quests                                          arc progress
   inventory (i)                                   what the party is carrying
+  list                                            what a shop here is selling
+  buy <item> / sell <item>                        trade (you get half back)
+  value <item>                                    what a shop would pay
+  purse                                           the party's coin
   sheet [who]                                     AC, Strike, HP as equipped
   equip [who] <item>                              wield or wear something
   unequip [who] weapon|armour                     put it away again

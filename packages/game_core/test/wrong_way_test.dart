@@ -167,6 +167,13 @@ void main() {
           ...i.requiredFlags,
           ...i.hiddenUntilFlags,
         ],
+        // A shelf that never fills, a discount never earned, and a reward
+        // never paid are the same bug as a door that never opens.
+        for (final shop in _campaign.economy.shops) ...[
+          for (final line in shop.stock) ...line.requiredFlags,
+          for (final m in shop.modifiers) m.flag,
+        ],
+        ..._campaign.economy.rewardFlags,
       };
       expect(referenced.difference(_producible(_campaign)), isEmpty);
     });

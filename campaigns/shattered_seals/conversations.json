@@ -205,7 +205,7 @@
               "outcome": {
                 "text": "\"A hundred,\" he says, and counts it out, and it is a hundred, in coin that has been several different people's savings.",
                 "goTo": "thorne_after",
-                "setFlags": ["thorne_paid"]
+                "setFlags": ["thorne_paid", "thorne_paid_hundred"]
               },
               "requires": {
                 "flags": ["thorne_reward_doubled"],
@@ -219,7 +219,7 @@
               "outcome": {
                 "text": "Seventy-five, counted out twice, the second time more slowly.",
                 "goTo": "thorne_after",
-                "setFlags": ["thorne_paid"]
+                "setFlags": ["thorne_paid", "thorne_paid_seventy_five"]
               },
               "requires": {
                 "flags": ["thorne_reward_raised"],
@@ -233,7 +233,7 @@
               "outcome": {
                 "text": "\"Fifty, as promised.\" He pushes the purse across. \"It's not enough. It never was.\"",
                 "goTo": "thorne_after",
-                "setFlags": ["thorne_paid"]
+                "setFlags": ["thorne_paid", "thorne_paid_fifty"]
               },
               "requires": {
                 "notFlags": ["thorne_paid", "thorne_reward_raised", "thorne_reward_doubled"]
@@ -1868,6 +1868,192 @@
           "id": "malachai_after",
           "title": "Malachai Vex",
           "body": "Nothing of Malachai Vex remains in the chamber but the ledger, closed, and a shadow on the floor that does not belong to anything still standing.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_009_jory",
+      "entries": [
+        {
+          "scene": "jory_wagon",
+          "requires": ["Unlock_Travel_to_Valorheim"],
+          "unless": ["jory_saw_the_wagon"]
+        },
+        {
+          "scene": "jory_again",
+          "requires": ["met_jory"]
+        },
+        { "scene": "jory_open" }
+      ],
+      "scenes": [
+        {
+          "id": "jory_open",
+          "title": "Jory Tallow",
+          "body": "\"Customers!\" The pedlar folds his broadsheet away. \"Actual customers. Jory Tallow — licensed to the Crown road, and currently licensed to this fountain.\" He taps a tollgate stamp pinned to his hatband like a medal.",
+          "options": [
+            {
+              "id": "ask_road",
+              "label": "Ask why he is stuck here",
+              "say": "Why's a Crown-road pedlar selling out of a market square?",
+              "outcome": {
+                "text": "\"Tollgate's shut. Captain's orders, till the roads are safe — and the roads are not safe, so here I sit.\" He waves at the cart. \"Stock I bought for the capital, selling to farmers. You can imagine how that's going.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["met_jory", "jory_told_of_the_road"]
+              }
+            },
+            {
+              "id": "look",
+              "label": "Ask to see his stock",
+              "say": "What have you got?",
+              "outcome": {
+                "text": "\"Everything a sensible adventurer needs, and several things nobody does.\" He props the second shutter open with a flourish.",
+                "goTo": "jory_talk",
+                "setFlags": ["met_jory"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "\"Mind how you go. Come back richer.\"",
+                "goTo": "jory_bye",
+                "setFlags": ["met_jory"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "jory_talk",
+          "title": "Jory Tallow",
+          "body": "Jory leans on the cart wheel. \"What else?\"",
+          "options": [
+            {
+              "id": "ask_road",
+              "label": "Ask why he is stuck here",
+              "say": "Why's a Crown-road pedlar selling out of a market square?",
+              "outcome": {
+                "text": "\"Tollgate's shut. Captain's orders, till the roads are safe — and the roads are not safe, so here I sit.\" He waves at the cart. \"Stock I bought for the capital, selling to farmers. You can imagine how that's going.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["jory_told_of_the_road"]
+              },
+              "requires": {
+                "notFlags": ["jory_told_of_the_road"]
+              }
+            },
+            {
+              "id": "haggle",
+              "label": "[Diplomacy] Talk his prices down",
+              "say": "Nobody in Millhaven can afford capital prices. We can — if they come down.",
+              "check": { "stat": "diplomacy", "dc": 16 },
+              "outcomes": {
+                "criticalSuccess": {
+                  "text": "\"...You know, I like you.\" He writes something on the back of his broadsheet and underlines it twice. \"Two in ten off, for you. Don't tell the farmers.\"",
+                  "goTo": "jory_talk",
+                  "setFlags": ["jory_haggled", "jory_discount_large"]
+                },
+                "success": {
+                  "text": "He sucks his teeth, looks at the cart, looks at the empty square. \"One in ten off. Because you're the only people who've asked.\"",
+                  "goTo": "jory_talk",
+                  "setFlags": ["jory_haggled", "jory_discount"]
+                },
+                "failure": {
+                  "text": "\"My prices are my prices,\" he says, cheerfully enough.",
+                  "goTo": "jory_talk",
+                  "setFlags": ["jory_haggled"]
+                },
+                "criticalFailure": {
+                  "text": "\"Well,\" he says, a good deal less cheerfully, \"now they're a little higher.\"",
+                  "goTo": "jory_talk",
+                  "setFlags": ["jory_haggled", "jory_offended"]
+                }
+              },
+              "requires": {
+                "notFlags": ["jory_haggled"]
+              }
+            },
+            {
+              "id": "ask_talk",
+              "label": "Ask what he has heard on the road",
+              "say": "You're a travelling man. What's the talk?",
+              "outcome": {
+                "text": "\"That the road's shut, mostly.\" He lowers his voice. \"And that nobody in this town will buy iron nails from me. Plenty of call for nails — every tree on the Whisperwood side has a row of them. Nobody buys mine. Somebody local's selling them cheaper, and I'd dearly like to know who.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["jory_mentioned_the_nails"]
+              },
+              "requires": {
+                "notFlags": ["jory_mentioned_the_nails"]
+              }
+            },
+            {
+              "id": "ask_rare",
+              "label": "Ask if he has anything special",
+              "say": "Anything under the counter? Something the capital doesn't have?",
+              "outcome": {
+                "text": "\"If I had anything you couldn't get in the capital, I'd be in the capital selling it.\" He grins. \"The things worth having out here don't come off a cart. They come off whatever was carrying them. Bring me those and I'll give you half what they're worth, which is more than they're worth to a corpse.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["jory_asked_rare"]
+              },
+              "requires": {
+                "notFlags": ["jory_asked_rare"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "say": "We'll have a look.",
+              "outcome": { "text": "\"Look all you like. Buying's where the joy is.\"", "goTo": "jory_bye" }
+            }
+          ]
+        },
+        {
+          "id": "jory_again",
+          "title": "Jory Tallow",
+          "body": "Jory looks up from his broadsheet. \"Back for more?\"",
+          "options": [
+            {
+              "id": "talk",
+              "label": "Talk",
+              "say": "A word, Jory.",
+              "outcome": { "text": "\"Always.\"", "goTo": "jory_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "He goes back to the broadsheet.", "goTo": "jory_bye" }
+            }
+          ]
+        },
+        {
+          "id": "jory_wagon",
+          "title": "Jory Tallow",
+          "body": "Jory's cart has doubled overnight: a second wagon stands behind it, still dusty from the capital road, and he is unpacking it with the air of a man whose luck has finally turned. \"Road's open! And look what came down it.\"",
+          "options": [
+            {
+              "id": "ask_new",
+              "label": "Ask what came in",
+              "say": "What's new?",
+              "outcome": {
+                "text": "\"Capital stock. Proper armour, proper blades, and a mining pick I'd not touch myself, but somebody will.\" He lowers his voice. \"Some of it was cheap for reasons I didn't ask about. You'd be surprised what a dead man's quartermaster will part with.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["met_jory", "jory_saw_the_wagon"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "\"Don't be long! It won't last.\"",
+                "goTo": "jory_bye",
+                "setFlags": ["met_jory", "jory_saw_the_wagon"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "jory_bye",
+          "title": "Jory Tallow",
+          "body": "Jory goes back to his broadsheet.",
           "isEnding": true
         }
       ]

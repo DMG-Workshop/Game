@@ -1,0 +1,47 @@
+{
+  "shops": [
+    {
+      "shop_id": "s_001_tallows_cart",
+      "name": "Tallow's Cart",
+      "keeper": "npc_009_jory",
+      "location": "MH_001_Square",
+      "stock": [
+        { "item": "w_001_guard_sword" },
+        { "item": "w_002_nail_iron_spade" },
+        { "item": "w_004_whisperwood_bow" },
+        { "item": "w_006_shadowbane_dagger" },
+        { "item": "a_006_ravencrest_hide" },
+        {
+          "item": "g_007_last_shift_lamp",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "a_008_grave_wardens_mail",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_010_inquisitors_blade",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "a_011_palace_cuirass",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_012_bloodstone_pick",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        }
+      ],
+      "price_modifiers": [
+        { "flag": "jory_discount", "percent": -10 },
+        { "flag": "jory_discount_large", "percent": -20 },
+        { "flag": "jory_offended", "percent": 10 }
+      ]
+    }
+  ],
+  "rewards": [
+    { "flag": "thorne_paid_fifty", "gp": 50 },
+    { "flag": "thorne_paid_seventy_five", "gp": 75 },
+    { "flag": "thorne_paid_hundred", "gp": 100 }
+  ]
+}

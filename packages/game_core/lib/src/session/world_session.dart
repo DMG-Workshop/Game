@@ -2,13 +2,14 @@ import 'package:pf2e_core/pf2e_core.dart';
 
 import '../campaign/arc.dart';
 import '../campaign/campaign.dart';
+import '../campaign/creature.dart';
+import '../campaign/economy.dart';
+import '../campaign/gear.dart';
 import '../campaign/locations.dart';
 import '../campaign/npc.dart';
-import '../campaign/creature.dart';
-import '../campaign/gear.dart';
 import '../campaign/world.dart';
-import '../party/equipment.dart';
 import '../campaign/world_item.dart';
+import '../party/equipment.dart';
 import 'encounter_session.dart';
 import 'game_session.dart';
 import 'session_actor.dart';
@@ -157,6 +158,7 @@ class WorldSession {
         final id = flag.substring('loot_'.length);
         if (campaign.gear.byId(id) != null) _inventory.add(id);
       }
+      _inventory.earn(_startingCoin(_actors));
     }
     _enter(_roomId);
   }
@@ -179,6 +181,13 @@ class WorldSession {
   /// Weather per region, rolled once on arrival and kept until the party
   /// leaves. Weather that changed every step would be noise, not atmosphere.
   final Map<String, String> _weatherByRegion = {};
+
+  /// What the party's own sheets say they are carrying, pooled.
+  ///
+  /// The characters arrive with the coin Pathbuilder gave them, the same way
+  /// they arrive with its weapons, because it is their money.
+  static int _startingCoin(List<SessionActor> actors) =>
+      actors.fold(0, (sum, actor) => sum + actor.character.money.totalInCopper);
 
   static String _firstRoomOf(Campaign campaign) {
     final rooms = campaign.locations.rooms.keys.toList()..sort();
@@ -318,9 +327,25 @@ class WorldSession {
   List<String> _enter(String roomId) {
     final set = <String>[];
     for (final flag in {'enter_$roomId', 'enter_${_shortId(roomId)}'}) {
-      if (_flags.add(flag)) set.add(flag);
+      if (_set(flag)) set.add(flag);
     }
     return set..sort();
+  }
+
+  /// Sets [flag], paying out any coin it carries. True when it was new.
+  ///
+  /// Every flag the world sets comes through here, so a reward keyed to one
+  /// pays out once whichever way it was reached: a conversation, a fight,
+  /// an object, or an arc finishing.
+  bool _set(String flag) {
+    if (!_flags.add(flag)) return false;
+    _payReward(flag);
+    return true;
+  }
+
+  void _payReward(String flag) {
+    final copper = campaign.economy.rewardFor(flag);
+    if (copper > 0) _inventory.earn(copper);
   }
 
   /// `MH_001_Square` becomes `MH_001`.
@@ -362,13 +387,13 @@ class WorldSession {
     final set = <String>[];
     if (isNew) {
       final keywordFlag = 'keyword_${matched}_unlocked';
-      if (_flags.add(keywordFlag)) set.add(keywordFlag);
+      if (_set(keywordFlag)) set.add(keywordFlag);
     }
 
     final exhausted = raised.length == npc.keywords.length;
     if (exhausted) {
       final completeFlag = 'dialogue_complete_${npc.slug}';
-      if (_flags.add(completeFlag)) set.add(completeFlag);
+      if (_set(completeFlag)) set.add(completeFlag);
     }
 
     return TalkResult(
@@ -416,6 +441,7 @@ class WorldSession {
       ..clear()
       ..addAll(conversation.flags);
     final set = _flags.difference(before).toList()..sort();
+    set.forEach(_payReward);
 
     // Somebody handing the party something is recorded the way a drop is,
     // so a gift and a kill end up in the same pack.
@@ -464,7 +490,7 @@ class WorldSession {
     }
     final set = <String>[];
     for (final flag in item.acquireFlags) {
-      if (_flags.add(flag)) set.add(flag);
+      if (_set(flag)) set.add(flag);
     }
     return (
       item: item,
@@ -482,7 +508,7 @@ class WorldSession {
     }
     final set = <String>[];
     for (final flag in item.destroyFlags) {
-      if (_flags.add(flag)) set.add(flag);
+      if (_set(flag)) set.add(flag);
     }
     return (
       item: item,
@@ -554,7 +580,7 @@ class WorldSession {
         ? [fight.encounter.wonFlag(fight.encounter.waveFor(_flags))]
         : const <String>[];
     for (final flag in [...won, ...fight.victoryFlags, ...fight.lootFlags]) {
-      if (_flags.add(flag)) set.add(flag);
+      if (_set(flag)) set.add(flag);
     }
     for (final item in fight.loot) {
       _inventory.add(item.id);
@@ -581,6 +607,13 @@ class WorldSession {
     final item = _inventory.find(what);
     if (item == null) {
       throw InvalidMoveException('You are not carrying a "$what".');
+    }
+    final others =
+        _inventory.holdersOf(item.id).where((h) => h != actor.id).toList();
+    if (others.length >= _inventory.countOf(item.id)) {
+      throw InvalidMoveException('${_namesOf(others)} already '
+          '${others.length == 1 ? 'has' : 'have'} ${item.name}, and the '
+          'party has no other.');
     }
     final result = _inventory.equip(actor.id, item.id);
     return (
@@ -610,6 +643,90 @@ class WorldSession {
         actorFor(actorId).stats,
         _inventory.loadoutFor(actorFor(actorId).id),
       );
+
+  // --- trade ---------------------------------------------------------------
+
+  /// The shop kept in this room, if there is one.
+  Shop? get shopHere => campaign.economy.shopIn(_roomId);
+
+  /// What is on the shelf here, cheapest first, at what the party would pay.
+  List<({GearItem item, int price})> wares() {
+    final shop = _requireShop();
+    final rows = [
+      for (final id in shop.onSaleFor(_flags))
+        if (campaign.gear.byId(id) case final item?)
+          (item: item, price: shop.priceFor(item, _flags)),
+    ];
+    return rows..sort((a, b) => a.price.compareTo(b.price));
+  }
+
+  /// Buys one of something on the shelf.
+  ({GearItem item, int price}) buy(String what) {
+    final shop = _requireShop();
+    final onSale = [
+      for (final row in wares()) row.item,
+    ];
+    final item = PartyInventory.findIn(onSale, what);
+    if (item == null) {
+      throw InvalidMoveException('${_keeperName(shop)} has nothing called '
+          '"$what" for sale.');
+    }
+    final price = shop.priceFor(item, _flags);
+    try {
+      _inventory.spend(price);
+    } on EquipException catch (e) {
+      throw InvalidMoveException(e.message);
+    }
+    _inventory.add(item.id);
+    return (item: item, price: price);
+  }
+
+  /// What the keeper here would pay for something the party carries.
+  ({GearItem item, int price}) valueOf(String what) {
+    _requireShop();
+    final item = _inventory.find(what);
+    if (item == null) {
+      throw InvalidMoveException('You are not carrying a "$what".');
+    }
+    return (item: item, price: item.resalePrice);
+  }
+
+  /// Sells one of something the party carries, for half its price.
+  ///
+  /// Anything can be sold, rare things included; selling the only one of a
+  /// boss's weapon is a choice a player is allowed to regret.
+  ({GearItem item, int price}) sell(String what) {
+    final quote = valueOf(what);
+    final holders = _inventory.holdersOf(quote.item.id);
+    if (holders.length >= _inventory.countOf(quote.item.id)) {
+      throw InvalidMoveException('${_namesOf(holders)} '
+          '${holders.length == 1 ? 'is' : 'are'} using ${quote.item.name}. '
+          'Take it off first.');
+    }
+    try {
+      _inventory.remove(quote.item.id);
+    } on EquipException catch (e) {
+      throw InvalidMoveException(e.message);
+    }
+    _inventory.earn(quote.price);
+    return quote;
+  }
+
+  Shop _requireShop() {
+    final shop = shopHere;
+    if (shop == null) {
+      throw InvalidMoveException('There is nobody here to trade with.');
+    }
+    return shop;
+  }
+
+  /// Actor ids as a player would read them: "Korash Blackearth and Sela".
+  String _namesOf(List<String> actorIds) => actorIds
+      .map((id) => _actors.where((a) => a.id == id).firstOrNull?.name ?? id)
+      .join(' and ');
+
+  String _keeperName(Shop shop) =>
+      campaign.npcs.byId(shop.keeperId)?.name ?? shop.name;
 
   /// Whether [who] names somebody in the party.
   bool knowsActor(String who) {
@@ -656,7 +773,7 @@ class WorldSession {
   /// before the world quietly changes underneath the player.
   List<String> applyPendingWorldState() {
     final pending = campaign.arcs.pendingWorldStateChanges(_flags);
-    _flags.addAll(pending);
+    pending.forEach(_set);
     return pending;
   }
 
@@ -707,6 +824,10 @@ class WorldSession {
       inventory: inventory,
       cameFrom: snapshot['cameFrom']?.toString(),
     );
+    final savedPack = snapshot['inventory'];
+    if (savedPack is Map && !savedPack.containsKey('coin')) {
+      session._inventory.earn(_startingCoin(actors));
+    }
     for (final e in (snapshot['weather'] as Map? ?? const {}).entries) {
       session._weatherByRegion[e.key.toString()] = e.value.toString();
     }

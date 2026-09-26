@@ -19,6 +19,7 @@ Campaign loadShatteredSeals() => const CampaignLoader().load(
       bestiaryJson: _read('bestiary.json'),
       itemsJson: _read('world_items.json'),
       conversationsJson: _read('conversations.json'),
+      economyJson: _read('economy.json'),
     );
 
 void main() {
@@ -115,12 +116,13 @@ void main() {
 
   group('npcs', () {
     test('reads the cast and places them', () {
-      expect(campaign.npcs.length, 8);
+      expect(campaign.npcs.length, 9);
       expect(campaign.npcs.byId('npc_001_thorne')!.name,
           'Captain Thorne Ironhelm');
       expect(
           campaign.npcs.inRoom('VC_002_ThroneRoom').single.name, 'Queen Liora');
-      expect(campaign.npcs.inRoom('MH_001_Square'), isEmpty);
+      expect(campaign.npcs.inRoom('MH_001_Square').single.name, 'Jory Tallow');
+      expect(campaign.npcs.inRoom('WW_002_Deep'), isEmpty);
     });
 
     test('finds an NPC by any word of their name', () {

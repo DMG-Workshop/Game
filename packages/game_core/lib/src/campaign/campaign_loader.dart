@@ -8,6 +8,7 @@ import 'arc.dart';
 import 'campaign.dart';
 import 'conversation.dart';
 import 'creature.dart';
+import 'economy.dart';
 import 'gear.dart';
 import 'locations.dart';
 import 'npc.dart';
@@ -43,6 +44,7 @@ class CampaignLoader {
     String? bestiaryJson,
     String? itemsJson,
     String? conversationsJson,
+    String? economyJson,
   }) =>
       Campaign(
         id: id,
@@ -57,6 +59,7 @@ class CampaignLoader {
         conversations: conversationsJson == null
             ? null
             : readConversations(conversationsJson),
+        economy: economyJson == null ? null : readEconomy(economyJson),
       );
 
   // --- world ---------------------------------------------------------------
@@ -216,6 +219,7 @@ class CampaignLoader {
         stats: _map(raw['stats']),
         special: _optional(raw['special']),
         rarity: _readRarity(_optional(raw['rarity']), id),
+        listedPrice: _readPrice(raw['price'], 'item "$id"'),
         drops: [
           for (final d in _list(raw['drops']))
             if (d is Map) _readDrop(d.cast<String, Object?>(), id),
@@ -375,6 +379,78 @@ class CampaignLoader {
       ));
     }
     return ItemPlacements(items);
+  }
+
+  // --- shops and rewards ----------------------------------------------------
+
+  /// Reads the campaign's shops and the coin it pays for things done.
+  ///
+  /// Prices and rewards are written in gold, as a Pathfinder player would
+  /// write them, and held in copper so a price like 1 gp 5 sp is exact.
+  Economy readEconomy(String json) {
+    final root = _object(json, 'economy');
+    final shops = <Shop>[];
+    final seen = <String>{};
+    for (final entry in _list(root['shops'])) {
+      if (entry is! Map) continue;
+      final raw = entry.cast<String, Object?>();
+      final id = _string(raw['shop_id'], 'shop_id');
+      if (!seen.add(id)) {
+        throw CampaignFormatException('Duplicate shop id "$id".');
+      }
+      shops.add(Shop(
+        id: id,
+        name: _string(raw['name'], 'shop name'),
+        keeperId: _string(raw['keeper'], 'shop keeper on "$id"'),
+        location: _string(raw['location'], 'shop location on "$id"'),
+        stock: [
+          for (final line in _list(raw['stock']))
+            if (line is Map)
+              StockLine(
+                itemId: _string(line.cast<String, Object?>()['item'],
+                    'stock item on "$id"'),
+                requiredFlags: _strings(line['requires']),
+              ),
+        ],
+        modifiers: [
+          for (final m in _list(raw['price_modifiers']))
+            if (m is Map)
+              PriceModifier(
+                flag: _string(
+                    m.cast<String, Object?>()['flag'], 'modifier on "$id"'),
+                percent: _int(m['percent']),
+              ),
+        ],
+      ));
+    }
+
+    final rewards = <CoinReward>[];
+    for (final entry in _list(root['rewards'])) {
+      if (entry is! Map) continue;
+      final raw = entry.cast<String, Object?>();
+      final flag = _string(raw['flag'], 'reward flag');
+      final copper = _readPrice(raw['gp'], 'the reward for "$flag"');
+      if (copper == null) {
+        throw CampaignFormatException('The reward for "$flag" has no "gp".');
+      }
+      rewards.add(CoinReward(flag: flag, copper: copper));
+    }
+    return Economy(shops: shops, rewards: rewards);
+  }
+
+  /// Reads an amount written in gold pieces as copper, or null if absent.
+  int? _readPrice(Object? raw, String what) {
+    if (raw == null) return null;
+    final gp = switch (raw) {
+      final num v => v,
+      final String v => num.tryParse(v.trim()),
+      _ => null,
+    };
+    if (gp == null || gp < 0) {
+      throw CampaignFormatException('The price of $what is "$raw", which is '
+          'not an amount of gold.');
+    }
+    return (gp * 100).round();
   }
 
   // --- conversations -------------------------------------------------------

@@ -45,6 +45,7 @@ void main(List<String> args) {
       bestiaryJson: read('bestiary.json'),
       itemsJson: read('world_items.json'),
       conversationsJson: read('conversations.json'),
+      economyJson: read('economy.json'),
     );
   } on CampaignFormatException catch (e) {
     stderr.writeln('Could not read the campaign: ${e.message}');
