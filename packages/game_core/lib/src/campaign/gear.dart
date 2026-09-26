@@ -71,6 +71,24 @@ class DropSource {
 /// Traits are Pathfinder traits and stay as written strings: the engine does
 /// not implement them yet, and inventing a partial interpretation would be
 /// worse than carrying them through untouched.
+/// An item bonus an item gives to a check, and when.
+///
+/// The part of an item's text the engine can act on. [when] is null for a
+/// bonus that always applies; otherwise `exposure` (saves against the
+/// weather), `region:<id>` or `zone:<id>` (only there). Anything more
+/// situational than that stays in the item's text for the table to apply.
+class CheckBonus {
+  const CheckBonus({required this.stat, required this.bonus, this.when});
+
+  /// The statistic it applies to: a skill, a save, or `perception`.
+  final String stat;
+  final int bonus;
+  final String? when;
+
+  @override
+  String toString() => '+$bonus $stat${when == null ? '' : ' ($when)'}';
+}
+
 class GearItem {
   const GearItem({
     required this.id,
@@ -84,7 +102,11 @@ class GearItem {
     this.rarity = ItemRarity.common,
     this.drops = const [],
     this.listedPrice,
+    this.checkBonuses = const [],
   });
+
+  /// Item bonuses to checks, where the item's text can be put into numbers.
+  final List<CheckBonus> checkBonuses;
 
   final String id;
   final String name;

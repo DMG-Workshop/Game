@@ -32,7 +32,9 @@ class GameSession {
     required DiceRoller roller,
     String? sceneId,
     Set<String>? flags,
+    int Function(SessionActor actor, String statKey)? itemBonusFor,
   })  : _actors = List.of(actors),
+        _itemBonusFor = itemBonusFor,
         _roller = roller,
         _sceneId = sceneId ?? adventure.startSceneId,
         // Copied rather than kept, for the same reason as WorldSession: a
@@ -74,6 +76,10 @@ class GameSession {
   final Adventure adventure;
 
   final List<SessionActor> _actors;
+
+  /// Item bonuses from what each actor is carrying, when the world knows.
+  final int Function(SessionActor actor, String statKey)? _itemBonusFor;
+
   final DiceRoller _roller;
   late final CheckResolver _resolver;
   String _sceneId;
@@ -136,7 +142,7 @@ class GameSession {
     final rows = <ActorCandidate>[];
     for (final actor in _actors) {
       if (!option.gate.allows(_flags, actor.stats)) continue;
-      final stat = actor.statFor(check.statKey);
+      final stat = _statFor(actor, check.statKey);
       if (stat != null) rows.add((actor: actor, stat: stat));
     }
     rows.sort((a, b) => b.stat.total.compareTo(a.stat.total));
@@ -176,7 +182,7 @@ class GameSession {
       final ActorCandidate candidate;
       if (actorId != null) {
         final named = _requireActor(actorId, option);
-        final stat = named.statFor(check.statKey);
+        final stat = _statFor(named, check.statKey);
         if (stat == null) {
           throw InvalidChoiceException(
               '${named.name} has no "${check.statKey}" to roll.');
@@ -231,6 +237,13 @@ class GameSession {
     );
     _log.add(event);
     return event;
+  }
+
+  /// [actor]'s bonus for [statKey], with whatever they carry applied.
+  CheckValue? _statFor(SessionActor actor, String statKey) {
+    final stat = actor.statFor(statKey);
+    final bonus = _itemBonusFor?.call(actor, statKey) ?? 0;
+    return stat == null ? null : withItemBonus(stat, bonus);
   }
 
   SessionActor _requireActor(String actorId, SceneOption option) {

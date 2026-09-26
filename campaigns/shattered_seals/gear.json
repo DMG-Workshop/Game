@@ -96,7 +96,8 @@
       "traits": ["medium", "magical"],
       "description": "Road armour: steel plates riveted inside a coat of oiled canvas that has been rained on across three kingdoms and has kept out every drop.",
       "stats": { "ac": 14, "bonus": 1, "magic": true, "ac_bonus": 3, "dex_cap": 2 },
-      "special": "+1 item bonus to Fortitude saves against cold and exposure."
+      "special": "+1 item bonus to Fortitude saves against cold and exposure.",
+      "check_bonuses": [{ "stat": "fortitude", "bonus": 1, "when": "exposure" }]
     },
     {
       "item_id": "a_006_ravencrest_hide",
@@ -106,7 +107,8 @@
       "traits": ["light", "magical"],
       "description": "Farm leather, patched and re-patched, still smelling faintly of the byre. The previous owner's name is inked inside the collar and has been crossed through once.",
       "stats": { "ac": 15, "bonus": 1, "magic": true, "ac_bonus": 2, "dex_cap": 3 },
-      "special": "+1 item bonus to Survival checks made within a day's walk of Millhaven."
+      "special": "+1 item bonus to Survival checks made within a day's walk of Millhaven.",
+      "check_bonuses": [{ "stat": "survival", "bonus": 1, "when": "region:r_001_millhaven_valley" }]
     },
     {
       "item_id": "g_007_last_shift_lamp",
@@ -202,7 +204,8 @@
       "traits": ["heavy", "magical"],
       "description": "Crown issue, crimson-lacquered, and newer than the man who was wearing it. The quartermaster's stamp inside is dated after his funeral.",
       "stats": { "ac": 18, "bonus": 2, "magic": true, "ac_bonus": 5, "dex_cap": 1 },
-      "special": "+1 item bonus to Society checks made inside the Palace District."
+      "special": "+1 item bonus to Society checks made inside the Palace District.",
+      "check_bonuses": [{ "stat": "society", "bonus": 1, "when": "zone:z_04_palace_district" }]
     },
     {
       "item_id": "w_025_censer_chain",
@@ -236,7 +239,8 @@
       "description": "Long, fine, and kept in a velvet roll with eleven others. The Covenant does not call what it does with these torture, and it is technically correct: the needle does the asking.",
       "stats": { "damage": "1d4", "bonus": 2, "magic": true, "striking": "greaterStriking" },
       "special": "+2 item bonus to Intimidation checks. A creature critically hit by it answers the next question it is asked truthfully, though nothing makes it answer at length.",
-      "drops": [{ "from": "c_covenant_acolyte", "chance": 8 }]
+      "drops": [{ "from": "c_covenant_acolyte", "chance": 8 }],
+      "check_bonuses": [{ "stat": "intimidation", "bonus": 2 }]
     },
     {
       "item_id": "w_027_ascension_rod",
@@ -258,7 +262,8 @@
       "traits": ["magical", "occult"],
       "description": "A burial register kept in two hands: the undertaker's, and a second that added a small mark beside four of the entries afterward. The fifth line is still blank.",
       "stats": { "bonus": 2, "magic": true },
-      "special": "+2 item bonus to Occultism checks and to Lore checks concerning the undead. While carried, you know without checking whether a corpse you can see died of what the record says it did."
+      "special": "+2 item bonus to Occultism checks and to Lore checks concerning the undead. While carried, you know without checking whether a corpse you can see died of what the record says it did.",
+      "check_bonuses": [{ "stat": "occultism", "bonus": 2 }]
     },
     {
       "item_id": "a_011_monarchs_vestment",
@@ -268,7 +273,8 @@
       "traits": ["heavy", "divine", "authority"],
       "description": "Golden plate armor fit for a king. It emanates majesty.",
       "stats": { "ac": 20, "bonus": 2, "magic": true, "ac_bonus": 6, "dex_cap": 0 },
-      "special": "+2 item bonus to Diplomacy checks."
+      "special": "+2 item bonus to Diplomacy checks.",
+      "check_bonuses": [{ "stat": "diplomacy", "bonus": 2 }]
     },
     {
       "item_id": "w_028_seal_breakers_athame",
@@ -340,7 +346,8 @@
       "traits": ["magical", "authority", "warding"],
       "description": "Not the crown of Valorheim. The crown of what was here before Valorheim, recovered from beneath it, worn by people who understood entropy well enough to decide against it.",
       "stats": { "bonus": 3, "magic": true },
-      "special": "+3 item bonus to Diplomacy and Intimidation checks. Once per day, you may close one seal that has been broken, anywhere you can see, and know afterward exactly what it cost you."
+      "special": "+3 item bonus to Diplomacy and Intimidation checks. Once per day, you may close one seal that has been broken, anywhere you can see, and know afterward exactly what it cost you.",
+      "check_bonuses": [{ "stat": "diplomacy", "bonus": 3 }, { "stat": "intimidation", "bonus": 3 }]
     }
   ]
 }

@@ -18,6 +18,8 @@ class WorldItem {
     this.hiddenUntilFlags = const [],
     this.onTake,
     this.onDestroy,
+    this.sayOnTake,
+    this.sayOnDestroy,
   });
 
   final String id;
@@ -53,6 +55,10 @@ class WorldItem {
 
   /// Narration when destroyed.
   final String? onDestroy;
+
+  /// What the one doing it says as they take it, or break it.
+  final String? sayOnTake;
+  final String? sayOnDestroy;
 
   bool isVisible(Set<String> flags) => hiddenUntilFlags.every(flags.contains);
 

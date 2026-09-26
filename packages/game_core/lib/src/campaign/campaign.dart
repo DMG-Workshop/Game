@@ -6,6 +6,7 @@ import 'gear.dart';
 import 'hunt.dart';
 import 'locations.dart';
 import 'npc.dart';
+import 'weather.dart';
 import 'world.dart';
 import 'world_item.dart';
 
@@ -24,11 +25,13 @@ class Campaign {
     Conversations? conversations,
     Economy? economy,
     HuntTable? hunts,
+    WeatherBook? weather,
   })  : bestiary = bestiary ?? Bestiary(),
         items = items ?? ItemPlacements(const []),
         conversations = conversations ?? Conversations(const []),
         economy = economy ?? Economy(),
-        hunts = hunts ?? HuntTable();
+        hunts = hunts ?? HuntTable(),
+        weather = weather ?? WeatherBook();
 
   final String id;
   final String title;
@@ -52,6 +55,9 @@ class Campaign {
 
   /// What comes after a party that gets rich.
   final HuntTable hunts;
+
+  /// The calendar, the road, and the sky.
+  final WeatherBook weather;
 
   /// What setting [flag] pays: a reward the economy lists, or the reward for
   /// the quest [flag] marks as finished.
@@ -111,11 +117,113 @@ class Campaign {
           roomIds: locations.rooms.keys.toSet(),
         ),
         sideQuestGaps: _sideQuestGaps(),
+        weatherProblems:
+            weather.problems(regionIds: [for (final r in world.regions) r.id]),
+        dialogueGaps: _dialogueGaps(),
+        gearBonusProblems: _gearBonusProblems(),
         huntProblems: hunts.problems(
           bestiary,
           levels: [for (var l = 1; l <= world.metadata.levelCap; l++) l],
         ),
       );
+
+  /// Item bonuses that could never apply: a condition naming a region or a
+  /// part of the map that does not exist, or one the engine does not know.
+  List<String> _gearBonusProblems() {
+    final regions = {for (final r in world.regions) r.id};
+    final zones = {
+      for (final town in locations.towns)
+        for (final zone in town.zones) zone.id,
+    };
+    final out = <String>[];
+    for (final item in gear.all) {
+      for (final b in item.checkBonuses) {
+        final when = b.when;
+        final ok = when == null ||
+            when == 'exposure' ||
+            (when.startsWith('region:') &&
+                regions.contains(when.substring('region:'.length))) ||
+            (when.startsWith('zone:') &&
+                zones.contains(when.substring('zone:'.length)));
+        if (!ok) {
+          out.add('${item.name} gives $b, which can never apply');
+        }
+        if (b.bonus <= 0) out.add('${item.name} gives a bonus of ${b.bonus}');
+      }
+    }
+    return out;
+  }
+
+  /// Everywhere something happens with nothing said about it.
+  ///
+  /// Every fight and every hunter needs a scene: where it is, what it feels
+  /// like, and words at its start and at each way it can end. Every creature
+  /// needs a voice for the turns of a fight, even if its voice is only what
+  /// it does. Every room needs something going on in it, every object
+  /// something said on picking it up or breaking it, every shopkeeper
+  /// something to say across the counter, and the weather and the night
+  /// their lines too.
+  List<String> _dialogueGaps() {
+    final out = <String>[];
+    for (final e in bestiary.encounters) {
+      final scene = e.scene;
+      if (scene == null) {
+        out.add('${e.name} (${e.id}) has no scene');
+      } else {
+        for (final gap in scene.gaps()) {
+          out.add('${e.name} (${e.id}): $gap');
+        }
+      }
+    }
+    for (final h in hunts.hunters) {
+      final scene = h.scene;
+      if (scene == null) {
+        out.add('Hunter ${h.creatureId} has no scene');
+      } else {
+        for (final gap in scene.gaps()) {
+          out.add('Hunter ${h.creatureId}: $gap');
+        }
+      }
+    }
+    for (final c in bestiary.creatures) {
+      final voice = c.voice;
+      if (voice == null) {
+        out.add('${c.name} (${c.id}) has no voice');
+      } else {
+        for (final gap in voice.gaps()) {
+          out.add('${c.name} (${c.id}): $gap');
+        }
+      }
+    }
+    for (final room in locations.rooms.values) {
+      if (room.ambiance.length < 2) {
+        out.add('${room.title} (${room.id}) has fewer than two lines of '
+            'ambiance');
+      }
+    }
+    for (final item in items.all) {
+      if (item.takeable && item.sayOnTake == null) {
+        out.add('${item.name} (${item.id}): nothing said taking it');
+      }
+      if (item.destroyable && item.sayOnDestroy == null) {
+        out.add('${item.name} (${item.id}): nothing said breaking it');
+      }
+    }
+    for (final shop in economy.shops) {
+      for (final gap in shop.lines.gaps()) {
+        out.add('${shop.name}: $gap');
+      }
+    }
+    if (!weather.isEmpty) {
+      for (final type in weather.types) {
+        if (type.remark == null) out.add('${type.name}: no remark');
+      }
+      for (final gap in weather.restLines.gaps()) {
+        out.add('Resting: $gap');
+      }
+    }
+    return out;
+  }
 
   /// Parts of the map with no side quest set in them, and side quests set
   /// somewhere the map does not have.
@@ -228,6 +336,9 @@ class CampaignReport {
     this.unrewardedArcs = const [],
     this.huntProblems = const [],
     this.sideQuestGaps = const [],
+    this.weatherProblems = const [],
+    this.dialogueGaps = const [],
+    this.gearBonusProblems = const [],
   });
 
   /// Rooms a zone or an exit names but nobody has written.
@@ -283,6 +394,15 @@ class CampaignReport {
   /// Regions with nothing to do off the main road.
   final List<String> sideQuestGaps;
 
+  /// Seasons with no weather, and weather that does not add up.
+  final List<String> weatherProblems;
+
+  /// Fights, creatures, rooms and the rest with nothing said about them.
+  final List<String> dialogueGaps;
+
+  /// Item bonuses that could never apply.
+  final List<String> gearBonusProblems;
+
   bool get isClean =>
       unwrittenRooms.isEmpty &&
       danglingExits.isEmpty &&
@@ -300,7 +420,10 @@ class CampaignReport {
       unpaidEncounters.isEmpty &&
       unrewardedArcs.isEmpty &&
       huntProblems.isEmpty &&
-      sideQuestGaps.isEmpty;
+      sideQuestGaps.isEmpty &&
+      weatherProblems.isEmpty &&
+      dialogueGaps.isEmpty &&
+      gearBonusProblems.isEmpty;
 
   /// Problems that would strand a player right now, as opposed to content
   /// that is merely unfinished.
@@ -366,6 +489,9 @@ class CampaignReport {
         unrewardedArcs.map((a) => '${a.name} (${a.id})'));
     section('The hunt', huntProblems);
     section('Side quests', sideQuestGaps);
+    section('Weather', weatherProblems);
+    section('Scenes and dialogue', dialogueGaps);
+    section('Item bonuses', gearBonusProblems);
     section(
       'Conversations for somebody who does not exist',
       orphanedConversations.map((c) => c.npcId),

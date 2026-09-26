@@ -36,7 +36,25 @@
         { "flag": "jory_discount", "percent": -10 },
         { "flag": "jory_discount_large", "percent": -20 },
         { "flag": "jory_offended", "percent": 10 }
-      ]
+      ],
+      "lines": {
+        "greet": [
+          "Capital goods at capital prices! Well. Nearly capital prices.",
+          "Have a look. Take your time. I have nothing but time."
+        ],
+        "buy": [
+          "A fine choice. A fine, fine choice.",
+          "Sold! You are the first customer I have had in a week.",
+          "Look after it. They do not make many like that out here."
+        ],
+        "sell": [
+          "Hm. I can move that. Eventually.",
+          "I will give you what it is worth to me, which is half. Sorry."
+        ],
+        "broke": [
+          "Ah. Not quite. Come back when your purse has caught up with your taste."
+        ]
+      }
     },
     {
       "shop_id": "s_002_mercys_mule",
@@ -65,7 +83,24 @@
           "item": "w_018_shadow_ripper",
           "requires": ["Unlock_Travel_to_Valorheim"]
         }
-      ]
+      ],
+      "lines": {
+        "greet": [
+          "Don't touch the mule. Look all you like at the rest.",
+          "Different stock every time. Buy it now or never see it again."
+        ],
+        "buy": [
+          "Sold. No refunds, and don't ask me where I got it.",
+          "Good eye. Patience here was sorry to see it go."
+        ],
+        "sell": [
+          "I'll take it off your hands. Half, and not a copper more.",
+          "Hm. Somebody on the road will want this. Deal."
+        ],
+        "broke": [
+          "Mercy's the name, not charity. Come back with coin."
+        ]
+      }
     }
   ],
   "rewards": [

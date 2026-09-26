@@ -10,10 +10,12 @@ import 'campaign.dart';
 import 'conversation.dart';
 import 'creature.dart';
 import 'economy.dart';
+import 'fight_scene.dart';
 import 'gear.dart';
 import 'hunt.dart';
 import 'locations.dart';
 import 'npc.dart';
+import 'weather.dart';
 import 'world.dart';
 import 'world_item.dart';
 
@@ -48,6 +50,7 @@ class CampaignLoader {
     String? conversationsJson,
     String? economyJson,
     String? huntJson,
+    String? weatherJson,
   }) =>
       Campaign(
         id: id,
@@ -64,6 +67,7 @@ class CampaignLoader {
             : readConversations(conversationsJson),
         economy: economyJson == null ? null : readEconomy(economyJson),
         hunts: huntJson == null ? null : readHunts(huntJson),
+        weather: weatherJson == null ? null : readWeather(weatherJson),
       );
 
   // --- world ---------------------------------------------------------------
@@ -138,6 +142,8 @@ class CampaignLoader {
         id: id,
         title: _optional(raw['title']) ?? id,
         description: _optional(raw['description']) ?? '',
+        shelter: raw['shelter'] == true,
+        ambiance: _strings(raw['ambiance']),
         exits: {
           for (final e in _map(raw['exits']).entries)
             e.key.trim().toLowerCase():
@@ -161,6 +167,7 @@ class CampaignLoader {
         to: _string(m['to'], 'exit target in "$roomId"'),
         requiredFlags: _strings(m['requires']),
         blockedMessage: _optional(m['blocked']),
+        minutes: m['minutes'] == null ? null : _int(m['minutes']),
       );
     }
     final to = _optional(raw);
@@ -196,6 +203,15 @@ class CampaignLoader {
             e.key.trim().toLowerCase(): e.value.toString(),
         },
         route: _readRoute(raw['route'], id),
+        barks: [
+          for (final b in _list(raw['barks']))
+            if (b is Map)
+              NpcBark(
+                line: b['line']?.toString().trim() ?? '',
+                requiredFlags: _strings(b['requires']),
+                forbiddenFlags: _strings(b['unless']),
+              ),
+        ],
       ));
     }
     return NpcDirectory(npcs);
@@ -245,6 +261,15 @@ class CampaignLoader {
         drops: [
           for (final d in _list(raw['drops']))
             if (d is Map) _readDrop(d.cast<String, Object?>(), id),
+        ],
+        checkBonuses: [
+          for (final b in _list(raw['check_bonuses']))
+            if (b is Map)
+              CheckBonus(
+                stat: _string(b['stat'], 'check bonus on "$id"').toLowerCase(),
+                bonus: _int(b['bonus']),
+                when: _optional(b['when']),
+              ),
         ],
       ));
     }
@@ -314,6 +339,7 @@ class CampaignLoader {
         speed: _int(raw['speed'], fallback: 25),
         specials: _strings(raw['specials']),
         isBoss: raw['boss'] == true,
+        voice: _readVoice(raw['voice']),
         attacks: [
           for (final a in _list(raw['attacks']))
             if (a is Map) _readAttack(a.cast<String, Object?>(), id),
@@ -346,10 +372,57 @@ class CampaignLoader {
         rearmDescription: _optional(raw['rearm_description']),
         ambush: raw['ambush'] == true,
         coin: _readCoinDice(raw['coin'], 'Fight "$id"'),
+        scene: _readScene(raw['scene'], 'fight "$id"'),
       ));
     }
 
     return Bestiary(creatures: creatures, encounters: encounters);
+  }
+
+  /// Reads what a creature says, or does, when a fight turns.
+  CreatureVoice? _readVoice(Object? raw) {
+    if (raw is! Map) return null;
+    return CreatureVoice(
+      speaks: raw['speaks'] != false,
+      taunts: _strings(raw['taunts']),
+      hurt: _strings(raw['hurt']),
+      dying: _strings(raw['dying']),
+    );
+  }
+
+  /// Reads the words around a fight.
+  FightScene? _readScene(Object? raw, String what) {
+    if (raw is! Map) return null;
+    final m = raw.cast<String, Object?>();
+    List<SceneLine> lines(String key) => [
+          for (final entry in _list(m[key]))
+            if (entry is Map) _readLine(entry.cast<String, Object?>(), what),
+        ];
+    return FightScene(
+      setting: _optional(m['setting']) ?? '',
+      ambiance: _strings(m['ambiance']),
+      opening: lines('opening'),
+      bloodied: lines('bloodied'),
+      firstDown: lines('first_down'),
+      victory: lines('victory'),
+      defeat: lines('defeat'),
+      flee: lines('flee'),
+    );
+  }
+
+  /// One line: `{"enemy": "..."}`, `{"pc": "..."}` or `{"text": "..."}`.
+  SceneLine _readLine(Map<String, Object?> raw, String what) {
+    if (raw.length != 1) {
+      throw CampaignFormatException('A line in $what has ${raw.length} '
+          'speakers; it should have one of enemy, pc or text.');
+    }
+    final entry = raw.entries.single;
+    final speaker = Speaker.tryParse(entry.key);
+    if (speaker == null) {
+      throw CampaignFormatException('A line in $what is spoken by '
+          '"${entry.key}", which is not enemy, pc or text.');
+    }
+    return SceneLine(speaker, entry.value.toString());
   }
 
   /// Reads a fight's coin as dice in gold, checked now rather than when the
@@ -412,6 +485,8 @@ class CampaignLoader {
         hiddenUntilFlags: _strings(raw['hidden_until']),
         onTake: _optional(raw['on_take']),
         onDestroy: _optional(raw['on_destroy']),
+        sayOnTake: _optional(raw['say_on_take']),
+        sayOnDestroy: _optional(raw['say_on_destroy']),
       ));
     }
     return ItemPlacements(items);
@@ -440,6 +515,12 @@ class CampaignLoader {
         keeperId: _string(raw['keeper'], 'shop keeper on "$id"'),
         location: _optional(raw['location']),
         carries: raw['carries'] == null ? null : _int(raw['carries']),
+        lines: ShopLines(
+          greet: _strings(_map(raw['lines'])['greet']),
+          buy: _strings(_map(raw['lines'])['buy']),
+          sell: _strings(_map(raw['lines'])['sell']),
+          broke: _strings(_map(raw['lines'])['broke']),
+        ),
         stock: [
           for (final line in _list(raw['stock']))
             if (line is Map)
@@ -563,6 +644,7 @@ class CampaignLoader {
         coin: _readCoinDice(raw['coin'], 'Hunter "$id"') ??
             (throw CampaignFormatException('Hunter "$id" carries no coin.')),
         arrival: _optional(raw['arrival']) ?? '',
+        scene: _readScene(raw['scene'], 'hunter "$id"'),
       ));
     }
 
@@ -576,6 +658,104 @@ class CampaignLoader {
       hunters: hunters,
       restSteps: _int(root['rest_steps'], fallback: 6),
       robPercent: rob,
+    );
+  }
+
+  // --- the calendar and the weather ------------------------------------------
+
+  /// Reads the calendar, the road, and each region's weather by season.
+  WeatherBook readWeather(String json) {
+    final root = _object(json, 'weather');
+    final cal = _map(root['calendar']);
+    final seasons = [
+      for (final s in _list(cal['seasons']))
+        if (s is Map)
+          Season(
+            id: _string(s['id'], 'season id'),
+            name: _string(s['name'], 'season name'),
+            days: _int(s['days'], fallback: 30),
+          ),
+    ];
+    if (seasons.isEmpty) {
+      throw CampaignFormatException('The calendar has no seasons.');
+    }
+    final start = _map(cal['start']);
+    final startId = _optional(start['season']) ?? seasons.first.id;
+    final startIndex = seasons.indexWhere((s) => s.id == startId);
+    if (startIndex < 0) {
+      throw CampaignFormatException(
+          'The calendar starts in "$startId", which is not a season.');
+    }
+
+    final road = _map(root['travel']);
+    const defaults = TravelTimes();
+    final travel = TravelTimes(
+      sameZoneMinutes:
+          _int(road['same_zone_minutes'], fallback: defaults.sameZoneMinutes),
+      newZoneMinutes:
+          _int(road['new_zone_minutes'], fallback: defaults.newZoneMinutes),
+      newTownMinutes:
+          _int(road['new_town_minutes'], fallback: defaults.newTownMinutes),
+      fatiguedAfterHours: _int(road['fatigued_after_hours'],
+          fallback: defaults.fatiguedAfterHours),
+      exhaustedAfterHours: _int(road['exhausted_after_hours'],
+          fallback: defaults.exhaustedAfterHours),
+      awakeHours: _int(road['awake_hours'], fallback: defaults.awakeHours),
+    );
+
+    final types = <WeatherType>[];
+    for (final w in _list(root['weather'])) {
+      if (w is! Map) continue;
+      final raw = w.cast<String, Object?>();
+      final id = _string(raw['id'], 'weather id');
+      final severityName = _optional(raw['severity']) ?? 'fair';
+      final severity = WeatherSeverity.tryParse(severityName);
+      if (severity == null) {
+        throw CampaignFormatException('Weather "$id" is "$severityName", '
+            'which is not fair, foul or severe.');
+      }
+      final travelRaw = raw['travel'];
+      types.add(WeatherType(
+        id: id,
+        name: _optional(raw['name']) ?? id,
+        severity: severity,
+        travel: travelRaw is num ? travelRaw.toDouble() : 1.0,
+        rangedPenalty: _int(raw['ranged_penalty']),
+        text: _optional(raw['text']) ?? '',
+        exposure: _optional(raw['exposure']),
+        after: _optional(raw['after']),
+        remark: _optional(raw['remark']),
+      ));
+    }
+
+    final tables = <String, Map<String, List<WeatherBand>>>{};
+    for (final region in _map(root['regions']).entries) {
+      tables[region.key] = {
+        for (final season in _map(region.value).entries)
+          season.key: [
+            for (final band in _list(season.value))
+              if (band is List && band.length == 2)
+                WeatherBand(
+                    upTo: _int(band[0]), weather: band[1].toString().trim()),
+          ],
+      };
+    }
+
+    return WeatherBook(
+      calendar: Calendar(
+        seasons: seasons,
+        startSeason: startIndex,
+        startDayOfSeason: _int(start['day'], fallback: 1),
+      ),
+      travel: travel,
+      types: types,
+      tables: tables,
+      restLines: RestLines(
+        indoors: _strings(_map(root['rest'])['indoors']),
+        outdoors: _strings(_map(root['rest'])['outdoors']),
+        pc: _strings(_map(root['rest'])['pc']),
+        wake: _strings(_map(root['rest'])['wake']),
+      ),
     );
   }
 

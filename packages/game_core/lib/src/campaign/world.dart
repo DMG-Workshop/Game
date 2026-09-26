@@ -64,10 +64,15 @@ class TimeSystem {
   final String? dawnEcho;
   final String? duskEcho;
 
-  /// Half the cycle, so a 24-hour day turns at hour 12.
-  int get nightfallHour => dayCycleHours ~/ 2;
+  /// A quarter of the way through the cycle: six in the morning.
+  int get dawnHour => dayCycleHours ~/ 4;
 
-  bool isNight(int hour) => hour >= nightfallHour;
+  /// Three quarters of the way through: six in the evening.
+  int get duskHour => dayCycleHours * 3 ~/ 4;
+
+  /// Dark from dusk until dawn. This used to be the second half of the
+  /// cycle, noon to midnight, which made two in the morning broad day.
+  bool isNight(int hour) => hour < dawnHour || hour >= duskHour;
 
   /// The circumstance modifier this time of day applies to [statKey].
   int modifierFor(String statKey, {required int hour}) {

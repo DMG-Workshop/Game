@@ -174,6 +174,12 @@ void main() {
           for (final m in shop.modifiers) m.flag,
         ],
         ..._campaign.economy.rewardFlags,
+        // What somebody says walking in is a gate on the story too.
+        for (final npc in _campaign.npcs.all)
+          for (final bark in npc.barks) ...[
+            ...bark.requiredFlags,
+            ...bark.forbiddenFlags,
+          ],
       };
       // Being hunted sets flags of its own, counted rather than listed.
       expect(

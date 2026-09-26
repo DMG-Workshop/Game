@@ -23,6 +23,25 @@ class NpcRoute {
 /// the player raises by name. It suits a text game far better than a dialogue
 /// tree, because the player types what they are curious about rather than
 /// picking from a list someone else wrote.
+/// Something an NPC says when the party walks in, while the story stands a
+/// certain way.
+class NpcBark {
+  const NpcBark({
+    required this.line,
+    this.requiredFlags = const [],
+    this.forbiddenFlags = const [],
+  });
+
+  /// What they say; empty for nothing at all, as when they are not there.
+  final String line;
+  final List<String> requiredFlags;
+  final List<String> forbiddenFlags;
+
+  bool fits(Set<String> flags) =>
+      requiredFlags.every(flags.contains) &&
+      !forbiddenFlags.any(flags.contains);
+}
+
 class Npc {
   const Npc({
     required this.id,
@@ -33,6 +52,7 @@ class Npc {
     this.tier = 1,
     this.keywords = const {},
     this.route,
+    this.barks = const [],
   });
 
   final String id;
@@ -46,6 +66,21 @@ class Npc {
 
   /// Said on first approach.
   final String greeting;
+
+  /// What they say as the party walks in, first fitting one wins.
+  final List<NpcBark> barks;
+
+  /// What they say to the party walking in, the way things stand, or null.
+  ///
+  /// Nothing when no line fits: somebody the party has never met has not
+  /// yet got anything to say to them, and their greeting is the first line
+  /// of the conversation, where it would otherwise be said twice.
+  String? barkFor(Set<String> flags) {
+    for (final bark in barks) {
+      if (bark.fits(flags)) return bark.line.isEmpty ? null : bark.line;
+    }
+    return null;
+  }
 
   final int tier;
 

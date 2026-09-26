@@ -84,6 +84,7 @@ Future<void> main(List<String> args) async {
       conversationsJson: read('conversations.json'),
       economyJson: read('economy.json'),
       huntJson: read('hunt.json'),
+      weatherJson: read('weather.json'),
     );
     for (final path in characterPaths) {
       final file = File(path);
@@ -160,6 +161,7 @@ Future<void> main(List<String> args) async {
   }
 
   _renderRoom(session, full: true, showWeather: true);
+  _announceEvents(session);
 
   while (true) {
     final line = nextCommand();
@@ -175,6 +177,7 @@ Future<void> main(List<String> args) async {
     };
     final tierBefore = session.notoriety.tier;
     final keepGoing = _handle(session, line, nextCommand);
+    _announceEvents(session);
     final gained = session.inventory.coin - coinBefore;
     if (gained > 0 && !line.toLowerCase().startsWith('sell')) {
       stdout.writeln('\n  [+${formatCoin(gained)} — the party has '
@@ -262,12 +265,122 @@ bool _handle(WorldSession session, String line,
           encounterId: rest.isEmpty ? null : rest);
 
     case 'wait':
-      final hours = int.tryParse(rest) ?? 1;
-      session.advanceTime(hours);
-      stdout.writeln('Time passes. It is now hour ${session.hour}'
-          '${session.isNight ? ', and dark' : ''}.');
+      final hours = int.tryParse(rest);
+      try {
+        if (hours == null) {
+          final minutes = session.waitOutStorm();
+          stdout.writeln(minutes > 60
+              ? 'You wait out the weather: ${_duration(minutes)}.'
+              : 'An hour goes by.');
+        } else {
+          session.advanceTime(hours);
+          stdout.writeln('${_duration(hours * 60)} go by.');
+        }
+      } on InvalidMoveException catch (e) {
+        stdout.writeln(_wrap(e.message));
+        return true;
+      }
+      _announceEvents(session);
+      stdout.writeln('\nIt is ${_when(session)}.');
       final echo = session.ambianceEcho();
       if (echo != null) stdout.writeln('\n${_wrap(echo)}');
+      return true;
+
+    case 'time':
+    case 'date':
+      stdout.writeln('It is ${_when(session)}.');
+      return true;
+
+    case 'status':
+    case 'hp':
+    case 'party':
+      _renderStatus(session);
+      return true;
+
+    case 'rest':
+    case 'sleep':
+    case 'camp':
+      try {
+        final indoors = session.currentRoom.shelter || session.isSheltering;
+        final night = session.nightLines(indoors: indoors);
+        if (night.said case final said?) _says(said.who.name, said.line);
+        final healed = session.rest();
+        if (night.night case final text?) stdout.writeln('\n${_wrap(text)}');
+        if (night.wake case final text?) stdout.writeln('\n${_wrap(text)}');
+        stdout.writeln('\nYou slept eight hours, and have made your '
+            'preparations for the day.');
+        for (final actor in session.actors) {
+          final v = session.vitalsOf(actor.id);
+          stdout.writeln('  ${actor.name}: +${healed[actor.id]} HP '
+              '(${v.hp}/${v.maxHp})');
+        }
+        stdout.writeln('  Spell slots and focus restored. Nobody is tired.');
+        stdout.writeln('\nIt is ${_when(session)}.');
+      } on InvalidMoveException catch (e) {
+        stdout.writeln(_wrap(e.message));
+      }
+      return true;
+
+    case 'treat':
+    case 'heal':
+      try {
+        final t = session.treatWounds(who: rest.isEmpty ? null : rest);
+        final c = t.check;
+        final whose =
+            t.healer.id == t.patient.id ? 'their own' : "${t.patient.name}'s";
+        stdout.writeln('\n${t.healer.name} treats $whose '
+            'wounds: d20(${c.dieRoll}) ${_signed(c.modifier)} = ${c.total} '
+            'vs DC ${c.dc} — ${c.degree.displayName}');
+        final roll = t.roll;
+        final v = session.vitalsOf(t.patient.id);
+        if (roll != null) {
+          stdout.writeln('  ${t.change >= 0 ? 'heals' : 'hurts'} $roll: '
+              '${t.change >= 0 ? '+' : ''}${t.change} HP (${v.hp}/${v.maxHp})');
+        } else {
+          stdout.writeln('  Ten minutes, and nothing to show for it.');
+        }
+      } on InvalidMoveException catch (e) {
+        stdout.writeln(_wrap(e.message));
+      }
+      return true;
+
+    case 'refocus':
+      try {
+        final back = session.refocus();
+        for (final id in back.keys) {
+          final v = session.vitalsOf(id);
+          stdout.writeln('${session.actorFor(id).name} refocuses: '
+              '${v.focus}/${v.maxFocus} focus.');
+        }
+      } on InvalidMoveException catch (e) {
+        stdout.writeln(_wrap(e.message));
+      }
+      return true;
+
+    case 'shelter':
+      try {
+        final built = session.makeShelter();
+        final c = built.check;
+        stdout.writeln('\n${built.builder.name} makes shelter: '
+            'd20(${c.dieRoll}) ${_signed(c.modifier)} = ${c.total} vs DC '
+            '${c.dc} — ${c.degree.displayName}');
+        stdout.writeln(_wrap(
+            switch (c.degree) {
+              DegreeOfSuccess.criticalSuccess =>
+                'A windbreak of cut branches and a groundsheet, pegged down '
+                    'tight. It will hold.',
+              DegreeOfSuccess.success =>
+                'Rough, but it will keep the worst off. Wait it out: "wait".',
+              DegreeOfSuccess.failure =>
+                'It holds, more or less, once you have been soaked putting it '
+                    'up. Wait it out: "wait".',
+              DegreeOfSuccess.criticalFailure =>
+                'It comes down on top of you. You are still out in it.',
+            },
+            indent: '  '));
+      } on InvalidMoveException catch (e) {
+        stdout.writeln(_wrap(e.message));
+      }
       return true;
 
     case 'quests':
@@ -367,12 +480,18 @@ bool _go(WorldSession session, String direction,
     return true;
   }
 
+  if (result.minutes >= 30) {
+    stdout.writeln('\n  (${_duration(result.minutes)} on the road)');
+  }
   _renderRoom(session, full: true, showWeather: result.changedRegion);
+  final here = session.roomAmbiance();
+  if (here != null) stdout.writeln('\n${_wrap(here)}');
   if (result.changedRegion) {
     final echo = session.ambianceEcho();
     if (echo != null) stdout.writeln('\n${_wrap(echo)}');
   }
   _announceArcs(session);
+  _announceEvents(session);
 
   // An ambush is not something to mention and move on from.
   final ambush = result.ambush;
@@ -567,6 +686,7 @@ void _renderWares(WorldSession session) {
     stdout.writeln('There is nobody here to trade with.');
     return;
   }
+  if (session.keeperSays('greet') case final k?) _says(k.keeper, k.line);
   final percent = shop.percentFor(session.flags);
   stdout.writeln('\n${shop.name} — ${_keeper(session)}'
       '${percent == 0 ? '' : percent < 0 ? '  (${-percent}% off, for you)' : '  (+$percent%, for you)'}');
@@ -591,14 +711,19 @@ bool _trade(WorldSession session, String what, {required bool buying}) {
       stdout.writeln('\nYou buy ${bought.item.name} for '
           '${formatCoin(bought.price)}. The party has '
           '${formatCoin(session.inventory.coin)} left.');
+      if (session.keeperSays('buy') case final k?) _says(k.keeper, k.line);
     } else {
       final sold = session.sell(what);
       stdout.writeln('\n${_keeper(session)} gives you '
           '${formatCoin(sold.price)} for ${sold.item.name}. The party has '
           '${formatCoin(session.inventory.coin)}.');
+      if (session.keeperSays('sell') case final k?) _says(k.keeper, k.line);
     }
   } on InvalidMoveException catch (e) {
     stdout.writeln(_wrap(e.message));
+    if (e.message.contains('and the party has')) {
+      if (session.keeperSays('broke') case final k?) _says(k.keeper, k.line);
+    }
   }
   return true;
 }
@@ -691,6 +816,131 @@ bool _unequip(WorldSession session, String rest) {
 }
 
 String _signed(int value) => value >= 0 ? '+$value' : '$value';
+
+/// "day 3 (day 14 of Autumn, year 1), 14:15, in the rain".
+String _when(WorldSession session) {
+  final date = session.date;
+  final now = session.weatherNow;
+  return 'day ${session.day} (day ${date.dayOfSeason} of ${date.season.name}, '
+      'year ${date.year}), ${session.clock}'
+      '${session.isNight ? ', and dark' : ''}'
+      '${now == null ? '' : '. ${now.name}${session.currentRoom.shelter ? ' outside' : ''}'}';
+}
+
+/// 90 as "1 hour 30 minutes".
+String _duration(int minutes) {
+  final h = minutes ~/ 60;
+  final m = minutes % 60;
+  return [
+    if (h > 0) '$h ${h == 1 ? 'hour' : 'hours'}',
+    if (m > 0) '$m ${m == 1 ? 'minute' : 'minutes'}',
+  ].join(' ');
+}
+
+/// How everyone is holding up: HP, what is left to cast with, and how far
+/// the party can go before it has to stop.
+void _renderStatus(WorldSession session) {
+  stdout.writeln('\nIt is ${_when(session)}.');
+  for (final actor in session.actors) {
+    final v = session.vitalsOf(actor.id);
+    final slots = (v.slots.keys.toList()..sort())
+        .map((r) => '${_ordinal(r)} ${v.slotsLeft[r] ?? 0}/${v.slots[r]}')
+        .join(', ');
+    stdout.writeln('  ${actor.name.padRight(24)} HP ${v.hp}/${v.maxHp}'
+        '${v.maxFocus > 0 ? '   focus ${v.focus}/${v.maxFocus}' : ''}'
+        '${slots.isEmpty ? '' : '   spells $slots'}');
+  }
+  final e = session.endurance;
+  final limits = session.campaign.weather.travel;
+  stdout.writeln('\n  ${_duration(e.travelMinutes).ifEmpty('No time')} on '
+      'the road, ${_duration(e.awakeMinutes).ifEmpty('no time')} awake, '
+      'since you last rested.');
+  if (session.isSpent) {
+    stdout.writeln('  The party is spent: no long roads until you rest.');
+  } else if (session.isFatigued) {
+    stdout.writeln('  The party is Fatigued: -1 to AC and saves until you '
+        'rest.');
+  } else {
+    stdout.writeln('  About ${e.roadLeftHours(limits).toStringAsFixed(1)} '
+        'hours before you tire.');
+  }
+  if (session.isExposed) {
+    stdout.writeln(
+        '  You are out in the ${session.weatherNow!.name.toLowerCase()} '
+        'with nothing over you. Find a roof, or "shelter".');
+  } else if (session.isSheltering) {
+    stdout.writeln('  You are under a shelter of your own making.');
+  }
+}
+
+String _ordinal(int n) => switch (n) {
+      1 => '1st',
+      2 => '2nd',
+      3 => '3rd',
+      _ => '${n}th',
+    };
+
+/// Tells the player what the world did while time passed.
+void _announceEvents(WorldSession session) {
+  for (final event in session.drainEvents()) {
+    switch (event) {
+      case WeatherRolled(:final weather):
+        final storm = weather.hasStorm
+            ? ', breaking at ${weather.stormStartHour}:00 for '
+                '${weather.stormHours} hours'
+            : '';
+        stdout.writeln('\n  [Weather, ${_regionName(weather.regionId)}, '
+            '${weather.season.name} ${session.campaign.weather.calendar.dateOf(weather.day).dayOfSeason}: '
+            'd100(${weather.die}) — ${weather.type.name}$storm]');
+        if (session.remarkOn(weather.type) case final r?) {
+          _says(r.who.name, r.line);
+        }
+      case NewDay():
+        stdout.writeln('\n  *** $event ***');
+      case DawnOrDusk(:final echo):
+        if (echo != null) stdout.writeln('\n${_wrap(echo)}');
+      case StormBroke(:final weather, :final sheltered):
+        stdout.writeln('\n  *** The ${weather.type.name.toLowerCase()} '
+            'breaks. ***');
+        stdout.writeln(_wrap(
+            session.look().region?.weatherStates[weather.type.id] ??
+                weather.type.text,
+            indent: '  '));
+        if (!sheltered) {
+          stdout.writeln(_wrap(
+              'You are out in the open. Find a roof, or make shelter here '
+              '("shelter"). Every hour out in it will cost you.',
+              indent: '  '));
+        }
+      case Exposure(:final actor, :final save, :final damage, :final hpLost):
+        final v = session.vitalsOf(actor.id);
+        stdout.writeln('  ${actor.name}: ${save.label} '
+            'd20(${save.dieRoll}) ${_signed(save.modifier)} = ${save.total} '
+            'vs DC ${save.dc} — ${save.degree.displayName}; $damage; '
+            'loses $hpLost HP (${v.hp}/${v.maxHp})');
+      case StormPassed(:final weather, :final xp, :final ownShelter):
+        stdout.writeln('\n  *** The ${weather.type.name.toLowerCase()} blows '
+            'over. ${xp == 0 ? 'You stood out in it, and you are still '
+                'standing.' : ownShelter ? 'You rode it out under a shelter '
+                'you made yourselves.' : 'You waited it out under a roof.'} ***');
+      case GrewTired(:final spent):
+        stdout.writeln(spent
+            ? '\n  *** The party is spent. No more long roads until you '
+                'rest. ***'
+            : '\n  *** The party is Fatigued: -1 to AC and saves until '
+                'you rest. ***');
+    }
+  }
+}
+
+/// `r_001_millhaven_valley` as "the Millhaven Valley".
+String _regionName(String id) {
+  final words = id
+      .split('_')
+      .skip(2)
+      .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}');
+  return 'the ${words.join(' ')}';
+}
 
 /// What the party is worth, against what is expected of it, and what that
 /// brings down on them.
@@ -889,20 +1139,30 @@ void _renderRoom(WorldSession session,
     {bool full = false, bool showWeather = false}) {
   final view = session.look();
   stdout.writeln('\n## ${view.room.title}');
-  if (view.town != null) {
-    stdout.writeln('   ${view.town!.name}'
-        '${view.isNight ? ' · night' : ''}');
-  }
+  final now = session.weatherNow;
+  final date = session.date;
+  stdout.writeln('   ${[
+    if (view.town != null) view.town!.name,
+    '${date.season.name} ${date.dayOfSeason}',
+    session.clock + (view.isNight ? ' (night)' : ''),
+    if (now != null)
+      view.room.shelter
+          ? 'indoors; ${now.name.toLowerCase()} outside'
+          : now.name,
+  ].join(' · ')}');
   stdout.writeln();
   if (full) stdout.writeln(_wrap(view.room.description));
   // Weather is an arrival note, not a per-step refrain: repeating the same
   // fog line every time the party takes a step turns atmosphere into noise.
-  if (showWeather && view.weather != null) {
+  if (showWeather && view.weather != null && !view.room.shelter) {
     stdout.writeln('\n${_wrap(view.weather!)}');
   }
 
   for (final npc in view.npcs) {
     stdout.writeln('\n${_wrap(npc.appearance)}');
+  }
+  for (final greeting in session.greetingsHere()) {
+    _says(greeting.npc.name, greeting.line);
   }
   final shop = session.shopHere;
   if (shop != null) {
@@ -995,7 +1255,15 @@ const _commands = '''
   sheet [who]                                     AC, Strike, HP as equipped
   equip [who] <item>                              wield or wear something
   unequip [who] weapon|armour                     put it away again
-  wait [hours]                                    let time pass
+  wait [hours]                                    let time pass (no number:
+                                                  wait out a storm)
+  time                                            the day, the hour, the sky
+  status                                          HP, spells, focus, fatigue
+  rest                                            sleep 8 hours: HP back,
+                                                  spells and focus restored
+  treat [who]                                     Treat Wounds (Medicine)
+  refocus                                         10 minutes: 1 focus back
+  shelter                                         make shelter from a storm
   quit                                            stop
 ''';
 
@@ -1024,6 +1292,7 @@ bool _takeOrDestroy(WorldSession session, String what,
   }
   try {
     final result = destroy ? session.destroy(what) : session.take(what);
+    if (result.spoken case final spoken?) _says(spoken.who.name, spoken.line);
     stdout.writeln('\n${_wrap(result.said)}');
     for (final flag in result.flagsSet) {
       stdout.writeln('\n  [$flag]');
@@ -1063,18 +1332,34 @@ bool _fight(
         '${roll.combatant.name.padRight(26)} '
         'd20(${roll.die}) ${_signed(roll.modifier)} = ${roll.total}');
   }
+  if (fight.rangedPenalty > 0) {
+    stdout.writeln('\n  ${session.weatherNow?.name}: -${fight.rangedPenalty} '
+        'to any strike across open ground.');
+  }
+  if (session.isFatigued) {
+    stdout.writeln('  The party is Fatigued: -1 AC.');
+  }
+
+  final script = FightScript(fight);
+  if (script.setting.isNotEmpty) {
+    stdout.writeln('\n${_wrap(script.setting)}');
+  }
+  _speak(script.opening());
+
   if (fight.openingStrikes.isNotEmpty) {
     stdout.writeln('\nBefore anyone in the party can move:');
-    _narrate(fight.openingStrikes);
+    _narrate(fight.openingStrikes, script);
   }
   _renderCombatants(fight);
 
   while (!fight.isOver) {
     if (!fight.isPartyTurn) {
-      _narrate(fight.endTurn());
+      _narrate(fight.endTurn(), script);
       continue;
     }
 
+    final ambiance = script.ambianceFor(fight.round);
+    if (ambiance != null) stdout.writeln('\n${_wrap(ambiance.text)}');
     stdout.writeln('\n-- ${fight.current.name}, round ${fight.round}, '
         '${fight.actionsLeft} action(s) --');
     final targets = fight.targetsInReach();
@@ -1104,7 +1389,7 @@ bool _fight(
             break;
           }
           final result = fight.strike(target);
-          stdout.writeln('\n  ${_strikeLine(result)}');
+          _narrate([result], script);
         case 'close':
         case 'stride':
           final moved = fight.stride();
@@ -1117,7 +1402,7 @@ bool _fight(
               '${moved.zone}.');
         case 'end':
         case 'done':
-          _narrate(fight.endTurn());
+          _narrate(fight.endTurn(), script);
         case 'flee':
           fight.flee();
         case 'status':
@@ -1134,14 +1419,15 @@ bool _fight(
     }
 
     if (fight.actionsLeft == 0 && !fight.isOver && fight.isPartyTurn) {
-      _narrate(fight.endTurn());
+      _narrate(fight.endTurn(), script);
     }
   }
 
   stdout.writeln('\n${'=' * 70}');
+  _speak(script.closing());
   switch (fight.outcome!) {
     case EncounterOutcome.victory:
-      stdout.writeln('The fight is over. You are still standing.');
+      stdout.writeln('\nThe fight is over. You are still standing.');
       final flags = session.concludeEncounter(fight);
       _renderSpoils(fight);
       if (fight.loot.isNotEmpty) {
@@ -1157,32 +1443,52 @@ bool _fight(
       }
       _announceArcs(session);
     case EncounterOutcome.defeat:
-      stdout.writeln('The party goes down. Valorheim does not stop for it.');
+      stdout.writeln('\nThe party goes down. Valorheim does not stop for it.');
       final before = session.inventory.coin;
       session.concludeEncounter(fight);
+      stdout.writeln('\n  You come to an hour later, where you fell, everyone '
+          'at 1 HP. Rest, or have your wounds treated, before the next one.');
       final taken = before - session.inventory.coin;
       if (taken > 0) {
         stdout.writeln('\n  ${fight.enemies.first.name} goes through your '
             'packs while you lie there, and takes ${formatCoin(taken)}.');
       }
     case EncounterOutcome.fled:
-      stdout.writeln('You break off and go.');
+      stdout.writeln('\nYou break off and go.');
       session.concludeEncounter(fight);
   }
   return true;
 }
 
-void _narrate(List<StrikeResult> log) {
+/// Each strike with its dice, and whatever is said as the fight turns.
+void _narrate(List<StrikeResult> log, FightScript script) {
   for (final result in log) {
     stdout.writeln('\n  ${_strikeLine(result)}');
+    _speak(script.after([result]));
   }
 }
+
+/// Lines of a scene: speech attributed, narration told.
+void _speak(Iterable<ScriptLine> lines) {
+  for (final line in lines) {
+    stdout.writeln(line.isSpeech
+        ? '\n${_wrap('${line.speaker} says, "${line.text}"', indent: '  ')}'
+        : '\n${_wrap(line.text, indent: '  ')}');
+  }
+}
+
+/// Somebody in the party, or across a counter, saying something.
+void _says(String who, String line) =>
+    stdout.writeln('\n${_wrap('$who says, "$line"', indent: '  ')}');
 
 /// A strike with its dice: the attack roll against AC, and on a hit the
 /// damage dice as they fell.
 String _strikeLine(StrikeResult r) {
   final check = r.outcome;
-  final map = r.penalty == 0 ? '' : ', MAP ${r.penalty}';
+  final map = [
+    if (r.penalty != 0) ', MAP ${r.penalty}',
+    if (r.weatherPenalty != 0) ', weather ${r.weatherPenalty}',
+  ].join();
   final natural = check.wasShiftedByNatural ? ', natural ${check.dieRoll}' : '';
   final verdict = switch (check.degree) {
     DegreeOfSuccess.criticalSuccess => 'CRITICAL HIT',
@@ -1226,4 +1532,8 @@ void _renderCombatants(EncounterSession fight) {
     stdout.writeln('  ${c.isEnemy ? ' ' : '*'} ${c.id.padRight(28)} '
         '${bar.padLeft(8)}  $where');
   }
+}
+
+extension on String {
+  String ifEmpty(String fallback) => isEmpty ? fallback : this;
 }

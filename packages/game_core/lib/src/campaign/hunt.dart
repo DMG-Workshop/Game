@@ -3,6 +3,7 @@ import 'package:pf2e_core/pf2e_core.dart';
 import '../party/experience.dart';
 import '../party/wealth.dart';
 import 'creature.dart';
+import 'fight_scene.dart';
 
 /// How dangerous a fight is meant to be, as Pathfinder budgets it.
 ///
@@ -84,9 +85,13 @@ class Hunter {
     required this.creatureId,
     required this.coin,
     this.arrival = '',
+    this.scene,
   });
 
   final String creatureId;
+
+  /// The words around the fight it brings.
+  final FightScene? scene;
 
   /// What it was carrying, in gold, as dice — rolled when it is beaten.
   final String coin;
@@ -120,6 +125,7 @@ class Pursuer {
         creatureIds: [creature.id],
         startZone: 'near',
         coin: hunter.coin,
+        scene: hunter.scene,
       );
 }
 

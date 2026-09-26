@@ -1,5 +1,7 @@
 import 'package:pf2e_core/pf2e_core.dart';
 
+import 'fight_scene.dart';
+
 /// One way a creature can hurt someone.
 class CreatureAttack {
   const CreatureAttack({
@@ -53,11 +55,15 @@ class Creature {
     this.speed = 25,
     this.specials = const [],
     this.isBoss = false,
+    this.voice,
   });
 
   final String id;
   final String name;
   final int level;
+
+  /// What it says, or does, when a fight turns.
+  final CreatureVoice? voice;
   final String description;
 
   final int armorClass;
@@ -134,6 +140,7 @@ class Creature {
         speed: speed,
         specials: specials,
         isBoss: isBoss,
+        voice: voice,
         attacks: [
           for (final a in attacks)
             CreatureAttack(
@@ -190,6 +197,7 @@ class Encounter {
     this.rearmDescription,
     this.ambush = false,
     this.coin,
+    this.scene,
   });
 
   final String id;
@@ -228,6 +236,9 @@ class Encounter {
 
   /// What the party sees when the fight has come back, if it differs.
   final String? rearmDescription;
+
+  /// The words around the fight.
+  final FightScene? scene;
 
   /// What the defeated were carrying, in gold, as dice: `3d6`, `2d10+40`.
   ///

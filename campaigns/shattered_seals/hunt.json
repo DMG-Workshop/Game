@@ -41,62 +41,311 @@
     {
       "creature": "c_hunt_copper_rat",
       "coin": "1d6",
-      "arrival": "Something small has been keeping to the ditch beside you for a while. It stops when you stop. Its nose is working at your belt."
+      "arrival": "Something small has been keeping to the ditch beside you for a while. It stops when you stop. Its nose is working at your belt.",
+      "scene": {
+        "setting": "Nothing clever: a rat that smells money. But it found you.",
+        "ambiance": [
+          "Something else rustles in the ditch, and goes quiet.",
+          "Your purse is heavier than it has ever felt."
+        ],
+        "opening": [
+          { "pc": "It is after the purse. Not the pack. The purse." }
+        ],
+        "victory": [
+          { "pc": "If the rats can smell it, so can everything else." }
+        ],
+        "defeat": [
+          { "text": "You come round lighter, and the ditch is empty." }
+        ],
+        "flee": [
+          { "text": "It does not chase you far. It has what it wanted." }
+        ]
+      }
     },
     {
       "creature": "c_hunt_hedge_footpad",
       "coin": "2d6",
-      "arrival": "A figure steps out of the hedge ahead of you with the particular bad confidence of someone who has rehearsed this. \"Purses. On the ground. Nobody needs to be brave.\""
+      "arrival": "A figure steps out of the hedge ahead of you with the particular bad confidence of someone who has rehearsed this. \"Purses. On the ground. Nobody needs to be brave.\"",
+      "scene": {
+        "setting": "Word gets round a market town. Somebody in the Sparrow heard what you paid for your drinks, and came out to see what else you had.",
+        "ambiance": [
+          "A dog barks at a farm somewhere, and stops.",
+          "The footpad's eyes keep going to your belts."
+        ],
+        "opening": [
+          { "enemy": "Purses. On the ground. Nobody needs to be brave." },
+          { "pc": "You should have picked someone poorer." }
+        ],
+        "victory": [
+          { "pc": "Go home. Tell whoever sent you we are not worth the trouble." }
+        ],
+        "defeat": [
+          { "enemy": "Told you. Nobody needed to be brave." }
+        ],
+        "flee": [
+          { "enemy": "Keep running! Leave the purses next time!" }
+        ]
+      }
     },
     {
       "creature": "c_hunt_tithe_taker",
       "coin": "3d6+10",
-      "arrival": "A young man in a good coat is waiting where the path narrows, reading from a folded page. He reads your names. Then a number. \"The Covenant will take its share,\" he says, \"and you will not be needing the rest.\""
+      "arrival": "A young man in a good coat is waiting where the path narrows, reading from a folded page. He reads your names. Then a number. \"The Covenant will take its share,\" he says, \"and you will not be needing the rest.\"",
+      "scene": {
+        "setting": "The Covenant keeps an account of what everybody has. Your line in it has grown long enough to send someone.",
+        "ambiance": [
+          "The tithe-taker checks a figure against his page, and frowns.",
+          "Red cord flutters at his wrist."
+        ],
+        "opening": [
+          { "enemy": "I have your names, and I have your sum. The Covenant will take its share." },
+          { "pc": "Come and count it, then." }
+        ],
+        "victory": [
+          { "pc": "Burn that page. Then burn the book it came out of." }
+        ],
+        "defeat": [
+          { "enemy": "Tithe collected. The balance will be called later." }
+        ],
+        "flee": [
+          { "enemy": "You cannot run from a ledger. We will find you again." }
+        ]
+      }
     },
     {
       "creature": "c_hunt_gilt_harpy",
       "coin": "4d10+30",
-      "arrival": "A shadow goes over you twice. The third time it comes down, with a shriek like a gate hinge and its eyes fixed not on your face but on your hands."
+      "arrival": "A shadow goes over you twice. The third time it comes down, with a shriek like a gate hinge and its eyes fixed not on your face but on your hands.",
+      "scene": {
+        "setting": "Harpies line their nests with what glitters. She has seen yours from a long way up.",
+        "ambiance": [
+          "Her song goes up and down the scale like a coin rolling.",
+          "Brass feathers drift down around you."
+        ],
+        "opening": [
+          { "enemy": "Pretty, pretty, pretty. Give me the pretty things." },
+          { "pc": "Come down here and take them." }
+        ],
+        "victory": [
+          { "pc": "Her nest must be full of rings. And fingers." }
+        ],
+        "defeat": [
+          { "enemy": "Mine now. All the pretty things are mine." }
+        ],
+        "flee": [
+          { "enemy": "Run, run! I can see you glitter from the clouds!" }
+        ]
+      }
     },
     {
       "creature": "c_hunt_hoard_wight",
       "coin": "4d20+60",
-      "arrival": "You smell him first: grave earth and brass polish. Then he is there in the road, a thin man in a burial coat with the pockets turned out, holding out a hand. \"Mine,\" he says."
+      "arrival": "You smell him first: grave earth and brass polish. Then he is there in the road, a thin man in a burial coat with the pockets turned out, holding out a hand. \"Mine,\" he says.",
+      "scene": {
+        "setting": "Buried with his money, and robbed of it within the month. He has been following gold ever since, sure that each piece is his.",
+        "ambiance": [
+          "The smell of grave earth and brass polish thickens.",
+          "He counts under his breath, and loses his place, and starts again."
+        ],
+        "opening": [
+          { "enemy": "Mine." },
+          { "pc": "None of this was ever yours." },
+          { "enemy": "All of it. All of it was mine." }
+        ],
+        "victory": [
+          { "pc": "Put him back in the ground. Leave a coin on him." }
+        ],
+        "defeat": [
+          { "enemy": "Mine. Mine. Mine." }
+        ],
+        "flee": [
+          { "enemy": "I will find it. I always find it." }
+        ]
+      }
     },
     {
       "creature": "c_hunt_ash_ogre",
       "coin": "6d20+140",
-      "arrival": "The ground shakes before you see it. It comes round the bend with the sack over one shoulder, looks at your packs, and grins with every one of its teeth."
+      "arrival": "The ground shakes before you see it. It comes round the bend with the sack over one shoulder, looks at your packs, and grins with every one of its teeth.",
+      "scene": {
+        "setting": "An ogre with a sack, grey from the mines' ash, going from traveller to traveller like a man picking apples.",
+        "ambiance": [
+          "The sack clanks every time the ogre moves.",
+          "Ash drifts off its shoulders in grey flakes."
+        ],
+        "opening": [
+          { "enemy": "Shinies! Shinies for the sack!" },
+          { "pc": "That sack is going to be your shroud." }
+        ],
+        "victory": [
+          { "pc": "Open the sack. Somebody will want their things back." }
+        ],
+        "defeat": [
+          { "enemy": "Into the sack! Heavy ones!" }
+        ],
+        "flee": [
+          { "enemy": "Come back, little shinies!" }
+        ]
+      }
     },
     {
       "creature": "c_hunt_cinder_drake",
       "coin": "8d20+320",
-      "arrival": "Heat on the back of your neck, and a smell like a forge left burning overnight. The drake drops out of the smoke ahead of you and settles, patient, between you and the road."
+      "arrival": "Heat on the back of your neck, and a smell like a forge left burning overnight. The drake drops out of the smoke ahead of you and settles, patient, between you and the road.",
+      "scene": {
+        "setting": "A drake can smell gold the way a hound smells meat, and you have been carrying a great deal of it through its valley.",
+        "ambiance": [
+          "Heat comes off the drake in waves that bend the air.",
+          "Sparks drop from its jaws and hiss out on the ground."
+        ],
+        "opening": [
+          {
+            "text": "The drake settles across the road, patient, and breathes out a long slow ribbon of smoke."
+          },
+          { "pc": "It wants the gold. It is not getting it." }
+        ],
+        "victory": [
+          { "pc": "Cool it down before you touch it. Then check its gut." }
+        ],
+        "defeat": [
+          {
+            "text": "The drake noses through your packs, takes what glitters, and flies off heavy."
+          }
+        ],
+        "flee": [
+          { "text": "It does not chase. It can smell you from anywhere." }
+        ]
+      }
     },
     {
       "creature": "c_hunt_red_vein_stalker",
       "coin": "10d20+800",
-      "arrival": "A red light comes through the dark like an ember in a grate, steady, getting closer. The ground rings under it. It does not hurry. It never has to."
+      "arrival": "A red light comes through the dark like an ember in a grate, steady, getting closer. The ground rings under it. It does not hurry. It never has to.",
+      "scene": {
+        "setting": "Bloodstone given legs and one instruction by somebody in the Covenant. The instruction was your names.",
+        "ambiance": [
+          "The red light inside it pulses faster the closer it gets.",
+          "The ground rings under each step."
+        ],
+        "opening": [
+          { "text": "It does not hurry. It never has to." },
+          { "pc": "Break it apart. It is only stone." }
+        ],
+        "victory": [
+          { "pc": "Somebody in the Covenant made that. Somebody who knows our names." }
+        ],
+        "defeat": [
+          {
+            "text": "It stands over you until it is sure, and then walks away toward the capital, reporting."
+          }
+        ],
+        "flee": [
+          { "text": "Behind you it keeps walking, at exactly the same pace." }
+        ]
+      }
     },
     {
       "creature": "c_hunt_crimson_inquisitor",
       "coin": "10d20+1900",
-      "arrival": "She is sitting on a milestone with a book open on her knee. She closes it when she sees you, takes off her spectacles, and folds them away. \"You are worth a great deal,\" she says. \"That is going to change.\""
+      "arrival": "She is sitting on a milestone with a book open on her knee. She closes it when she sees you, takes off her spectacles, and folds them away. \"You are worth a great deal,\" she says. \"That is going to change.\"",
+      "scene": {
+        "setting": "The Covenant's accountant of last resort, sent when a name in the book has grown too large to be allowed.",
+        "ambiance": [
+          "She makes a small note in her book between blows.",
+          "Her spectacles catch the light and hide her eyes."
+        ],
+        "opening": [
+          { "enemy": "You are worth a great deal. That is going to change." },
+          { "pc": "Come and change it." },
+          { "enemy": "I intend to." }
+        ],
+        "victory": [
+          { "pc": "Take her book. I want to see who else is in it." }
+        ],
+        "defeat": [
+          { "enemy": "Entered. Settled. Filed." }
+        ],
+        "flee": [
+          { "enemy": "There is nowhere in Valorheim my book does not reach." }
+        ]
+      }
     },
     {
       "creature": "c_hunt_tithe_knight",
       "coin": "20d20+4600",
-      "arrival": "Hooves on the road behind you, slow and exact. A knight in black plate draws up and unrolls a writ that has gone brown with age. \"Monies owed,\" it says, in a voice like a vault door."
+      "arrival": "Hooves on the road behind you, slow and exact. A knight in black plate draws up and unrolls a writ that has gone brown with age. \"Monies owed,\" it says, in a voice like a vault door.",
+      "scene": {
+        "setting": "A tax-collector three hundred years dead, still riding his round. The Crown that sent him is gone. The debt is not.",
+        "ambiance": [
+          "The writ on its breastplate flaps in a wind that is not there.",
+          "Its horse stands perfectly still, and has no breath."
+        ],
+        "opening": [
+          { "enemy": "Monies owed to the Crown of Valorheim. Payable now." },
+          { "pc": "The Crown you collected for is dust." },
+          { "enemy": "The debt is not." }
+        ],
+        "victory": [
+          { "pc": "Tear up the writ. Let him rest." }
+        ],
+        "defeat": [
+          { "enemy": "Paid in part. The remainder is outstanding." }
+        ],
+        "flee": [
+          { "enemy": "Arrears accrue." }
+        ]
+      }
     },
     {
       "creature": "c_hunt_vessel_hound",
       "coin": "20d20+13800",
-      "arrival": "The light goes out of the coins in your purse all at once, as though someone had breathed on them. Then the shadow at your heel stands up on four legs."
+      "arrival": "The light goes out of the coins in your purse all at once, as though someone had breathed on them. Then the shadow at your heel stands up on four legs.",
+      "scene": {
+        "setting": "Something off the Shadow Vessel's own leash. It is not after your gold for itself. It is after it for the thing that sent it.",
+        "ambiance": [
+          "The light goes grey wherever the hound walks.",
+          "Every coin in your purse is cold."
+        ],
+        "opening": [
+          { "text": "The shadow at your heel stands up on four legs, and does not bark." },
+          { "pc": "That is not a dog. Whatever it is, do not let it bite." }
+        ],
+        "victory": [
+          { "pc": "If the Vessel is sending hounds, it is awake enough to be hungry." }
+        ],
+        "defeat": [
+          { "text": "When you wake, every coin you still have has gone black." }
+        ],
+        "flee": [
+          { "text": "It does not run after you. It simply is behind you." }
+        ]
+      }
     },
     {
       "creature": "c_hunt_hoardmother",
       "coin": "40d20+40000",
-      "arrival": "The sky goes dark from one edge to the other, and it is not cloud. The Hoardmother comes down in front of you like a building falling, and her first word is your names."
+      "arrival": "The sky goes dark from one edge to the other, and it is not cloud. The Hoardmother comes down in front of you like a building falling, and her first word is your names.",
+      "scene": {
+        "setting": "Old enough to remember when Valorheim paid her tribute. She has heard what you are worth, and she considers it overdue.",
+        "ambiance": [
+          "Her shadow covers everything for a hundred yards.",
+          "The ground shakes each time she shifts her weight."
+        ],
+        "opening": [
+          { "enemy": "Tribute. Four hundred years of it. You will do to begin with." },
+          { "pc": "Valorheim does not pay you any more." },
+          { "enemy": "Then Valorheim will be reminded." }
+        ],
+        "victory": [
+          { "pc": "Nobody is going to believe this. Take a tooth." }
+        ],
+        "defeat": [
+          { "enemy": "Tribute accepted." }
+        ],
+        "flee": [
+          { "enemy": "Run. I have been patient for four hundred years." }
+        ]
+      }
     }
   ]
 }

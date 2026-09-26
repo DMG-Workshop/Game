@@ -29,3 +29,19 @@ class SessionActor {
 
 /// One actor's standing to attempt a particular check.
 typedef ActorCandidate = ({SessionActor actor, CheckValue stat});
+
+/// [stat] with an item bonus of [bonus] from something carried.
+///
+/// Pathfinder's item bonuses do not stack: the higher of the sheet's own
+/// and this one applies, never both.
+CheckValue withItemBonus(CheckValue stat, int bonus) {
+  if (bonus <= stat.itemBonus) return stat;
+  return CheckValue(
+    label: stat.label,
+    proficiency: stat.proficiency,
+    ability: stat.ability,
+    abilityModifier: stat.abilityModifier,
+    itemBonus: bonus,
+    total: stat.total - stat.itemBonus + bonus,
+  );
+}

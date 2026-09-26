@@ -39,6 +39,7 @@ class Shop {
     this.stock = const [],
     this.modifiers = const [],
     this.carries,
+    this.lines = const ShopLines(),
   });
 
   final String id;
@@ -54,6 +55,9 @@ class Shop {
   final int? carries;
 
   bool get travels => location == null;
+
+  /// What the keeper says across the counter.
+  final ShopLines lines;
   final List<StockLine> stock;
   final List<PriceModifier> modifiers;
 
@@ -78,6 +82,38 @@ class Shop {
 
   @override
   String toString() => '$name ($location)';
+}
+
+/// What a shopkeeper says across the counter.
+class ShopLines {
+  const ShopLines({
+    this.greet = const [],
+    this.buy = const [],
+    this.sell = const [],
+    this.broke = const [],
+  });
+
+  /// When the party looks over the stock.
+  final List<String> greet;
+
+  /// When the party buys something.
+  final List<String> buy;
+
+  /// When the party sells something.
+  final List<String> sell;
+
+  /// When the party cannot afford it.
+  final List<String> broke;
+
+  bool get isEmpty =>
+      greet.isEmpty && buy.isEmpty && sell.isEmpty && broke.isEmpty;
+
+  List<String> gaps() => [
+        if (greet.isEmpty) 'nothing to greet a customer with',
+        if (buy.isEmpty) 'nothing when something is bought',
+        if (sell.isEmpty) 'nothing when something is sold',
+        if (broke.isEmpty) 'nothing for a customer who cannot pay',
+      ];
 }
 
 /// Coin and experience paid out together.

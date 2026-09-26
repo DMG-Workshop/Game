@@ -3,19 +3,23 @@ import 'package:pf2e_core/pf2e_core.dart';
 import '../campaign/arc.dart';
 import '../campaign/campaign.dart';
 import '../campaign/creature.dart';
+import '../campaign/difficulty.dart';
 import '../campaign/economy.dart';
 import '../campaign/gear.dart';
 import '../campaign/hunt.dart';
 import '../campaign/locations.dart';
 import '../campaign/npc.dart';
+import '../campaign/weather.dart';
 import '../campaign/world.dart';
 import '../campaign/world_item.dart';
 import '../party/equipment.dart';
 import '../party/experience.dart';
+import '../party/vitals.dart';
 import '../party/wealth.dart';
 import 'encounter_session.dart';
 import 'game_session.dart';
 import 'session_actor.dart';
+import 'world_event.dart';
 
 /// Thrown when the party is asked to do something they cannot do here.
 class InvalidMoveException implements Exception {
@@ -80,6 +84,7 @@ class MoveResult {
     this.ambush,
     this.hunt,
     this.huntRoll,
+    this.minutes = 0,
   });
 
   final String from;
@@ -96,6 +101,9 @@ class MoveResult {
 
   /// The d100 against the chance of being found, when one was rolled.
   final ({int die, int chance})? huntRoll;
+
+  /// How long the way took, weather and all.
+  final int minutes;
 
   /// Flags entering the new room set, which arcs may be watching.
   final List<String> flagsSet;
@@ -144,6 +152,7 @@ class WorldSession {
     String? roomId,
     Set<String>? flags,
     int hour = 8,
+    int day = 1,
     PartyInventory? inventory,
     String? cameFrom,
     Experience? experience,
@@ -157,13 +166,17 @@ class WorldSession {
         // The hunt has dice of its own for the same reason: being rich must
         // not change the outcome of a fight the party would have had anyway.
         _huntDice = DiceRoller(roller.state ^ 0x5851F42D),
+        // And the sky: weather is rolled every day, and must not reach into
+        // the fights either.
+        _skyDice = DiceRoller(roller.state ^ 0x2545F491),
         _cameFrom = cameFrom,
         _roller = roller,
         _roomId = roomId ?? _firstRoomOf(campaign),
         // Copied rather than kept: callers pass an unmodifiable view or a
         // set another session owns, and a session must not mutate either.
         _flags = {...?flags},
-        _hour = hour,
+        _day = day < 1 ? 1 : day,
+        _minute = (hour * 60) % _minutesInDay,
         _inventory = inventory ?? PartyInventory(gear: campaign.gear) {
     if (_actors.isEmpty) {
       throw ArgumentError.value(actors, 'actors', 'a session needs an actor');
@@ -190,8 +203,14 @@ class WorldSession {
     for (final npc in campaign.npcs.travellers) {
       _moveOn(npc);
     }
+    for (final actor in _actors) {
+      _vitals[actor.id] = ActorVitals.fresh(actor.stats);
+    }
     _enter(_roomId);
+    _todaysWeather();
   }
+
+  static const int _minutesInDay = 24 * 60;
 
   final Campaign campaign;
   final List<SessionActor> _actors;
@@ -201,7 +220,38 @@ class WorldSession {
   /// The room the party walked in from, which is the one way past an ambush.
   String? _cameFrom;
   final Set<String> _flags;
-  int _hour;
+
+  /// The day of the campaign, from 1, and the minute of that day.
+  int _day;
+  int _minute;
+
+  /// Dice for the weather, kept apart from the world's.
+  DiceRoller _skyDice;
+
+  /// Each region's weather for the last day the party was in it.
+  final Map<String, DayWeather> _skies = {};
+
+  /// How each character is holding up.
+  final Map<String, ActorVitals> _vitals = {};
+
+  /// How far the party has come since it last slept.
+  Endurance _endurance = Endurance();
+
+  /// What has happened since a client last asked.
+  final List<WorldEvent> _events = [];
+
+  /// The storm the party is in the middle of, as `<region>@<day>`.
+  String? _caughtIn;
+
+  /// True while the party is under a shelter it made itself.
+  bool _sheltering = false;
+
+  /// Minutes spent out in the current storm since the last exposure roll.
+  int _exposedMinutes = 0;
+
+  /// Storms the party has come through, so each pays once.
+  final Set<String> _weathered = {};
+
   final PartyInventory _inventory;
   final Experience _experience;
   final LootLedger _ledger;
@@ -300,8 +350,23 @@ class WorldSession {
   String get roomId => _roomId;
   Room get currentRoom => campaign.locations.roomById(_roomId)!;
 
-  int get hour => _hour;
-  bool get isNight => campaign.world.time.isNight(_hour);
+  int get hour => _minute ~/ 60;
+
+  /// Minutes into the day.
+  int get minute => _minute;
+
+  /// The day of the campaign, counting from 1.
+  int get day => _day;
+
+  /// The day as the calendar has it.
+  ({Season season, int dayOfSeason, int year}) get date =>
+      campaign.weather.calendar.dateOf(_day);
+
+  /// The time as a clock would show it: `14:05`.
+  String get clock => '${hour.toString().padLeft(2, '0')}:'
+      '${(_minute % 60).toString().padLeft(2, '0')}';
+
+  bool get isNight => campaign.world.time.isNight(hour);
 
   Town? get currentTown => campaign.locations.townForRoom(_roomId);
 
@@ -312,7 +377,7 @@ class WorldSession {
 
   /// The circumstance modifier the time of day applies to [statKey].
   int timeModifierFor(String statKey) =>
-      campaign.world.time.modifierFor(statKey, hour: _hour);
+      campaign.world.time.modifierFor(statKey, hour: hour);
 
   /// Everything needed to render the room the party is standing in.
   RoomView look() {
@@ -342,9 +407,15 @@ class WorldSession {
     );
   }
 
-  /// The weather line for where the party is, rolled once per region visit.
+  /// The weather line for where the party is.
+  ///
+  /// With a weather table, the day's roll for the region and the hour: a
+  /// storm day is a storm only while the storm is on. Without one, a line
+  /// from the region's own list, rolled once and kept.
   String? get currentWeather {
     final region = currentRegion;
+    final now = weatherNow;
+    if (now != null) return region?.weatherStates[now.id] ?? now.text;
     if (region == null || !region.hasWeather) return null;
     final chosen = _weatherByRegion[region.id];
     if (chosen != null) return region.weatherStates[chosen];
@@ -352,6 +423,539 @@ class WorldSession {
     final key = keys[_roller.rollDie(keys.length) - 1];
     _weatherByRegion[region.id] = key;
     return region.weatherStates[key];
+  }
+
+  /// Today's weather in the party's region, rolling it if nobody has yet.
+  DayWeather? get weatherToday => _todaysWeather();
+
+  /// The weather in effect right now: the storm while it is on, what it
+  /// settles into either side of it, and the day's weather otherwise.
+  WeatherType? get weatherNow {
+    final today = _todaysWeather();
+    if (today == null) return null;
+    if (!today.type.isSevere) return today.type;
+    if (today.isStormAt(_minute)) return today.type;
+    return campaign.weather.typeById(today.type.after ?? '') ?? today.type;
+  }
+
+  /// True when the party is out in severe weather with nothing over them.
+  bool get isExposed =>
+      (weatherNow?.isSevere ?? false) && !currentRoom.shelter && !_sheltering;
+
+  /// True while the party is under a shelter it made.
+  bool get isSheltering => _sheltering;
+
+  DayWeather? _todaysWeather() {
+    final book = campaign.weather;
+    final region = currentRegion;
+    if (book.isEmpty || region == null) return null;
+    final known = _skies[region.id];
+    if (known != null && known.day == _day) return known;
+
+    final date = book.calendar.dateOf(_day);
+    final die = _skyDice.rollDie(100);
+    final type = book.lookUp(region.id, date.season.id, die);
+    if (type == null) return null;
+    int? start;
+    int? hours;
+    if (type.isSevere) {
+      // Between six in the morning and five in the evening, for two to eight
+      // hours, and over by midnight.
+      start = 5 + _skyDice.rollDie(12);
+      final length = _skyDice.rollSum(2, 4);
+      hours = length > 24 - start ? 24 - start : length;
+    }
+    final rolled = DayWeather(
+      regionId: region.id,
+      day: _day,
+      season: date.season,
+      die: die,
+      type: type,
+      stormStartHour: start,
+      stormHours: hours,
+    );
+    _skies[region.id] = rolled;
+    _events.add(WeatherRolled(rolled));
+    return rolled;
+  }
+
+  // --- time ----------------------------------------------------------------
+
+  /// Everything that has happened since the last time this was called.
+  List<WorldEvent> drainEvents() {
+    final out = List<WorldEvent>.of(_events);
+    _events.clear();
+    return out;
+  }
+
+  /// Lets [minutes] go by, a slice at a time, so that a storm breaking or a
+  /// day turning in the middle of it lands at the right moment.
+  void _pass(int minutes, {bool travelling = false, bool resting = false}) {
+    final limits = campaign.weather.travel;
+    final wasTired = _endurance.isFatigued(limits);
+    final wasSpent = _endurance.isSpent(limits);
+    final time = campaign.world.time;
+    var left = minutes;
+    while (left > 0) {
+      final toHour = 60 - _minute % 60;
+      final step = left < toHour ? left : toHour;
+      final hourBefore = hour;
+      _minute += step;
+      left -= step;
+      if (travelling) _endurance.travelMinutes += step;
+      if (!resting) _endurance.awakeMinutes += step;
+      if (_minute >= _minutesInDay) {
+        _minute -= _minutesInDay;
+        _day++;
+        final date = campaign.weather.calendar.dateOf(_day);
+        _events.add(NewDay(
+          day: _day,
+          season: date.season,
+          dayOfSeason: date.dayOfSeason,
+          year: date.year,
+        ));
+      }
+      if (hour != hourBefore) {
+        if (hour == time.dawnHour) {
+          _events.add(DawnOrDusk(isDawn: true, echo: time.dawnEcho));
+        } else if (hour == time.duskHour) {
+          _events.add(DawnOrDusk(isDawn: false, echo: time.duskEcho));
+        }
+      }
+      _weatherTick(step);
+    }
+    if (!wasSpent && _endurance.isSpent(limits)) {
+      _events.add(const GrewTired(spent: true));
+    } else if (!wasTired && _endurance.isFatigued(limits)) {
+      _events.add(const GrewTired(spent: false));
+    }
+  }
+
+  /// What the sky does to the party over [step] minutes just gone.
+  void _weatherTick(int step) {
+    final region = currentRegion;
+    final today = _todaysWeather();
+    if (region == null || today == null || !today.hasStorm) return;
+    final key = '${region.id}@${today.day}';
+
+    if (today.isStormAt(_minute)) {
+      if (_caughtIn != key) {
+        _caughtIn = key;
+        _exposedMinutes = 0;
+        _events.add(StormBroke(
+          weather: today,
+          sheltered: currentRoom.shelter || _sheltering,
+        ));
+      }
+      if (!currentRoom.shelter && !_sheltering) {
+        _exposedMinutes += step;
+        while (_exposedMinutes >= 60) {
+          _exposedMinutes -= 60;
+          _expose(today);
+        }
+      }
+      return;
+    }
+
+    if (_caughtIn == key && _minute >= today.stormEndMinute) {
+      _caughtIn = null;
+      _exposedMinutes = 0;
+      if (_weathered.add(key)) {
+        final own = _sheltering;
+        final xp = own
+            ? Accomplishment.moderate.xp
+            : currentRoom.shelter
+                ? Accomplishment.minor.xp
+                : 0;
+        _experience.award(_actors.map((a) => a.id), xp);
+        _events.add(StormPassed(weather: today, xp: xp, ownShelter: own));
+      }
+      _sheltering = false;
+    }
+  }
+
+  /// An hour out in severe weather: everyone saves against it.
+  ///
+  /// A basic Fortitude save against the DC for the party's level, as
+  /// Pathfinder runs a hazard. The damage grows with the party, a set of dice
+  /// for every five levels, so a storm stays a storm at level 15. It never
+  /// takes anyone below 1 HP: weather wears a party down, it does not kill it
+  /// in its sleep.
+  void _expose(DayWeather today) {
+    final dice = DamageExpression.tryParse(today.type.exposure ?? '');
+    if (dice == null) return;
+    final level = _partyLevel;
+    final sets = (level + 4) ~/ 5;
+    final scaled = DamageExpression(
+      diceCount: dice.diceCount * sets,
+      dieSize: dice.dieSize,
+      flatBonus: dice.flatBonus * sets,
+    );
+    final dc = dcForLevel(level);
+    for (final actor in _actors) {
+      final vitals = _vitals[actor.id]!;
+      final fort = actor.statFor('fortitude');
+      final bonus = itemBonusFor(actor, 'fortitude', exposure: true);
+      final save = CheckResolver.outcomeFor(
+        dieRoll: _skyDice.d20(),
+        modifier: fort == null ? bonus : withItemBonus(fort, bonus).total,
+        dc: dc,
+        label: 'Fortitude against the ${today.type.name.toLowerCase()}',
+      );
+      final roll = scaled.rollDetailed(_skyDice);
+      final taken = switch (save.degree) {
+        DegreeOfSuccess.criticalSuccess => 0,
+        DegreeOfSuccess.success => roll.total ~/ 2,
+        DegreeOfSuccess.failure => roll.total,
+        DegreeOfSuccess.criticalFailure => roll.total * 2,
+      };
+      final lost =
+          vitals.hurt(taken.clamp(0, vitals.hp - 1 < 0 ? 0 : vitals.hp - 1));
+      _events
+          .add(Exposure(actor: actor, save: save, damage: roll, hpLost: lost));
+    }
+  }
+
+  /// Whether severe weather will be on here within the next [minutes].
+  bool _stormWithin(int minutes) {
+    final today = _todaysWeather();
+    if (today == null || !today.hasStorm) return false;
+    final start = today.stormStartHour! * 60;
+    final end = today.stormEndMinute;
+    return _minute < end && _minute + minutes > start;
+  }
+
+  // --- how the party is holding up -----------------------------------------
+
+  /// Hit points and what is left to cast with, for [actorId].
+  ActorVitals vitalsOf(String actorId) => _vitals[actorFor(actorId).id]!;
+
+  /// How far the party has come since it last rested.
+  Endurance get endurance => _endurance;
+
+  /// Pathfinder's Fatigued: -1 to AC and saves, until the party rests.
+  bool get isFatigued => _endurance.isFatigued(campaign.weather.travel);
+
+  /// Too tired to set out on a long stretch of road.
+  bool get isSpent => _endurance.isSpent(campaign.weather.travel);
+
+  /// Sleeps eight hours, and wakes rested.
+  ///
+  /// Pathfinder's night's rest: each character recovers their Constitution
+  /// modifier (at least 1) times their level in HP, and makes their daily
+  /// preparations — every spell slot and focus point back. Fatigue goes.
+  /// Nobody sleeps with a hunter at the door or an ambush in the room, or out
+  /// in the open with a storm coming.
+  Map<String, int> rest() {
+    _requireQuiet('rest');
+    if (!currentRoom.shelter && !_sheltering && _stormWithin(8 * 60)) {
+      throw InvalidMoveException('A ${todaysWeatherName.toLowerCase()} is '
+          'coming, and nobody sleeps out in that. Find a roof, or make '
+          'shelter first.');
+    }
+    _pass(8 * 60, resting: true);
+    final healed = <String, int>{};
+    for (final actor in _actors) {
+      final vitals = _vitals[actor.id]!;
+      healed[actor.id] = vitals.heal(restHealing(actor.character));
+      vitals.prepare();
+    }
+    _endurance.rested();
+    return healed;
+  }
+
+  String get todaysWeatherName => _todaysWeather()?.type.name ?? 'storm';
+
+  /// Ten minutes of Treat Wounds, by whoever in the party is best at
+  /// Medicine, on [who] or on whoever is worst hurt.
+  ///
+  /// Pathfinder's DC 15 for a trained healer: 2d8 back, 4d8 on a critical
+  /// success, and 1d8 lost on a critical failure. A patient cannot be
+  /// treated again for an hour.
+  ({
+    SessionActor healer,
+    SessionActor patient,
+    CheckOutcome check,
+    DamageRoll? roll,
+    int change,
+  }) treatWounds({String? who}) {
+    _requireQuiet('treat anyone');
+    final healers = [
+      for (final a in _actors)
+        if (a.statFor('medicine') case final stat?
+            when stat.proficiency != Proficiency.untrained)
+          (
+            actor: a,
+            stat: withItemBonus(stat, itemBonusFor(a, 'medicine')),
+          ),
+    ]..sort((a, b) => b.stat.total.compareTo(a.stat.total));
+    if (healers.isEmpty) {
+      throw InvalidMoveException('Nobody in the party is trained in Medicine.');
+    }
+    final SessionActor patient;
+    if (who != null && who.trim().isNotEmpty) {
+      patient = actorFor(who);
+    } else {
+      final hurt = [
+        for (final a in _actors)
+          if (_vitals[a.id]!.isHurt) a,
+      ]..sort((a, b) => (_vitals[a.id]!.hp / _vitals[a.id]!.maxHp)
+          .compareTo(_vitals[b.id]!.hp / _vitals[b.id]!.maxHp));
+      if (hurt.isEmpty) {
+        throw InvalidMoveException('Nobody needs it.');
+      }
+      patient = hurt.first;
+    }
+    final vitals = _vitals[patient.id]!;
+    if (!vitals.isHurt) {
+      throw InvalidMoveException('${patient.name} is not hurt.');
+    }
+    final now = _absoluteMinute;
+    final last = vitals.lastTreatedAt;
+    if (last != null && now - last < 60) {
+      throw InvalidMoveException('${patient.name} was treated within the '
+          'hour. It will not take again until ${60 - (now - last)} minutes '
+          'from now.');
+    }
+
+    final healer = healers.first;
+    final check = CheckResolver(_roller).resolve(
+      modifier: healer.stat.total,
+      dc: 15,
+      label: 'Medicine (Treat Wounds)',
+    );
+    DamageRoll? roll;
+    var change = 0;
+    switch (check.degree) {
+      case DegreeOfSuccess.criticalSuccess:
+        roll = DamageExpression.parse('4d8').rollDetailed(_roller);
+        change = vitals.heal(roll.total);
+      case DegreeOfSuccess.success:
+        roll = DamageExpression.parse('2d8').rollDetailed(_roller);
+        change = vitals.heal(roll.total);
+      case DegreeOfSuccess.failure:
+        break;
+      case DegreeOfSuccess.criticalFailure:
+        roll = DamageExpression.parse('1d8').rollDetailed(_roller);
+        change = -vitals.hurt(roll.total.clamp(0, vitals.hp - 1));
+    }
+    _pass(10);
+    vitals.lastTreatedAt = _absoluteMinute;
+    return (
+      healer: healer.actor,
+      patient: patient,
+      check: check,
+      roll: roll,
+      change: change,
+    );
+  }
+
+  /// Ten minutes of Refocus: one focus point back for each character who
+  /// has spent any.
+  Map<String, int> refocus() {
+    _requireQuiet('refocus');
+    final back = <String, int>{};
+    for (final actor in _actors) {
+      final v = _vitals[actor.id]!;
+      if (v.focus < v.maxFocus) {
+        v.focus++;
+        back[actor.id] = 1;
+      }
+    }
+    if (back.isEmpty) {
+      throw InvalidMoveException('Nobody has spent any focus to get back.');
+    }
+    _pass(10);
+    return back;
+  }
+
+  /// Makes shelter against the weather out here, with Survival.
+  ///
+  /// Half an hour's work against the DC for the party's level, by whoever
+  /// is best at it. On a success the party rides the storm out where it is;
+  /// on a failure the shelter holds but leaks, and everyone takes one hour's
+  /// exposure first; on a critical failure it comes down and they take the
+  /// hour with nothing over them.
+  ({SessionActor builder, CheckOutcome check}) makeShelter() {
+    if (currentRoom.shelter) {
+      throw InvalidMoveException('There is a roof here already.');
+    }
+    final today = _todaysWeather();
+    if (today == null || !today.hasStorm || _minute >= today.stormEndMinute) {
+      throw InvalidMoveException('There is no weather here worth sheltering '
+          'from today.');
+    }
+    if (_sheltering) {
+      throw InvalidMoveException('You are sheltering already.');
+    }
+    final builders = [
+      for (final a in _actors)
+        if (a.statFor('survival') case final stat?)
+          (
+            actor: a,
+            stat: withItemBonus(stat, itemBonusFor(a, 'survival')),
+          ),
+    ]..sort((a, b) => b.stat.total.compareTo(a.stat.total));
+    final builder = builders.isEmpty ? primary : builders.first.actor;
+    final check = CheckResolver.outcomeFor(
+      dieRoll: _skyDice.d20(),
+      modifier: builders.isEmpty ? 0 : builders.first.stat.total,
+      dc: dcForLevel(_partyLevel),
+      label: 'Survival (make shelter)',
+    );
+    switch (check.degree) {
+      case DegreeOfSuccess.criticalSuccess || DegreeOfSuccess.success:
+        _sheltering = true;
+        _pass(30);
+      case DegreeOfSuccess.failure:
+        _expose(today);
+        _sheltering = true;
+        _pass(30);
+      case DegreeOfSuccess.criticalFailure:
+        _pass(30);
+        _expose(today);
+    }
+    return (builder: builder, check: check);
+  }
+
+  /// Waits for the day's storm to blow over, from under a roof or a
+  /// shelter; or an hour, if there is no storm on.
+  int waitOutStorm() {
+    final today = _todaysWeather();
+    if (today == null || !today.hasStorm || _minute >= today.stormEndMinute) {
+      _pass(60);
+      return 60;
+    }
+    if (isExposed ||
+        (!currentRoom.shelter && !_sheltering && _stormWithin(1))) {
+      throw InvalidMoveException('Out here? Find a roof, or make shelter.');
+    }
+    final minutes = today.stormEndMinute - _minute;
+    _pass(minutes);
+    return minutes;
+  }
+
+  int get _absoluteMinute => (_day - 1) * _minutesInDay + _minute;
+
+  /// Refuses what cannot be done with something waiting to fight.
+  void _requireQuiet(String doing) {
+    final hunter = _pursuer;
+    if (hunter != null) {
+      throw InvalidMoveException(
+          'Not with ${hunter.creature.name} on you. You cannot $doing now.');
+    }
+    final waiting = campaign.bestiary.ambushIn(_roomId, _flags);
+    if (waiting != null) {
+      throw InvalidMoveException(
+          'Not with ${waiting.name} in the room. You cannot $doing now.');
+    }
+  }
+
+  /// Everyone in the party, when the party is fatigued.
+  Set<String> get _fatiguedIds =>
+      isFatigued ? {for (final a in _actors) a.id} : const {};
+
+  /// The best item bonus [actor] has to [statKey] from what they carry, here
+  /// and now.
+  ///
+  /// What they are wielding and wearing counts for them alone; the pack's
+  /// other gear counts for whoever is making the check, as if they were the
+  /// one carrying it. [exposure] is true for a save against the weather.
+  int itemBonusFor(SessionActor actor, String statKey,
+      {bool exposure = false}) {
+    final key = statKey.trim().toLowerCase();
+    final loadout = _inventory.loadoutFor(actor.id);
+    final sources = [
+      if (loadout.weapon case final weapon?) weapon,
+      if (loadout.armor case final armor?) armor,
+      for (final item in _inventory.carried)
+        if (EquipSlot.forType(item.type) == null) item,
+    ];
+    var best = 0;
+    for (final item in sources) {
+      for (final b in item.checkBonuses) {
+        if (b.stat != key || b.bonus <= best) continue;
+        if (_bonusApplies(b.when, exposure: exposure)) best = b.bonus;
+      }
+    }
+    return best;
+  }
+
+  bool _bonusApplies(String? when, {required bool exposure}) {
+    if (when == null) return true;
+    if (when == 'exposure') return exposure;
+    if (when.startsWith('region:')) {
+      return currentRegion?.id == when.substring('region:'.length);
+    }
+    if (when.startsWith('zone:')) {
+      return _zoneOf(_roomId) == when.substring('zone:'.length);
+    }
+    return false;
+  }
+
+  /// Counts lines already given out, so the next one is a different one.
+  final Map<String, int> _lineCounts = {};
+
+  /// The next of [lines], in turn, under [key]. No dice: which line comes
+  /// next is a matter of order, so words never shift a roll.
+  String? _next(String key, List<String> lines) {
+    if (lines.isEmpty) return null;
+    final n = _lineCounts.update(key, (c) => c + 1, ifAbsent: () => 0);
+    return lines[n % lines.length];
+  }
+
+  /// NPCs already greeted, as `<npc>@<day>`, so a walk-in says hello once
+  /// a day rather than every time the party crosses the threshold.
+  final Set<String> _greeted = {};
+
+  /// What the people here say as the party walks in: once a day each, the
+  /// way the story stands.
+  List<({Npc npc, String line})> greetingsHere() {
+    final out = <({Npc npc, String line})>[];
+    for (final npc in _npcsHere()) {
+      final line = npc.barkFor(_flags);
+      if (line == null || !_greeted.add('${npc.id}@$_day')) continue;
+      out.add((npc: npc, line: line));
+    }
+    return out;
+  }
+
+  /// Something going on in the room the party is standing in.
+  String? roomAmbiance() =>
+      _next('room:${currentRoom.id}', currentRoom.ambiance);
+
+  /// What the keeper here says, at [moment]: `greet`, `buy`, `sell`, or
+  /// `broke` for a customer who cannot pay.
+  ({String keeper, String line})? keeperSays(String moment) {
+    final shop = shopHere;
+    if (shop == null) return null;
+    final lines = switch (moment) {
+      'greet' => shop.lines.greet,
+      'buy' => shop.lines.buy,
+      'sell' => shop.lines.sell,
+      'broke' => shop.lines.broke,
+      _ => const <String>[],
+    };
+    final line = _next('shop:${shop.id}:$moment', lines);
+    return line == null ? null : (keeper: _keeperName(shop), line: line);
+  }
+
+  /// What somebody in the party says, looking up at [weather].
+  ({SessionActor who, String line})? remarkOn(WeatherType weather) =>
+      weather.remark == null ? null : (who: primary, line: weather.remark!);
+
+  /// The night the party just had: how it went, what was said settling
+  /// down, and waking.
+  ({String? night, ({SessionActor who, String line})? said, String? wake})
+      nightLines({required bool indoors}) {
+    final lines = campaign.weather.restLines;
+    final said = _next('rest:pc', lines.pc);
+    return (
+      night: _next(indoors ? 'rest:in' : 'rest:out',
+          indoors ? lines.indoors : lines.outdoors),
+      said: said == null ? null : (who: primary, line: said),
+      wake: _next('rest:wake', lines.wake),
+    );
   }
 
   /// A random ambiance line for the current region, or null if it has none.
@@ -394,11 +998,26 @@ class WorldSession {
           'on. Fight, or go back the way you came.');
     }
 
+    final minutes = travelMinutes(direction);
+    final limits = campaign.weather.travel;
+    if (minutes >= limits.newZoneMinutes && isSpent) {
+      throw InvalidMoveException('You are too tired to take on the road. '
+          'Rest first: there is only so far anyone can go in a day.');
+    }
+
     final fromRegion = currentRegion?.id;
     final from = _roomId;
     _roomId = exit.to;
     _cameFrom = from;
+    // A shelter stays where it was put up, and a storm is left behind with
+    // the region it is in.
+    _sheltering = false;
+    if (currentRegion?.id != fromRegion) {
+      _caughtIn = null;
+      _exposedMinutes = 0;
+    }
     final set = _enter(exit.to);
+    _pass(minutes, travelling: true);
 
     _steps++;
     for (final npc in campaign.npcs.travellers) {
@@ -419,8 +1038,37 @@ class WorldSession {
       ambush: ambush,
       hunt: caught?.encounterIn(_roomId),
       huntRoll: huntRoll,
+      minutes: minutes,
     );
   }
+
+  /// How long the way [direction] would take now, weather and all.
+  ///
+  /// The exit's own time if it has one; otherwise a short walk within a part
+  /// of the map, an hour into the next part, and a day's road to another
+  /// town. Weather stretches all of it, and an unroofed road in a storm
+  /// takes twice as long as it would on a fine day.
+  int travelMinutes(String direction) {
+    final exit = currentRoom.exit(direction);
+    if (exit == null) return 0;
+    final limits = campaign.weather.travel;
+    final locations = campaign.locations;
+    final base = exit.minutes ??
+        (locations.townForRoom(_roomId)?.id !=
+                locations.townForRoom(exit.to)?.id
+            ? limits.newTownMinutes
+            : _zoneOf(_roomId) == _zoneOf(exit.to)
+                ? limits.sameZoneMinutes
+                : limits.newZoneMinutes);
+    final factor = currentRoom.shelter &&
+            (campaign.locations.roomById(exit.to)?.shelter ?? false)
+        ? 1.0
+        : weatherNow?.travel ?? 1.0;
+    return (base * factor).round();
+  }
+
+  String? _zoneOf(String roomId) =>
+      campaign.locations.townForRoom(roomId)?.zoneForRoom(roomId)?.id;
 
   /// Rolls whether anything finds the party this step, and sends it if so.
   ///
@@ -567,6 +1215,7 @@ class WorldSession {
         roller: _roller,
         sceneId: opening,
         flags: _flags,
+        itemBonusFor: itemBonusFor,
       ),
     );
   }
@@ -625,7 +1274,12 @@ class WorldSession {
   /// Returns the narration and any flags set. Refuses rather than silently
   /// no-ops, because "nothing happened" is the worst possible answer to a
   /// player who typed a specific verb at a specific noun.
-  ({WorldItem item, String said, List<String> flagsSet}) take(String query) {
+  ({
+    WorldItem item,
+    String said,
+    List<String> flagsSet,
+    ({SessionActor who, String line})? spoken,
+  }) take(String query) {
     final item = _requireItem(query);
     if (!item.takeable) {
       throw InvalidMoveException('${item.name} is not something you can take.');
@@ -638,11 +1292,18 @@ class WorldSession {
       item: item,
       said: item.onTake ?? 'You take ${item.name}.',
       flagsSet: set..sort(),
+      spoken:
+          item.sayOnTake == null ? null : (who: primary, line: item.sayOnTake!),
     );
   }
 
   /// Destroys an object in the room.
-  ({WorldItem item, String said, List<String> flagsSet}) destroy(String query) {
+  ({
+    WorldItem item,
+    String said,
+    List<String> flagsSet,
+    ({SessionActor who, String line})? spoken,
+  }) destroy(String query) {
     final item = _requireItem(query);
     if (!item.destroyable) {
       throw InvalidMoveException(
@@ -656,6 +1317,9 @@ class WorldSession {
       item: item,
       said: item.onDestroy ?? 'You destroy ${item.name}.',
       flagsSet: set..sort(),
+      spoken: item.sayOnDestroy == null
+          ? null
+          : (who: primary, line: item.sayOnDestroy!),
     );
   }
 
@@ -715,6 +1379,11 @@ class WorldSession {
       foes: hunter != null && _isHunt(encounter, hunter)
           ? [hunter.creature]
           : null,
+      // The party comes in as it is: hurt from the last one, tired from the
+      // road, and fighting in whatever the sky is doing.
+      hp: {for (final a in _actors) a.id: _vitals[a.id]!.hp},
+      fatigued: _fatiguedIds,
+      rangedPenalty: currentRoom.shelter ? 0 : weatherNow?.rangedPenalty ?? 0,
     );
   }
 
@@ -727,6 +1396,7 @@ class WorldSession {
   /// itself, so that losing and fleeing are the caller's to narrate. Loot is
   /// recorded here too: a drop the party never went back for is not theirs.
   List<String> concludeEncounter(EncounterSession fight) {
+    _afterFight(fight);
     final hunter = _pursuer;
     if (hunter != null && _isHunt(fight.encounter, hunter)) {
       return _concludeHunt(fight, hunter);
@@ -742,6 +1412,22 @@ class WorldSession {
     }
     _collect(fight);
     return set..sort();
+  }
+
+  /// Carries the party's wounds out of a fight, and the time it took.
+  ///
+  /// Whoever went down in a fight the party won is brought round at 1 HP.
+  /// A party that loses comes to an hour later, everyone at 1 HP, wherever
+  /// they fell: nobody in Valorheim finishes a job that thoroughly.
+  void _afterFight(EncounterSession fight) {
+    final lost = fight.outcome == EncounterOutcome.defeat;
+    for (final c in fight.party) {
+      final vitals = _vitals[c.id];
+      if (vitals == null) continue;
+      vitals.hp = lost || c.hp <= 0 ? 1 : c.hp.clamp(1, vitals.maxHp);
+    }
+    // Six seconds a round, and an hour to come round from a beating.
+    _pass(lost ? 60 : (fight.round * 6 + 59) ~/ 60);
   }
 
   /// Takes a won fight's coin, loot and XP, and writes them in the ledger.
@@ -1002,13 +1688,12 @@ class WorldSession {
     throw InvalidMoveException('Nobody here is called "$who".');
   }
 
-  /// Moves the clock on, wrapping at the end of the day.
+  /// Lets [hours] go by, into the next day if need be.
   void advanceTime(int hours) {
     if (hours < 0) {
       throw ArgumentError.value(hours, 'hours', 'must not be negative');
     }
-    final cycle = campaign.world.time.dayCycleHours;
-    _hour = cycle <= 0 ? _hour : (_hour + hours) % cycle;
+    _pass(hours * 60);
   }
 
   /// Arcs that have started and are not yet finished.
@@ -1041,7 +1726,21 @@ class WorldSession {
         'campaignId': campaign.id,
         'roomId': _roomId,
         'cameFrom': _cameFrom,
-        'hour': _hour,
+        'hour': hour,
+        'day': _day,
+        'minute': _minute,
+        'sky': {
+          'dice': _skyDice.state,
+          'days': [for (final d in _skies.values) d.toJson()],
+          if (_caughtIn != null) 'caughtIn': _caughtIn,
+          if (_sheltering) 'sheltering': true,
+          if (_exposedMinutes > 0) 'exposed': _exposedMinutes,
+          'weathered': (_weathered.toList()..sort()),
+        },
+        'vitals': {
+          for (final e in _vitals.entries) e.key: e.value.toJson(),
+        },
+        'endurance': _endurance.toJson(),
         'road': {
           'dice': _roadDice.state,
           'steps': _steps,
@@ -1065,7 +1764,8 @@ class WorldSession {
         'ledger': _ledger.toJson(),
         'experience': _experience.toJson(),
         'rollerState': _roller.state,
-        'weather': Map<String, String>.from(_weatherByRegion),
+        if (_weatherByRegion.isNotEmpty)
+          'weather': Map<String, String>.from(_weatherByRegion),
         'topicsRaised': {
           for (final e in _topicsRaised.entries)
             e.key: (e.value.toList()..sort()),
@@ -1100,6 +1800,7 @@ class WorldSession {
       roomId: snapshot['roomId']!.toString(),
       flags: flags,
       hour: (snapshot['hour'] as num?)?.toInt() ?? 8,
+      day: (snapshot['day'] as num?)?.toInt() ?? 1,
       inventory: inventory,
       cameFrom: snapshot['cameFrom']?.toString(),
       experience: snapshot.containsKey('experience')
@@ -1155,6 +1856,50 @@ class WorldSession {
         for (final t in (e.value as List? ?? const [])) t.toString(),
       };
     }
+    final minute = (snapshot['minute'] as num?)?.toInt();
+    if (minute != null) session._minute = minute % _minutesInDay;
+    session._restoreSky(snapshot['sky']);
+    final vitals = snapshot['vitals'];
+    if (vitals is Map) {
+      for (final actor in actors) {
+        session._vitals[actor.id] = ActorVitals.restore(
+            ActorVitals.fresh(actor.stats), vitals[actor.id]);
+      }
+    }
+    session._endurance = Endurance.fromJson(snapshot['endurance']);
+    // Loading a game is not news: whatever the constructor rolled to stand
+    // up has been replaced by what was saved.
+    session._events.clear();
     return session;
+  }
+
+  /// Puts the sky back as it was saved: the dice, each region's day, and
+  /// the storm the party was in the middle of.
+  void _restoreSky(Object? raw) {
+    if (raw is! Map) return;
+    _skyDice = DiceRoller.fromState((raw['dice'] as num?)?.toInt() ?? 0);
+    _skies.clear();
+    for (final d in (raw['days'] as List? ?? const [])) {
+      if (d is! Map) continue;
+      final type = campaign.weather.typeById(d['type']?.toString() ?? '');
+      final day = (d['day'] as num?)?.toInt();
+      final region = d['region']?.toString();
+      if (type == null || day == null || region == null) continue;
+      _skies[region] = DayWeather(
+        regionId: region,
+        day: day,
+        season: campaign.weather.calendar.seasonOf(day),
+        die: (d['die'] as num?)?.toInt() ?? 0,
+        type: type,
+        stormStartHour: (d['stormStart'] as num?)?.toInt(),
+        stormHours: (d['stormHours'] as num?)?.toInt(),
+      );
+    }
+    _caughtIn = raw['caughtIn']?.toString();
+    _sheltering = raw['sheltering'] == true;
+    _exposedMinutes = (raw['exposed'] as num?)?.toInt() ?? 0;
+    _weathered
+      ..clear()
+      ..addAll([for (final k in (raw['weathered'] as List? ?? const [])) '$k']);
   }
 }

@@ -35,7 +35,8 @@ class Combatant {
     this.agile = false,
     this.creature,
     this.actor,
-  }) : hp = maxHp;
+    int? hp,
+  }) : hp = (hp ?? maxHp).clamp(0, maxHp);
 
   final String id;
   final String name;
@@ -161,6 +162,7 @@ class StrikeResult {
     required this.penalty,
     this.damageRoll,
     this.targetDropped = false,
+    this.weatherPenalty = 0,
   });
 
   final Combatant attacker;
@@ -175,6 +177,9 @@ class StrikeResult {
 
   /// The multiple attack penalty that applied.
   final int penalty;
+
+  /// What the weather took off a strike that had to cross open ground.
+  final int weatherPenalty;
   final bool targetDropped;
 
   bool get isHit => outcome.degree.isSuccess;
@@ -203,9 +208,14 @@ class EncounterSession {
     GearTable? gear,
     Map<String, Loadout> loadouts = const {},
     List<Creature>? foes,
+    Map<String, int> hp = const {},
+    Set<String> fatigued = const {},
+    this.rangedPenalty = 0,
   })  : _roller = roller,
         _gear = gear,
         _loadouts = loadouts,
+        _startingHp = hp,
+        _fatigued = fatigued,
         _resolver = CheckResolver(roller) {
     if (actors.isEmpty) {
       throw ArgumentError.value(actors, 'actors', 'a fight needs a party');
@@ -236,6 +246,16 @@ class EncounterSession {
       ];
 
   final Encounter encounter;
+
+  /// Taken off any strike that has to cross open ground, by the weather.
+  final int rangedPenalty;
+
+  /// What each actor comes into the fight with, when it is not full.
+  final Map<String, int> _startingHp;
+
+  /// Actors fighting Fatigued: -1 to AC, as Pathfinder has it.
+  final Set<String> _fatigued;
+
   final DiceRoller _roller;
   final CheckResolver _resolver;
 
@@ -461,8 +481,9 @@ class EncounterSession {
 
   StrikeResult _resolveStrike(Combatant attacker, Combatant target) {
     final penalty = attacker.nextAttackPenalty;
+    final weather = _distance(attacker, target) > 0 ? -rangedPenalty : 0;
     final outcome = _resolver.resolve(
-      modifier: attacker.attackBonus + penalty,
+      modifier: attacker.attackBonus + penalty + weather,
       dc: target.armorClass,
       label: '${attacker.name} strikes ${target.name}',
     );
@@ -486,6 +507,7 @@ class EncounterSession {
       damage: damage,
       damageRoll: damageRoll,
       penalty: penalty,
+      weatherPenalty: weather,
       targetDropped: wasStanding && target.isDown,
     );
   }
@@ -639,8 +661,9 @@ class EncounterSession {
       id: actor.id,
       name: actor.name,
       isEnemy: false,
-      armorClass: equipped.armorClass,
+      armorClass: equipped.armorClass - (_fatigued.contains(actor.id) ? 1 : 0),
       maxHp: actor.stats.maxHp,
+      hp: _startingHp[actor.id],
       attackBonus: equipped.attackBonus,
       damage: equipped.damage,
       perception: actor.stats.perception.total,

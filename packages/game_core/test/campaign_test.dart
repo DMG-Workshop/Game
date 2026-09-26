@@ -21,6 +21,7 @@ Campaign loadShatteredSeals() => const CampaignLoader().load(
       conversationsJson: _read('conversations.json'),
       economyJson: _read('economy.json'),
       huntJson: _read('hunt.json'),
+      weatherJson: _read('weather.json'),
     );
 
 void main() {
@@ -55,12 +56,17 @@ void main() {
   });
 
   group('time', () {
-    test('turns to night at the halfway point of the cycle', () {
+    test('is dark from dusk until dawn', () {
       final time = campaign.world.time;
       expect(time.dayCycleHours, 24);
-      expect(time.nightfallHour, 12);
-      expect(time.isNight(11), isFalse);
-      expect(time.isNight(12), isTrue);
+      expect(time.dawnHour, 6);
+      expect(time.duskHour, 18);
+      expect(time.isNight(2), isTrue, reason: 'two in the morning');
+      expect(time.isNight(5), isTrue);
+      expect(time.isNight(6), isFalse);
+      expect(time.isNight(12), isFalse, reason: 'noon');
+      expect(time.isNight(17), isFalse);
+      expect(time.isNight(18), isTrue);
     });
 
     test('applies night modifiers only at night, and only where written', () {
