@@ -178,6 +178,16 @@ than through a second mechanism bolted alongside.
 Exits can be gated on flags, which is how the road out of Millhaven stays shut
 until the arc that opens it completes.
 
+A game saves to a file and picks up where it was left. The save remembers
+its campaign and characters, so resuming needs nothing else; pass
+`--characters` to bring a sheet re-exported from Pathbuilder, and a level
+gained there is settled when the game loads:
+
+```
+$ dart run game_core:walk --save=game.json      # saves when you stop, and on "save"
+$ dart run game_core:walk --resume=game.json
+```
+
 ## Next
 
 The gap between importing a character and *running* one is the real work. A
