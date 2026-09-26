@@ -12,3 +12,10 @@ flutter run
 The campaign and rules content are copied into `assets/`, not committed:
 the repository keeps one copy of each file. Build for the web with
 `--no-web-resources-cdn` so the page carries its own renderer.
+
+## Online
+
+Every merge to `main` builds the web app and publishes it to GitHub Pages
+(`.github/workflows/pages.yml`), at `https://<owner>.github.io/<repository>/`.
+It needs Pages turned on once: Settings → Pages → Source: GitHub Actions.
+Saves live in each browser's own storage.
