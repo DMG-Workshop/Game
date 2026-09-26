@@ -15,6 +15,7 @@ import 'gear.dart';
 import 'hunt.dart';
 import 'locations.dart';
 import 'npc.dart';
+import 'spell.dart';
 import 'weather.dart';
 import 'world.dart';
 import 'world_item.dart';
@@ -659,6 +660,64 @@ class CampaignLoader {
       restSteps: _int(root['rest_steps'], fallback: 6),
       robPercent: rob,
     );
+  }
+
+  // --- spells --------------------------------------------------------------
+
+  /// Reads a spell table from a content package.
+  ///
+  /// Spells are rules content rather than campaign content, so they are read
+  /// on their own and handed to the session, not folded into a campaign.
+  SpellBook readSpells(String json) {
+    final root = _object(json, 'spells');
+    final spells = <Spell>[];
+    final seen = <String>{};
+    for (final entry in _list(root['spells'])) {
+      if (entry is! Map) continue;
+      final raw = entry.cast<String, Object?>();
+      final name = _string(raw['name'], 'spell name');
+      if (!seen.add(name.toLowerCase())) {
+        throw CampaignFormatException('"$name" is in the spell table twice.');
+      }
+      final defenseName = _string(raw['defense'], 'defense of "$name"');
+      final defense = SpellDefense.tryParse(defenseName);
+      if (defense == null) {
+        throw CampaignFormatException('"$name" is rolled against '
+            '"$defenseName", which is not ac, fortitude, reflex or will.');
+      }
+      final damage = DamageExpression.tryParse(
+          _string(raw['damage'], 'damage of "$name"'));
+      if (damage == null) {
+        throw CampaignFormatException('"$name" has damage "${raw['damage']}", '
+            'which is not dice.');
+      }
+      final heighten = _map(raw['heighten']);
+      final extraRaw = _optional(heighten['damage']);
+      final extra =
+          extraRaw == null ? null : DamageExpression.tryParse(extraRaw);
+      if (extraRaw != null &&
+          (extra == null || extra.dieSize != damage.dieSize)) {
+        throw CampaignFormatException('"$name" heightens by "$extraRaw", '
+            'which is not more of its own dice.');
+      }
+      final range = _optional(raw['range']) ?? 'far';
+      if (!const {'engaged', 'near', 'far'}.contains(range)) {
+        throw CampaignFormatException('"$name" reaches "$range", which is not '
+            'engaged, near or far.');
+      }
+      spells.add(Spell(
+        name: name,
+        rank: _int(raw['rank']),
+        defense: defense,
+        damage: damage,
+        actions: _int(raw['actions'], fallback: 2),
+        range: range,
+        area: raw['area'] == true,
+        heightenEvery: _int(heighten['every'], fallback: 1).clamp(1, 10),
+        heightenDamage: extra,
+      ));
+    }
+    return SpellBook(spells);
   }
 
   // --- the calendar and the weather ------------------------------------------

@@ -68,28 +68,46 @@ class FightScript {
         }
       }
 
-      if (!target.isEnemy) continue;
-      if (target.isDown && _down.add(target.id)) {
-        final dying = target.creature?.voice?.dying ?? const [];
-        if (dying.isNotEmpty) {
-          out.add(_voiced(target, dying[_down.length % dying.length]));
-        }
-        if (!_saidFirstDown) {
-          _saidFirstDown = true;
-          out.addAll(_render(scene.firstDown, pc: attacker));
-        }
-      } else if (!target.isDown &&
-          target.hp * 2 <= target.maxHp &&
-          _bloodied.add(target.id)) {
-        final hurt = target.creature?.voice?.hurt ?? const [];
-        if (hurt.isNotEmpty) {
-          out.add(_voiced(target, hurt[_bloodied.length % hurt.length]));
-        }
-        if (!_saidBloodied) {
-          _saidBloodied = true;
-          out.addAll(_render(scene.bloodied, pc: attacker));
-        }
+      out.addAll(_notice(attacker, target));
+    }
+    return out;
+  }
+
+  /// A creature badly hurt for the first time says so; one going down has a
+  /// last word; the first to fall draws something from the party.
+  List<ScriptLine> _notice(Combatant attacker, Combatant target) {
+    final out = <ScriptLine>[];
+    if (!target.isEnemy) return out;
+    if (target.isDown && _down.add(target.id)) {
+      final dying = target.creature?.voice?.dying ?? const [];
+      if (dying.isNotEmpty) {
+        out.add(_voiced(target, dying[_down.length % dying.length]));
       }
+      if (!_saidFirstDown) {
+        _saidFirstDown = true;
+        out.addAll(_render(scene.firstDown, pc: attacker));
+      }
+    } else if (!target.isDown &&
+        target.hp * 2 <= target.maxHp &&
+        _bloodied.add(target.id)) {
+      final hurt = target.creature?.voice?.hurt ?? const [];
+      if (hurt.isNotEmpty) {
+        out.add(_voiced(target, hurt[_bloodied.length % hurt.length]));
+      }
+      if (!_saidBloodied) {
+        _saidBloodied = true;
+        out.addAll(_render(scene.bloodied, pc: attacker));
+      }
+    }
+    return out;
+  }
+
+  /// What gets said about a spell just cast: the same turns as a strike,
+  /// for everyone it caught.
+  List<ScriptLine> afterSpell(SpellResult result) {
+    final out = <ScriptLine>[];
+    for (final hit in result.hits) {
+      out.addAll(_notice(result.caster, hit.target));
     }
     return out;
   }

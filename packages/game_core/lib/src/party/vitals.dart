@@ -6,9 +6,10 @@ import '../campaign/weather.dart';
 /// cast with.
 ///
 /// Spell slots and focus points are tracked from the character's own
-/// Pathbuilder sheet and restored by rest. Casting in a fight is not built
-/// yet, so nothing spends them; they are here so that rest has something true
-/// to restore the day it is.
+/// Pathbuilder sheet, spent by casting, and restored by rest. A prepared
+/// caster's slots are the spells they prepared: casting Fireball spends the
+/// Fireball, not any third-rank slot, which is why [expended] counts spells
+/// as well as [slotsLeft] counting ranks.
 class ActorVitals {
   ActorVitals({
     required this.maxHp,
@@ -17,8 +18,10 @@ class ActorVitals {
     int? focus,
     Map<int, int> slots = const {},
     Map<int, int>? slotsLeft,
+    Map<String, int>? expended,
     this.lastTreatedAt,
-  })  : hp = (hp ?? maxHp).clamp(0, maxHp),
+  })  : expended = {...?expended},
+        hp = (hp ?? maxHp).clamp(0, maxHp),
         focus = (focus ?? maxFocus).clamp(0, maxFocus),
         slots = Map.unmodifiable(slots),
         slotsLeft = {...(slotsLeft ?? slots)};
@@ -49,6 +52,9 @@ class ActorVitals {
   final Map<int, int> slots;
   final Map<int, int> slotsLeft;
 
+  /// Prepared spells cast today, keyed `<entry>|<rank>|<spell>`.
+  final Map<String, int> expended;
+
   /// When Treat Wounds last landed on them, in minutes since day 1 began.
   /// Pathfinder makes a patient immune to it for an hour afterwards.
   int? lastTreatedAt;
@@ -76,6 +82,7 @@ class ActorVitals {
     slotsLeft
       ..clear()
       ..addAll(slots);
+    expended.clear();
   }
 
   Map<String, Object?> toJson() => {
@@ -84,6 +91,7 @@ class ActorVitals {
         'slotsLeft': {
           for (final e in slotsLeft.entries) '${e.key}': e.value,
         },
+        if (expended.isNotEmpty) 'expended': Map<String, int>.from(expended),
         if (lastTreatedAt != null) 'treatedAt': lastTreatedAt,
       };
 
@@ -109,6 +117,10 @@ class ActorVitals {
             }
           : null,
       lastTreatedAt: (json['treatedAt'] as num?)?.toInt(),
+      expended: {
+        for (final e in (json['expended'] as Map? ?? const {}).entries)
+          e.key.toString(): (e.value as num?)?.toInt() ?? 0,
+      },
     );
   }
 

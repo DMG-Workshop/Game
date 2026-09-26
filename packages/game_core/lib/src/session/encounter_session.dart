@@ -2,8 +2,11 @@ import 'package:pf2e_core/pf2e_core.dart';
 
 import '../campaign/creature.dart';
 import '../campaign/gear.dart';
+import '../campaign/spell.dart';
 import '../party/equipment.dart';
 import '../party/experience.dart';
+import '../party/vitals.dart';
+import 'casting.dart';
 import 'session_actor.dart';
 
 /// Thrown when an action is not legal right now.
@@ -152,6 +155,46 @@ class XpAward {
   }
 }
 
+/// What one spell did to one target.
+class SpellHit {
+  const SpellHit({
+    required this.target,
+    required this.check,
+    required this.damage,
+    this.damageRoll,
+    this.dropped = false,
+  });
+
+  final Combatant target;
+
+  /// The spell attack against their AC, or their save against the caster.
+  final CheckOutcome check;
+
+  /// What they took, after any save.
+  final int damage;
+
+  /// The damage dice, for a spell attack; a save spell's are on the result.
+  final DamageRoll? damageRoll;
+  final bool dropped;
+}
+
+/// The record of one spell cast.
+class SpellResult {
+  const SpellResult({
+    required this.caster,
+    required this.option,
+    required this.hits,
+    this.damageRoll,
+  });
+
+  final Combatant caster;
+  final CastOption option;
+  final List<SpellHit> hits;
+
+  /// For a save spell, the damage rolled once for everyone it caught.
+  final DamageRoll? damageRoll;
+}
+
 /// The record of one strike.
 class StrikeResult {
   const StrikeResult({
@@ -211,7 +254,11 @@ class EncounterSession {
     Map<String, int> hp = const {},
     Set<String> fatigued = const {},
     this.rangedPenalty = 0,
-  })  : _roller = roller,
+    SpellBook? spells,
+    Map<String, ActorVitals> vitals = const {},
+  })  : _spells = spells ?? SpellBook(),
+        _vitals = vitals,
+        _roller = roller,
         _gear = gear,
         _loadouts = loadouts,
         _startingHp = hp,
@@ -255,6 +302,13 @@ class EncounterSession {
 
   /// Actors fighting Fatigued: -1 to AC, as Pathfinder has it.
   final Set<String> _fatigued;
+
+  /// The spells the engine has numbers for.
+  final SpellBook _spells;
+
+  /// What each actor has left to cast with, shared with the world, so a
+  /// spell spent here stays spent.
+  final Map<String, ActorVitals> _vitals;
 
   final DiceRoller _roller;
   final CheckResolver _resolver;
@@ -386,6 +440,134 @@ class EncounterSession {
     _actionsLeft--;
     _checkOutcome();
     return result;
+  }
+
+  /// The spells the current combatant could cast, with what they have left.
+  List<CastOption> castOptions() {
+    final actor = current.actor;
+    final vitals = actor == null ? null : _vitals[actor.id];
+    if (actor == null || vitals == null) return const [];
+    return castOptionsFor(actor, vitals, _spells);
+  }
+
+  /// Casts [spellName] at [targetId], at its highest rank still available
+  /// unless [rank] says which.
+  ///
+  /// Pathfinder's arithmetic throughout. A spell attack is rolled against AC
+  /// with the caster's spell attack modifier, and counts toward the multiple
+  /// attack penalty like any attack. A save spell is a basic save by every
+  /// target against the caster's spell DC, with the damage rolled once: none
+  /// on a critical success, half on a success, double on a critical failure.
+  /// A burst catches everyone standing in the target's zone, the party
+  /// included.
+  SpellResult cast(String spellName, {String? targetId, int? rank}) {
+    _requirePartyTurn();
+    final caster = current;
+    final needle = spellName.trim().toLowerCase();
+    final options = castOptions()
+        .where((o) =>
+            o.spell.name.toLowerCase() == needle &&
+            (rank == null || o.rank == rank))
+        .toList();
+    if (options.isEmpty) {
+      throw InvalidActionException(
+          '${caster.name} has no "$spellName" to cast.');
+    }
+    final option = options.firstWhere((o) => o.isAvailable,
+        orElse: () => throw InvalidActionException(
+            '${caster.name} has no ${options.first.spell.name} left today.'));
+    final spell = option.spell;
+    _requireActions(spell.actions);
+
+    final target =
+        targetId == null ? _nearestOpponent(caster) : combatantById(targetId);
+    if (target == null || target.isDown) {
+      throw InvalidActionException('There is nothing there to cast it at.');
+    }
+    final reach = encounter.zones.indexOf(spell.range);
+    if (_distance(caster, target) > (reach < 0 ? 0 : reach)) {
+      throw InvalidActionException('${target.name} is out of range for '
+          '${spell.name}.');
+    }
+
+    final damage = spell.damageAt(option.rank);
+    final hits = <SpellHit>[];
+    DamageRoll? shared;
+
+    if (spell.defense == SpellDefense.ac) {
+      final penalty = caster.nextAttackPenalty;
+      final weather = _distance(caster, target) > 0 ? -rangedPenalty : 0;
+      final check = _resolver.resolve(
+        modifier: option.attackBonus + penalty + weather,
+        dc: target.armorClass,
+        label: '${spell.name} (spell attack)',
+      );
+      caster.attacksThisTurn++;
+      final roll = check.degree.isSuccess
+          ? damage.rollDetailed(_roller,
+              critical: check.degree == DegreeOfSuccess.criticalSuccess)
+          : null;
+      final standing = !target.isDown;
+      if (roll != null) target.takeDamage(roll.total);
+      hits.add(SpellHit(
+        target: target,
+        check: check,
+        damage: roll?.total ?? 0,
+        damageRoll: roll,
+        dropped: standing && target.isDown,
+      ));
+    } else {
+      final caught = spell.area
+          ? [
+              for (final c in _combatants)
+                if (!c.isDown && c.zoneIndex == target.zoneIndex) c,
+            ]
+          : [target];
+      shared = damage.rollDetailed(_roller);
+      for (final victim in caught) {
+        final check = _resolver.resolve(
+          modifier: _saveOf(victim, spell.defense),
+          dc: option.dc,
+          label: '${spell.defense.name[0].toUpperCase()}'
+              '${spell.defense.name.substring(1)} against ${spell.name}',
+        );
+        final taken = switch (check.degree) {
+          DegreeOfSuccess.criticalSuccess => 0,
+          DegreeOfSuccess.success => shared.total ~/ 2,
+          DegreeOfSuccess.failure => shared.total,
+          DegreeOfSuccess.criticalFailure => shared.total * 2,
+        };
+        final standing = !victim.isDown;
+        victim.takeDamage(taken);
+        hits.add(SpellHit(
+          target: victim,
+          check: check,
+          damage: taken,
+          dropped: standing && victim.isDown,
+        ));
+      }
+    }
+
+    _actionsLeft -= spell.actions;
+    final vitals = _vitals[caster.id];
+    if (vitals != null) spendCast(option, vitals);
+    _checkOutcome();
+    return SpellResult(
+      caster: caster,
+      option: option,
+      hits: hits,
+      damageRoll: shared,
+    );
+  }
+
+  /// A combatant's save of [kind]: a creature's own, or a character's sheet.
+  int _saveOf(Combatant c, SpellDefense kind) {
+    final creature = c.creature;
+    if (creature != null) return creature.saveFor(kind.name) ?? 0;
+    final actor = c.actor;
+    // Fatigued is -1 to saves as well as AC.
+    final tired = _fatigued.contains(c.id) ? 1 : 0;
+    return (actor?.statFor(kind.name)?.total ?? 0) - tired;
   }
 
   /// Moves the current combatant one zone toward the enemy, or away.

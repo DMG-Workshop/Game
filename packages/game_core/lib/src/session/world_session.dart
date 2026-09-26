@@ -9,6 +9,7 @@ import '../campaign/gear.dart';
 import '../campaign/hunt.dart';
 import '../campaign/locations.dart';
 import '../campaign/npc.dart';
+import '../campaign/spell.dart';
 import '../campaign/weather.dart';
 import '../campaign/world.dart';
 import '../campaign/world_item.dart';
@@ -16,6 +17,7 @@ import '../party/equipment.dart';
 import '../party/experience.dart';
 import '../party/vitals.dart';
 import '../party/wealth.dart';
+import 'casting.dart';
 import 'encounter_session.dart';
 import 'game_session.dart';
 import 'session_actor.dart';
@@ -157,7 +159,9 @@ class WorldSession {
     String? cameFrom,
     Experience? experience,
     LootLedger? ledger,
+    SpellBook? spells,
   })  : _actors = List.of(actors),
+        spells = spells ?? SpellBook(),
         _experience = experience ?? Experience(),
         _ledger = ledger ?? LootLedger(),
         // Salted off the world's own starting point, so a seed still fixes
@@ -213,6 +217,10 @@ class WorldSession {
   static const int _minutesInDay = 24 * 60;
 
   final Campaign campaign;
+
+  /// The spells the engine has numbers for, from a content package.
+  final SpellBook spells;
+
   final List<SessionActor> _actors;
   final DiceRoller _roller;
   String _roomId;
@@ -626,6 +634,32 @@ class WorldSession {
   }
 
   // --- how the party is holding up -----------------------------------------
+
+  /// The spells [actorId] could cast, and how many times more today.
+  List<CastOption> castOptions(String actorId) {
+    final actor = actorFor(actorId);
+    return castOptionsFor(actor, _vitals[actor.id]!, spells);
+  }
+
+  /// Spell names on [actorId]'s sheet that the spell table has no numbers
+  /// for, so a client can say why they are not on offer.
+  List<String> spellsWithoutNumbers(String actorId) {
+    final character = actorFor(actorId).character;
+    final names = <String>{
+      for (final entry in character.spellcasting)
+        for (final list
+            in entry.prepared.isEmpty ? entry.known : entry.prepared)
+          ...list.spells,
+      for (final focus in character.focus) ...[
+        ...focus.cantrips,
+        ...focus.spells,
+      ],
+    };
+    return [
+      for (final name in names)
+        if (spells.byName(name) == null) name,
+    ]..sort();
+  }
 
   /// Hit points and what is left to cast with, for [actorId].
   ActorVitals vitalsOf(String actorId) => _vitals[actorFor(actorId).id]!;
@@ -1383,6 +1417,8 @@ class WorldSession {
       // road, and fighting in whatever the sky is doing.
       hp: {for (final a in _actors) a.id: _vitals[a.id]!.hp},
       fatigued: _fatiguedIds,
+      spells: spells,
+      vitals: _vitals,
       rangedPenalty: currentRoom.shelter ? 0 : weatherNow?.rangedPenalty ?? 0,
     );
   }
@@ -1777,6 +1813,7 @@ class WorldSession {
     required Campaign campaign,
     required List<SessionActor> actors,
     required Map<String, Object?> snapshot,
+    SpellBook? spells,
   }) {
     final id = snapshot['campaignId']?.toString();
     if (id != null && id != campaign.id) {
@@ -1807,6 +1844,7 @@ class WorldSession {
           ? Experience.fromJson(snapshot['experience'])
           : null,
       ledger: LootLedger.fromJson(snapshot['ledger']),
+      spells: spells,
     );
     final hunt = snapshot['hunt'];
     if (hunt is Map) {

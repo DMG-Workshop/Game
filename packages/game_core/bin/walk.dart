@@ -6,6 +6,7 @@ import 'package:pf2e_core/pf2e_core.dart';
 
 const _defaultCampaign = '../../campaigns/shattered_seals';
 const _defaultCharacter = '../pf2e_core/test/fixtures/korash.json';
+const _defaultContent = '../../content/pf2e_remaster';
 
 const _directions = {
   'north',
@@ -110,9 +111,17 @@ Future<void> main(List<String> args) async {
     return;
   }
 
+  // Spells are rules content, read from their own package when it is there.
+  final contentDir = options['content'] ?? _defaultContent;
+  final spellFile = File('$contentDir/spells.json');
+  final spells = spellFile.existsSync()
+      ? const CampaignLoader().readSpells(spellFile.readAsStringSync())
+      : SpellBook();
+
   final session = WorldSession(
     campaign: campaign,
     actors: actors,
+    spells: spells,
     roller: DiceRoller(seed),
     roomId: options['room'],
     hour: int.tryParse(options['hour'] ?? '') ?? 8,
@@ -295,6 +304,10 @@ bool _handle(WorldSession session, String line,
     case 'hp':
     case 'party':
       _renderStatus(session);
+      return true;
+
+    case 'spells':
+      _renderSpells(session, rest);
       return true;
 
     case 'rest':
@@ -1259,6 +1272,7 @@ const _commands = '''
                                                   wait out a storm)
   time                                            the day, the hour, the sky
   status                                          HP, spells, focus, fatigue
+  spells [who]                                    what each of you can cast
   rest                                            sleep 8 hours: HP back,
                                                   spells and focus restored
   treat [who]                                     Treat Wounds (Medicine)
@@ -1277,6 +1291,7 @@ usage: walk [options]
   --hour=N           Start at a given hour (default 8)
   --flags=a,b        Start with these flags already set
   --gold=N           Start with N more gold, to see who comes for it
+  --content=DIR      Rules content (default: $_defaultContent)
   --commands=a,b,c   Play a scripted sequence instead of reading stdin
   --help             Show this message
 
@@ -1405,14 +1420,21 @@ bool _fight(
           _narrate(fight.endTurn(), script);
         case 'flee':
           fight.flee();
+        case 'cast':
+          _cast(fight, rest, script);
+        case 'spells':
+          final options = fight.castOptions();
+          stdout.writeln(options.isEmpty
+              ? '  ${fight.current.name} has no spells the engine can cast.'
+              : '  ${options.join('\n  ')}');
         case 'status':
           _renderCombatants(fight);
         case 'quit':
         case 'q':
           return false;
         default:
-          stdout.writeln('In a fight you can: strike <target>, close, back, '
-              'end, status, flee.');
+          stdout.writeln('In a fight you can: strike <target>, cast <spell> '
+              '[target], spells, close, back, end, status, flee.');
       }
     } on InvalidActionException catch (e) {
       stdout.writeln('  ${e.message}');
@@ -1458,6 +1480,75 @@ bool _fight(
       session.concludeEncounter(fight);
   }
   return true;
+}
+
+/// Casts a spell: "cast fireball", or "cast needle darts c_hollow_thrall_1".
+void _cast(EncounterSession fight, String rest, FightScript script) {
+  if (rest.isEmpty) {
+    stdout.writeln('Cast what? ("spells" lists them.)');
+    return;
+  }
+  final words = rest.split(RegExp(r'\s+'));
+  String? target;
+  if (words.length > 1 && fight.combatantById(words.last) != null) {
+    target = words.removeLast();
+  }
+  final result = fight.cast(words.join(' '), targetId: target);
+  final o = result.option;
+  final cost = switch (o.cost) {
+    CastCost.cantrip => 'cantrip',
+    CastCost.prepared => 'prepared, ${o.left - 1} left',
+    CastCost.slot => 'rank ${o.rank} slot, ${o.left - 1} left',
+    CastCost.focus => 'focus point, ${o.left - 1} left',
+  };
+  stdout.writeln('\n  ${result.caster.name} casts ${o.spell.name} '
+      '(rank ${o.rank}, $cost)'
+      '${result.damageRoll == null ? '' : ': ${result.damageRoll}'}');
+  for (final hit in result.hits) {
+    final c = hit.check;
+    final against =
+        o.spell.defense == SpellDefense.ac ? 'vs AC ${c.dc}' : 'vs DC ${c.dc}';
+    final natural = c.wasShiftedByNatural ? ', natural ${c.dieRoll}' : '';
+    stdout.writeln('    ${hit.target.name}: ${c.label} d20(${c.dieRoll}) '
+        '${_signed(c.modifier)} = ${c.total} $against$natural — '
+        '${c.degree.displayName}');
+    final dice = hit.damageRoll;
+    stdout.writeln('      ${dice == null ? '' : 'damage $dice; '}'
+        'takes ${hit.damage}.${hit.dropped ? ' ${hit.target.name} goes down.' : ''}');
+  }
+  _speak(script.afterSpell(result));
+}
+
+/// What each character can cast, how many times more today, and anything
+/// on their sheet the spell table has no numbers for yet.
+void _renderSpells(WorldSession session, String who) {
+  try {
+    final actors = who.isEmpty ? session.actors : [session.actorFor(who)];
+    for (final actor in actors) {
+      final options = session.castOptions(actor.id);
+      stdout.writeln('\n${actor.name}:');
+      if (options.isEmpty) stdout.writeln('  nothing the engine can cast yet');
+      for (final o in options) {
+        final uses = o.cost == CastCost.cantrip
+            ? 'at will'
+            : '${o.left} left (${o.cost.name})';
+        final how = o.spell.defense == SpellDefense.ac
+            ? 'spell attack ${_signed(o.attackBonus)}'
+            : 'basic ${o.spell.defense.name}, DC ${o.dc}';
+        stdout
+            .writeln('  ${o.spell.name.padRight(16)} ${o.source.padRight(12)} '
+                'rank ${o.rank}  ${o.spell.damageAt(o.rank)}  $how  $uses');
+      }
+      final missing = session.spellsWithoutNumbers(actor.id);
+      if (missing.isNotEmpty) {
+        stdout.writeln(_wrap(
+            'Not in the spell table yet: ${missing.join(', ')}.',
+            indent: '  '));
+      }
+    }
+  } on InvalidMoveException catch (e) {
+    stdout.writeln(e.message);
+  }
 }
 
 /// Each strike with its dice, and whatever is said as the fight turns.
