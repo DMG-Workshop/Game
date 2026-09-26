@@ -166,12 +166,16 @@ Future<void> main(List<String> args) async {
     if (line.isEmpty) continue;
     if (line == 'quit' || line == 'q') break;
     final coinBefore = session.inventory.coin;
+    final xpBefore = {
+      for (final a in session.actors) a.id: session.experience.xpOf(a.id),
+    };
     final keepGoing = _handle(session, line, nextCommand);
     final gained = session.inventory.coin - coinBefore;
     if (gained > 0 && !line.toLowerCase().startsWith('sell')) {
       stdout.writeln('\n  [+${formatCoin(gained)} — the party has '
           '${formatCoin(session.inventory.coin)}]');
     }
+    _announceExperience(session, xpBefore);
     if (!keepGoing) break;
   }
 
@@ -582,6 +586,9 @@ void _renderSheet(WorldSession session, String who) {
     stdout.writeln('  HP ${actor.stats.maxHp}  '
         'Perception ${actor.stats.perception.formatted}  '
         'Class DC ${actor.stats.classDc}');
+    final xp = session.experience.xpOf(actor.id);
+    stdout.writeln('  XP $xp/$xpToLevel'
+        '${xp >= xpToLevel ? '  — ready to level up in Pathbuilder' : ''}');
   } on InvalidMoveException catch (e) {
     stdout.writeln(e.message);
   }
@@ -654,9 +661,44 @@ bool _unequip(WorldSession session, String rest) {
 String _signed(int value) => value >= 0 ? '+$value' : '$value';
 
 void _announceArcs(WorldSession session) {
-  final changes = session.applyPendingWorldState();
-  if (changes.isEmpty) return;
-  stdout.writeln('\n  *** The world shifts: ${changes.join(', ')} ***');
+  final settled = session.settleArcs();
+  for (final arc in settled.completed) {
+    stdout.writeln('\n  *** ${arc.isSide ? 'Side quest' : 'Quest'} complete: '
+        '${arc.name}${_rewardNote(arc)} ***');
+  }
+  if (settled.worldState.isEmpty) return;
+  stdout.writeln('\n  *** The world shifts: '
+      '${settled.worldState.join(', ')} ***');
+}
+
+String _rewardNote(CampaignArc arc) {
+  final reward = arc.reward;
+  if (reward == null || reward.isEmpty) return '';
+  return ' (${[
+    if (reward.copper > 0) formatCoin(reward.copper),
+    if (reward.xp > 0) '${reward.xp} XP',
+  ].join(', ')})';
+}
+
+/// Says what XP the last thing earned, and says so loudly for anyone it has
+/// taken to their next level — which happens in Pathbuilder, not here.
+void _announceExperience(WorldSession session, Map<String, int> before) {
+  final xp = session.experience;
+  final gained = {
+    for (final a in session.actors) a.id: xp.xpOf(a.id) - (before[a.id] ?? 0),
+  };
+  final earned = gained.values.fold(0, (m, g) => g > m ? g : m);
+  if (earned <= 0) return;
+  stdout.writeln('\n  [+$earned XP each]');
+  for (final actor in session.actors) {
+    final was = before[actor.id] ?? 0;
+    if (was < xpToLevel && xp.readyToLevel(actor.id)) {
+      stdout.writeln('\n  *** ${actor.name} has ${xp.xpOf(actor.id)} XP — '
+          'enough for level ${actor.character.level + 1}. Level up in '
+          'Pathbuilder and re-import; the thousand comes off when the new '
+          'sheet arrives. ***');
+    }
+  }
 }
 
 void _renderArcs(WorldSession session) {
@@ -667,7 +709,8 @@ void _renderArcs(WorldSession session) {
   }
   for (final arc in active) {
     final progress = arc.progress(session.flags);
-    stdout.writeln('\n${arc.name} (${progress.done}/${progress.total})');
+    stdout.writeln('\n${arc.name}${arc.isSide ? '  (side quest)' : ''} '
+        '(${progress.done}/${progress.total})${_rewardNote(arc)}');
     for (final objective in arc.objectives) {
       final done = session.flags.contains(objective.condition);
       stdout.writeln('  [${done ? 'x' : ' '}] ${objective.task}');

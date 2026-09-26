@@ -1,3 +1,22 @@
+/// Where a travelling NPC goes, and how restless they are.
+class NpcRoute {
+  const NpcRoute({
+    required this.stops,
+    this.every = 10,
+    this.awayChance = 25,
+  });
+
+  /// Rooms they might be found in.
+  final List<String> stops;
+
+  /// How many steps the party takes before they move on.
+  final int every;
+
+  /// Percent chance, each time they move, of being on the road between
+  /// stops — and so nowhere the party can find them.
+  final int awayChance;
+}
+
 /// A character standing in a room, answering to keywords.
 ///
 /// This is the classic MUD conversation: a greeting on approach, then topics
@@ -13,6 +32,7 @@ class Npc {
     required this.greeting,
     this.tier = 1,
     this.keywords = const {},
+    this.route,
   });
 
   final String id;
@@ -31,6 +51,12 @@ class Npc {
 
   /// Topic to reply, keyed by the word the player raises.
   final Map<String, String> keywords;
+
+  /// Set for somebody who travels. They are never in [location] by right;
+  /// the session decides where they are, on dice of its own.
+  final NpcRoute? route;
+
+  bool get travels => route != null;
 
   List<String> get topics => keywords.keys.toList()..sort();
 
@@ -78,6 +104,7 @@ class Npc {
 class NpcDirectory {
   NpcDirectory(List<Npc> npcs) : _npcs = List.of(npcs) {
     for (final npc in _npcs) {
+      if (npc.travels) continue;
       _byRoom.putIfAbsent(npc.location, () => []).add(npc);
     }
   }
@@ -89,8 +116,16 @@ class NpcDirectory {
 
   int get length => _npcs.length;
 
+  /// Everyone who stays put in [roomId]. Travellers are placed by the
+  /// session, which knows where they have got to.
   List<Npc> inRoom(String roomId) =>
       List.unmodifiable(_byRoom[roomId] ?? const []);
+
+  /// Everyone who moves about.
+  List<Npc> get travellers => [
+        for (final npc in _npcs)
+          if (npc.travels) npc,
+      ];
 
   Npc? byId(String id) {
     for (final npc in _npcs) {
@@ -101,10 +136,14 @@ class NpcDirectory {
 
   /// Finds an NPC in [roomId] by name or id, matching loosely on any word of
   /// their name so "thorne" reaches Captain Thorne Ironhelm.
-  Npc? findInRoom(String roomId, String query) {
+  Npc? findInRoom(String roomId, String query) =>
+      findAmong(inRoom(roomId), query);
+
+  /// Finds one of [npcs] by name or id, the way [findInRoom] does.
+  static Npc? findAmong(Iterable<Npc> npcs, String query) {
     final needle = query.trim().toLowerCase();
     if (needle.isEmpty) return null;
-    for (final npc in inRoom(roomId)) {
+    for (final npc in npcs) {
       if (npc.id.toLowerCase() == needle) return npc;
       if (npc.name.toLowerCase() == needle) return npc;
       final words = npc.name.toLowerCase().split(RegExp(r'\s+'));
@@ -113,9 +152,11 @@ class NpcDirectory {
     return null;
   }
 
-  /// NPCs placed in a room that does not exist.
+  /// NPCs placed in a room that does not exist, or travelling to one.
   List<Npc> misplacedIn(Set<String> knownRoomIds) => [
         for (final npc in _npcs)
-          if (!knownRoomIds.contains(npc.location)) npc
+          if (!knownRoomIds.contains(npc.location) ||
+              (npc.route?.stops.any((s) => !knownRoomIds.contains(s)) ?? false))
+            npc
       ];
 }

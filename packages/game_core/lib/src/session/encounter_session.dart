@@ -3,6 +3,7 @@ import 'package:pf2e_core/pf2e_core.dart';
 import '../campaign/creature.dart';
 import '../campaign/gear.dart';
 import '../party/equipment.dart';
+import '../party/experience.dart';
 import 'session_actor.dart';
 
 /// Thrown when an action is not legal right now.
@@ -178,6 +179,8 @@ class EncounterSession {
   int _actionsLeft = actionsPerTurn;
   EncounterOutcome? _outcome;
   List<GearItem> _loot = const [];
+  int _coinEarned = 0;
+  int _xpEarned = 0;
 
   /// Pathfinder gives three actions a turn, which is what makes a third
   /// attack a real choice rather than a free one.
@@ -213,6 +216,16 @@ class EncounterSession {
   /// is read — a drop that changed depending on how often the client asked
   /// about it would be no drop at all.
   List<GearItem> get loot => _loot;
+
+  /// Coin found on the defeated, in copper. Zero unless the fight was won.
+  int get coinEarned => _coinEarned;
+
+  /// XP each member of the party earns for winning.
+  ///
+  /// Pathfinder's: each creature is worth XP by its level against the party's,
+  /// and everyone in the party earns the total. Worked out here because the
+  /// fight is the one place that knows both who fought and what they fought.
+  int get xpEarned => _xpEarned;
 
   /// The loot as flags, so recovering something is recorded the same way as
   /// everything else the party has done.
@@ -426,9 +439,29 @@ class EncounterSession {
     if (enemies.every((c) => c.isDown)) {
       _outcome = EncounterOutcome.victory;
       _rollLoot();
+      _rollCoin();
+      _countXp();
     } else if (party.every((c) => c.isDown)) {
       _outcome = EncounterOutcome.defeat;
     }
+  }
+
+  void _rollCoin() {
+    final dice = encounter.coin;
+    if (dice == null) return;
+    _coinEarned = DamageExpression.parse(dice).roll(_roller) * 100;
+  }
+
+  void _countXp() {
+    final level = partyLevel([
+      for (final c in party)
+        if (c.actor case final actor?) actor.character.level,
+    ]);
+    _xpEarned = enemies.fold(
+        0,
+        (sum, c) =>
+            sum +
+            (c.creature == null ? 0 : creatureXp(c.creature!.level - level)));
   }
 
   /// Rolls each defeated creature's drop table.

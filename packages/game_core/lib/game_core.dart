@@ -18,6 +18,7 @@ export 'src/campaign/world_item.dart';
 export 'src/party/character_revision.dart';
 export 'src/party/character_store.dart';
 export 'src/party/equipment.dart';
+export 'src/party/experience.dart';
 export 'src/party/party.dart';
 export 'src/party/party_member.dart';
 export 'src/scene/adventure_loader.dart';

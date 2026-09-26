@@ -39,7 +39,7 @@
       "description": "Sacking, red cord, and a shape that is very nearly right.",
       "takeable": true,
       "requires": ["cleared_drowned_mill"],
-      "acquire_flags": ["deception_revealed_mere_road"],
+      "acquire_flags": ["deception_revealed_mere_road", "wendel_lie_uncovered"],
       "on_take": "It is heavy the wrong way. You cut the cord and river stones spill across the millstone, and among them a strip of red cloth knotted the way the Covenant knots it.\n\nNobody carried a child down this road. Somebody wanted you to believe they had, and wanted you a long way from the Whisperwood while you believed it.\n\nFrom back up the causeway, faint across the water, a bell begins to ring."
     },
     {
@@ -50,7 +50,7 @@
       "description": "Heavy cream paper. The wax carries the royal cipher.",
       "takeable": true,
       "requires": ["cleared_false_seal"],
-      "acquire_flags": ["deception_revealed_under_archive"],
+      "acquire_flags": ["deception_revealed_under_archive", "hale_lie_uncovered"],
       "on_take": "It is addressed to the keepers of the vault, and it is short.\n\n'Keep them below as long as they are willing to stay. Hale has done well; see that the girl is kept comfortable, and remind him of her if he wavers. — L.'\n\nThe seal on the wall is painted plaster. Close enough to read by, you can see the brush strokes. Above you, the stair you came down is full of small sounds, and all of them are coming this way."
     }
   ]

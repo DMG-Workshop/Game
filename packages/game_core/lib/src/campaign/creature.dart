@@ -109,6 +109,7 @@ class Encounter {
     this.rearmOn = const [],
     this.rearmDescription,
     this.ambush = false,
+    this.coin,
   });
 
   final String id;
@@ -147,6 +148,12 @@ class Encounter {
 
   /// What the party sees when the fight has come back, if it differs.
   final String? rearmDescription;
+
+  /// What the defeated were carrying, in gold, as dice: `3d6`, `2d10+40`.
+  ///
+  /// Rolled every time the fight is won, waves included: whoever came back
+  /// up the road came back with their own purses.
+  final String? coin;
 
   /// True when it stops the party walking on past it.
   ///

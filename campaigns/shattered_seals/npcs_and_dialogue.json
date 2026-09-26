@@ -116,6 +116,24 @@
         "nails": "Plenty of call for iron nails in this town, and nobody will buy mine. Somebody local is selling them cheaper, and I'd dearly like to know who.",
         "prices": "Capital prices. But they're fair capital prices."
       }
+    },
+    {
+      "npc_id": "npc_010_sal",
+      "name": "Sal Mercy",
+      "location": "WW_001_Edge",
+      "tier": 1,
+      "appearance": "A mule stands in the road loaded higher than any mule should be, a bell on its bridle, and beside it a small woman as brown as a walnut, counting something on her fingers that she does not intend to tell you about.",
+      "greeting": "Mercy's the name, and it's the only thing I give away.",
+      "keywords": {
+        "mule": "Her name is Patience. She has none.",
+        "road": "I go where the roads go. Lately they go to graveyards.",
+        "prices": "Dear. It all rides on one mule, and you're paying for her feet."
+      },
+      "route": {
+        "stops": ["WW_001_Edge", "RF_001_Farm", "MH_004_Temple", "VC_001_Plaza", "BM_001_Entrance"],
+        "every": 8,
+        "away_chance": 30
+      }
     }
   ]
 }

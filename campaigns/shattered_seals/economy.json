@@ -37,6 +37,35 @@
         { "flag": "jory_discount_large", "percent": -20 },
         { "flag": "jory_offended", "percent": 10 }
       ]
+    },
+    {
+      "shop_id": "s_002_mercys_mule",
+      "name": "Sal Mercy's Mule",
+      "keeper": "npc_010_sal",
+      "carries": 3,
+      "stock": [
+        { "item": "w_029_drovers_goad" },
+        { "item": "g_022_hollow_ash" },
+        { "item": "a_030_oilskin_brigandine" },
+        { "item": "w_031_tollkeepers_hook" },
+        { "item": "a_032_mourners_mail" },
+        {
+          "item": "g_013_fourth_name_ledger",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "a_015_seal_wardens_regalia",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_016_sundering_edge",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_018_shadow_ripper",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        }
+      ]
     }
   ],
   "rewards": [

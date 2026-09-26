@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:pf2e_core/pf2e_core.dart';
 
 import '../scene/adventure_loader.dart';
+import '../party/experience.dart';
 import '../scene/scene.dart';
 import 'arc.dart';
 import 'campaign.dart';
@@ -191,9 +192,27 @@ class CampaignLoader {
           for (final e in _map(raw['keywords']).entries)
             e.key.trim().toLowerCase(): e.value.toString(),
         },
+        route: _readRoute(raw['route'], id),
       ));
     }
     return NpcDirectory(npcs);
+  }
+
+  NpcRoute? _readRoute(Object? raw, String npcId) {
+    if (raw is! Map) return null;
+    final m = raw.cast<String, Object?>();
+    final stops = _strings(m['stops']);
+    if (stops.isEmpty) {
+      throw CampaignFormatException(
+          '"$npcId" travels but has nowhere to travel to.');
+    }
+    final every = _int(m['every'], fallback: 10);
+    final away = _int(m['away_chance'], fallback: 25);
+    if (every < 1 || away < 0 || away > 100) {
+      throw CampaignFormatException('"$npcId" has a route that moves every '
+          '$every steps with a $away% chance of being away.');
+    }
+    return NpcRoute(stops: stops, every: every, awayChance: away);
   }
 
   // --- gear ----------------------------------------------------------------
@@ -323,10 +342,24 @@ class CampaignLoader {
         rearmOn: _strings(raw['rearm_on']),
         rearmDescription: _optional(raw['rearm_description']),
         ambush: raw['ambush'] == true,
+        coin: _readCoinDice(raw['coin'], id),
       ));
     }
 
     return Bestiary(creatures: creatures, encounters: encounters);
+  }
+
+  /// Reads a fight's coin as dice in gold, checked now rather than when the
+  /// party is standing over the bodies.
+  String? _readCoinDice(Object? raw, String encounterId) {
+    final dice = _optional(raw);
+    if (dice == null) return null;
+    final parsed = DamageExpression.tryParse(dice);
+    if (parsed == null || parsed.minimum < 0) {
+      throw CampaignFormatException(
+          'Fight "$encounterId" pays "$dice", which is not dice of gold.');
+    }
+    return dice;
   }
 
   CreatureAttack _readAttack(Map<String, Object?> raw, String creatureId) {
@@ -402,7 +435,8 @@ class CampaignLoader {
         id: id,
         name: _string(raw['name'], 'shop name'),
         keeperId: _string(raw['keeper'], 'shop keeper on "$id"'),
-        location: _string(raw['location'], 'shop location on "$id"'),
+        location: _optional(raw['location']),
+        carries: raw['carries'] == null ? null : _int(raw['carries']),
         stock: [
           for (final line in _list(raw['stock']))
             if (line is Map)
@@ -424,18 +458,39 @@ class CampaignLoader {
       ));
     }
 
-    final rewards = <CoinReward>[];
+    final rewards = <Reward>[];
     for (final entry in _list(root['rewards'])) {
       if (entry is! Map) continue;
       final raw = entry.cast<String, Object?>();
       final flag = _string(raw['flag'], 'reward flag');
-      final copper = _readPrice(raw['gp'], 'the reward for "$flag"');
-      if (copper == null) {
-        throw CampaignFormatException('The reward for "$flag" has no "gp".');
+      final payout = _readPayout(raw, 'the reward for "$flag"');
+      if (payout.isEmpty) {
+        throw CampaignFormatException('The reward for "$flag" pays nothing.');
       }
-      rewards.add(CoinReward(flag: flag, copper: copper));
+      rewards.add(Reward(flag: flag, payout: payout));
     }
     return Economy(shops: shops, rewards: rewards);
+  }
+
+  /// Reads `gp` and `xp` from a reward. XP may be a number or the size of the
+  /// accomplishment — `minor`, `moderate`, `major` — which is how Pathfinder
+  /// asks a GM to think about it.
+  Payout _readPayout(Map<String, Object?> raw, String what) {
+    final rawXp = raw['xp'];
+    final int xp;
+    if (rawXp == null) {
+      xp = 0;
+    } else if (rawXp is String && Accomplishment.tryParse(rawXp) != null) {
+      xp = Accomplishment.tryParse(rawXp)!.xp;
+    } else {
+      final n = _int(rawXp, fallback: -1);
+      if (n < 0) {
+        throw CampaignFormatException('The XP of $what is "$rawXp", which is '
+            'neither a number nor minor, moderate or major.');
+      }
+      xp = n;
+    }
+    return Payout(copper: _readPrice(raw['gp'], what) ?? 0, xp: xp);
   }
 
   /// Reads an amount written in gold pieces as copper, or null if absent.
@@ -547,6 +602,11 @@ class CampaignLoader {
               ),
         ],
         worldStateChanges: _strings(raw['world_state_changes_on_completion']),
+        isSide: _optional(raw['kind'])?.toLowerCase() == 'side',
+        reward: raw['reward'] is Map
+            ? _readPayout((raw['reward'] as Map).cast<String, Object?>(),
+                'the reward for "$id"')
+            : null,
       ));
     }
     return ArcTrack(arcs);

@@ -240,7 +240,8 @@
       "start_zone": "near",
       "repeatable": false,
       "victory_flags": ["cleared_whisperwood_thralls"],
-      "ambush": true
+      "ambush": true,
+      "coin": "2d6"
     },
     {
       "encounter_id": "e_hollow_grove",
@@ -250,7 +251,8 @@
       "creatures": ["c_hollow_avatar", "c_hollow_thrall", "c_hollow_thrall"],
       "start_zone": "far",
       "requires": ["item_acquired_elaras_doll"],
-      "victory_flags": ["boss_defeated_hollow_avatar"]
+      "victory_flags": ["boss_defeated_hollow_avatar"],
+      "coin": "6d10+40"
     },
     {
       "encounter_id": "e_ritual_chamber",
@@ -260,7 +262,8 @@
       "creatures": ["c_malachai_vex", "c_covenant_acolyte", "c_covenant_acolyte"],
       "start_zone": "near",
       "requires": ["item_destroyed_bloodstone_geode"],
-      "victory_flags": ["boss_defeated_malachai_vex"]
+      "victory_flags": ["boss_defeated_malachai_vex"],
+      "coin": "10d20+600"
     },
     {
       "encounter_id": "e_mere_road_cutthroats",
@@ -272,7 +275,8 @@
       "start_zone": "near",
       "ambush": true,
       "rearm_on": ["deception_revealed_mere_road"],
-      "victory_flags": ["cleared_mere_road"]
+      "victory_flags": ["cleared_mere_road"],
+      "coin": "3d6"
     },
     {
       "encounter_id": "e_reed_beds_drowned",
@@ -284,7 +288,8 @@
       "start_zone": "near",
       "ambush": true,
       "rearm_on": ["deception_revealed_mere_road"],
-      "victory_flags": ["cleared_reed_beds"]
+      "victory_flags": ["cleared_reed_beds"],
+      "coin": "2d4"
     },
     {
       "encounter_id": "e_drowned_mill",
@@ -294,7 +299,8 @@
       "creatures": ["c_covenant_cutthroat", "c_mere_drowned", "c_covenant_cutthroat"],
       "start_zone": "near",
       "ambush": true,
-      "victory_flags": ["cleared_drowned_mill"]
+      "victory_flags": ["cleared_drowned_mill"],
+      "coin": "4d6+5"
     },
     {
       "encounter_id": "e_sealed_stacks_warden",
@@ -306,7 +312,8 @@
       "start_zone": "far",
       "ambush": true,
       "rearm_on": ["deception_revealed_under_archive"],
-      "victory_flags": ["cleared_sealed_stacks"]
+      "victory_flags": ["cleared_sealed_stacks"],
+      "coin": "4d20+120"
     },
     {
       "encounter_id": "e_ossuary_readers",
@@ -318,7 +325,8 @@
       "start_zone": "near",
       "ambush": true,
       "rearm_on": ["deception_revealed_under_archive"],
-      "victory_flags": ["cleared_ossuary_stair"]
+      "victory_flags": ["cleared_ossuary_stair"],
+      "coin": "6d20+150"
     },
     {
       "encounter_id": "e_false_seal",
@@ -328,7 +336,8 @@
       "creatures": ["c_covenant_acolyte", "c_covenant_acolyte", "c_ossuary_reader"],
       "start_zone": "near",
       "ambush": true,
-      "victory_flags": ["cleared_false_seal"]
+      "victory_flags": ["cleared_false_seal"],
+      "coin": "8d20+250"
     }
   ]
 }

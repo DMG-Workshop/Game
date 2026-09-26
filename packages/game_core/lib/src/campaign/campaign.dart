@@ -47,6 +47,11 @@ class Campaign {
   /// Where gear is bought and sold, and the coin paid for deeds.
   final Economy economy;
 
+  /// What setting [flag] pays: a reward the economy lists, or the reward for
+  /// the quest [flag] marks as finished.
+  Payout? payoutFor(String flag) =>
+      economy.rewardFor(flag) ?? arcs.completedBy(flag)?.reward;
+
   /// Everything a player could see in a room: its text, exits, and who is
   /// standing there.
   ({Room room, Town? town, Region? region, List<Npc> npcs})? look(
@@ -81,6 +86,15 @@ class Campaign {
         unobtainableGear: gear.unobtainableRarities,
         orphanedConversations:
             conversations.orphanedFrom({for (final n in npcs.all) n.id}),
+        unpaidEncounters: [
+          for (final e in bestiary.encounters)
+            if (e.coin == null) e,
+        ],
+        unrewardedArcs: [
+          for (final arc in arcs.all)
+            if ((arc.reward?.copper ?? 0) <= 0 || (arc.reward?.xp ?? 0) <= 0)
+              arc,
+        ],
         shopProblems: economy.problems(
           gear: gear,
           npcs: npcs,
@@ -170,6 +184,8 @@ class CampaignReport {
     this.unobtainableGear = const [],
     this.orphanedConversations = const [],
     this.shopProblems = const [],
+    this.unpaidEncounters = const [],
+    this.unrewardedArcs = const [],
   });
 
   /// Rooms a zone or an exit names but nobody has written.
@@ -212,6 +228,13 @@ class CampaignReport {
   /// Shops selling what they should not, or kept by nobody.
   final List<String> shopProblems;
 
+  /// Fights that pay no coin. Every fight should: somebody was carrying
+  /// something.
+  final List<Encounter> unpaidEncounters;
+
+  /// Quests, main or side, that pay no coin or no XP.
+  final List<CampaignArc> unrewardedArcs;
+
   bool get isClean =>
       unwrittenRooms.isEmpty &&
       danglingExits.isEmpty &&
@@ -225,7 +248,9 @@ class CampaignReport {
       danglingDrops.isEmpty &&
       unobtainableGear.isEmpty &&
       orphanedConversations.isEmpty &&
-      shopProblems.isEmpty;
+      shopProblems.isEmpty &&
+      unpaidEncounters.isEmpty &&
+      unrewardedArcs.isEmpty;
 
   /// Problems that would strand a player right now, as opposed to content
   /// that is merely unfinished.
@@ -285,6 +310,10 @@ class CampaignReport {
       danglingDrops.map((d) => '${d.item.name} drops from "${d.creatureId}"'),
     );
     section('Shops that need attention', shopProblems);
+    section('Fights that pay no coin',
+        unpaidEncounters.map((e) => '${e.name} (${e.id})'));
+    section('Quests that pay no coin or no XP',
+        unrewardedArcs.map((a) => '${a.name} (${a.id})'));
     section(
       'Conversations for somebody who does not exist',
       orphanedConversations.map((c) => c.npcId),

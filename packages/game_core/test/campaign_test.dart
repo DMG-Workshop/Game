@@ -116,7 +116,7 @@ void main() {
 
   group('npcs', () {
     test('reads the cast and places them', () {
-      expect(campaign.npcs.length, 9);
+      expect(campaign.npcs.length, 10);
       expect(campaign.npcs.byId('npc_001_thorne')!.name,
           'Captain Thorne Ironhelm');
       expect(
@@ -175,8 +175,8 @@ void main() {
     });
 
     test('filters by type', () {
-      expect(campaign.gear.ofType('armor'), hasLength(5));
-      expect(campaign.gear.ofType('weapon'), hasLength(17));
+      expect(campaign.gear.ofType('armor'), hasLength(7));
+      expect(campaign.gear.ofType('weapon'), hasLength(19));
       // Every item lands in exactly one category, so nothing is invisible to
       // a table that asks by type.
       final byType = {
@@ -191,7 +191,7 @@ void main() {
       // tables have nothing to offer.
       expect(
           campaign.gear.levelGaps(campaign.world.metadata.levelCap), isEmpty);
-      expect(campaign.gear.length, 28);
+      expect(campaign.gear.length, 32);
       for (var level = 1; level <= 20; level++) {
         expect(campaign.gear.forLevel(level), isNotEmpty,
             reason: 'nothing within two levels of $level');
@@ -476,7 +476,9 @@ void main() {
 
   group('arcs', () {
     test('reads both tiers', () {
-      expect(campaign.arcs.length, 2);
+      // Two tiers of main story, and the side quests alongside them.
+      expect(campaign.arcs.all.where((a) => !a.isSide), hasLength(2));
+      expect(campaign.arcs.all.where((a) => a.isSide), hasLength(3));
       final tier1 = campaign.arcs.byId('tier_1_local_threat')!;
       expect(tier1.name, 'Shadows Over Millhaven');
       expect(tier1.minLevel, 1);

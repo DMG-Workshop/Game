@@ -35,17 +35,25 @@ class Shop {
     required this.id,
     required this.name,
     required this.keeperId,
-    required this.location,
+    this.location,
     this.stock = const [],
     this.modifiers = const [],
+    this.carries,
   });
 
   final String id;
   final String name;
   final String keeperId;
 
-  /// The room the keeper trades from.
-  final String location;
+  /// The room the keeper trades from, or null for a shop that travels with
+  /// its keeper and is wherever they are.
+  final String? location;
+
+  /// How many things from [stock] are on hand at any one stop, for a shop
+  /// that carries a different selection each time; null for all of it.
+  final int? carries;
+
+  bool get travels => location == null;
   final List<StockLine> stock;
   final List<PriceModifier> modifiers;
 
@@ -72,28 +80,44 @@ class Shop {
   String toString() => '$name ($location)';
 }
 
-/// Coin paid out once, the first time a flag is set.
+/// Coin and experience paid out together.
+class Payout {
+  const Payout({this.copper = 0, this.xp = 0});
+
+  final int copper;
+
+  /// XP each member of the party earns.
+  final int xp;
+
+  bool get isEmpty => copper <= 0 && xp <= 0;
+
+  @override
+  String toString() => '$copper cp, $xp XP';
+}
+
+/// A payout made once, the first time a flag is set.
 ///
 /// A flag can only be set once, so a reward keyed to one cannot be claimed
 /// twice however many ways there are of setting it.
-class CoinReward {
-  const CoinReward({required this.flag, required this.copper});
+class Reward {
+  const Reward({required this.flag, required this.payout});
 
   final String flag;
-  final int copper;
+  final Payout payout;
 }
 
 /// The campaign's shops and the coin it pays out.
 class Economy {
-  Economy({List<Shop> shops = const [], List<CoinReward> rewards = const []})
+  Economy({List<Shop> shops = const [], List<Reward> rewards = const []})
       : _shops = List.of(shops),
-        _rewards = {for (final r in rewards) r.flag: r.copper};
+        _rewards = {for (final r in rewards) r.flag: r.payout};
 
   final List<Shop> _shops;
-  final Map<String, int> _rewards;
+  final Map<String, Payout> _rewards;
 
   List<Shop> get shops => List.unmodifiable(_shops);
 
+  /// The shop that stays in [roomId], if one does.
   Shop? shopIn(String roomId) {
     for (final shop in _shops) {
       if (shop.location == roomId) return shop;
@@ -101,8 +125,16 @@ class Economy {
     return null;
   }
 
-  /// Copper paid for setting [flag], or 0.
-  int rewardFor(String flag) => _rewards[flag] ?? 0;
+  /// The shop [npcId] keeps, wherever it is.
+  Shop? shopKeptBy(String npcId) {
+    for (final shop in _shops) {
+      if (shop.keeperId == npcId) return shop;
+    }
+    return null;
+  }
+
+  /// What setting [flag] pays, if anything.
+  Payout? rewardFor(String flag) => _rewards[flag];
 
   Set<String> get rewardFlags => _rewards.keys.toSet();
 
@@ -114,15 +146,22 @@ class Economy {
   }) {
     final out = <String>[];
     for (final shop in _shops) {
-      if (!roomIds.contains(shop.location)) {
-        out.add('${shop.name} is in "${shop.location}", which does not exist');
+      final location = shop.location;
+      if (location != null && !roomIds.contains(location)) {
+        out.add('${shop.name} is in "$location", which does not exist');
       }
       final keeper = npcs.byId(shop.keeperId);
       if (keeper == null) {
         out.add('${shop.name} is kept by "${shop.keeperId}", who does not '
             'exist');
-      } else if (keeper.location != shop.location) {
-        out.add('${shop.name} is in ${shop.location}, but ${keeper.name} is '
+      } else if (shop.travels && !keeper.travels) {
+        out.add('${shop.name} travels, but ${keeper.name} never goes '
+            'anywhere');
+      } else if (!shop.travels && keeper.travels) {
+        out.add('${shop.name} stays in $location, but ${keeper.name} '
+            'travels');
+      } else if (!shop.travels && keeper.location != location) {
+        out.add('${shop.name} is in $location, but ${keeper.name} is '
             'standing in ${keeper.location}');
       }
       for (final line in shop.stock) {

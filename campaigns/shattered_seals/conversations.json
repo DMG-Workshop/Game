@@ -162,7 +162,7 @@
               "outcome": {
                 "text": "Thorne says nothing at all for a while. Then he takes his sword belt down off its peg. \"I've drunk in that man's house for twenty years.\" He goes out past you without another word, and by evening the Drowned Sparrow is shut, with a guard on the door.",
                 "goTo": "thorne_gone",
-                "setFlags": ["thorne_asked_about_mere_road", "wendel_reported", "wendel_arrested"]
+                "setFlags": ["thorne_asked_about_mere_road", "wendel_reported", "wendel_arrested", "wendel_dealt_with"]
               },
               "requires": {
                 "flags": ["wendel_confessed"]
@@ -175,7 +175,7 @@
               "outcome": {
                 "text": "\"Wendel.\" Thorne sits back down, slowly. \"Pike's lived here his whole life.\" He looks at the red cord in your hand for a long time. \"I can't hang a man on a bit of string. But I can watch him. And I will.\"",
                 "goTo": "thorne_bye",
-                "setFlags": ["thorne_asked_about_mere_road", "wendel_reported"]
+                "setFlags": ["thorne_asked_about_mere_road", "wendel_reported", "wendel_dealt_with"]
               },
               "requires": {
                 "notFlags": ["wendel_confessed"]
@@ -986,10 +986,24 @@
               "outcome": {
                 "text": "\"Well, somebody has,\" Wendel says, a shade too quickly. \"Two somebodies, carrying a third.\" He picks up a cup that is already clean and cleans it.",
                 "goTo": "wendel_bar",
-                "setFlags": ["caught_wendel_lying"]
+                "setFlags": ["caught_wendel_lying", "wendel_lie_uncovered"]
               },
               "requires": {
                 "flags": ["aldus_doubted_the_mere"],
+                "notFlags": ["caught_wendel_lying", "deception_revealed_mere_road"]
+              }
+            },
+            {
+              "id": "pedlar",
+              "label": "Tell him what the pedlar said",
+              "say": "Sal Mercy says the men on the Mere Road are paid in here.",
+              "outcome": {
+                "text": "Wendel laughs, and it comes out wrong. \"Sal Mercy? She'd sell you your own boots.\" His eyes go to the lamp on the back stair, and come back, and he sees you watching them do it.",
+                "goTo": "wendel_bar",
+                "setFlags": ["caught_wendel_lying", "wendel_lie_uncovered"]
+              },
+              "requires": {
+                "flags": ["sal_warned_of_the_mere", "heard_of_the_mere_road"],
                 "notFlags": ["caught_wendel_lying", "deception_revealed_mere_road"]
               }
             },
@@ -1034,12 +1048,12 @@
                 "criticalSuccess": {
                   "text": "He tells it again, word for word — exactly word for word, the same pauses in the same places, like a man reciting. And when he says *south*, his eyes go, just for a moment, to the lamp burning on the back stair.\n\nHe is lying, and lying to send you south, which means whatever he is covering for is somewhere else. The Whisperwood is west.",
                   "goTo": "wendel_bye",
-                  "setFlags": ["heard_of_the_mere_road", "caught_wendel_lying", "wendel_looked_at_the_lamp"]
+                  "setFlags": ["heard_of_the_mere_road", "caught_wendel_lying", "wendel_looked_at_the_lamp", "wendel_lie_uncovered"]
                 },
                 "success": {
                   "text": "He tells it again, and it comes out the same — too much the same, the same pauses in the same places, like a man reciting something he has practised. He is lying to you. You are not sure yet why.",
                   "goTo": "wendel_bye",
-                  "setFlags": ["heard_of_the_mere_road", "caught_wendel_lying"]
+                  "setFlags": ["heard_of_the_mere_road", "caught_wendel_lying", "wendel_lie_uncovered"]
                 },
                 "failure": {
                   "text": "He tells it again. It is a good story, and he tells it like a man who has been telling it all week to anybody who would listen, which is probably exactly what he has been doing.",
@@ -1105,17 +1119,17 @@
                 "criticalSuccess": {
                   "text": "\"The Hollow Grove!\" It comes out of him all at once. \"West, through the Whisperwood, past where the trees stop having birds. They said nobody would be hurt. They said she'd be kept, not— they said *kept*.\" He is crying now, which does not make you like him any better.",
                   "goTo": "wendel_broken",
-                  "setFlags": ["wendel_confessed", "wendel_named_the_grove"]
+                  "setFlags": ["wendel_confessed", "wendel_named_the_grove", "wendel_dealt_with"]
                 },
                 "success": {
                   "text": "\"West.\" He can't hold your eye. \"The Whisperwood, the grove at the heart of it. They pay me to send people south, and I send them south, and I don't ask what's west.\"",
                   "goTo": "wendel_broken",
-                  "setFlags": ["wendel_confessed", "wendel_named_the_grove"]
+                  "setFlags": ["wendel_confessed", "wendel_named_the_grove", "wendel_dealt_with"]
                 },
                 "failure": {
                   "text": "\"I don't know what you're talking about,\" he says, and walks into the back, and bolts the door. A moment later the lamp on the back stair goes out.",
                   "goTo": "wendel_bolted",
-                  "setFlags": ["wendel_fled"]
+                  "setFlags": ["wendel_fled", "wendel_dealt_with"]
                 }
               },
               "requires": {
@@ -1131,7 +1145,7 @@
                 "success": {
                   "text": "He sits down on the nearest bench as if his legs have been cut. \"They've got my boy,\" he says. \"Not— not like that. He's with them. He went to Thornhaven for work and came back with a red cord on his wrist, and he's so *happy*, and they said if I did as I was told he'd stay happy.\" A long breath. \"The Hollow Grove. West, through the wood. That's where they're keeping her.\"",
                   "goTo": "wendel_broken",
-                  "setFlags": ["wendel_confessed", "wendel_named_the_grove", "wendel_spoke_of_his_son"]
+                  "setFlags": ["wendel_confessed", "wendel_named_the_grove", "wendel_spoke_of_his_son", "wendel_dealt_with"]
                 },
                 "failure": {
                   "text": "\"I've done nothing I need a way out of,\" he says, and turns his back on you to serve somebody who isn't there.",
@@ -1562,12 +1576,12 @@
                 "criticalSuccess": {
                   "text": "\"Most nights,\" he says, and his hands, which have been still on the catalogue, press down flat as if to hold it shut. He isn't lying about the chanting. He is lying about everything around it. And when he says *the mines are a feint*, he looks, for a fraction of a second, like a man who badly wants to be contradicted.",
                   "goTo": "hale_bye",
-                  "setFlags": ["heard_of_the_under_archive", "caught_hale_lying", "hale_wants_to_be_stopped"]
+                  "setFlags": ["heard_of_the_under_archive", "caught_hale_lying", "hale_wants_to_be_stopped", "hale_lie_uncovered"]
                 },
                 "success": {
                   "text": "\"Most nights,\" he says, and his hands press flat on the catalogue as if to hold it shut. The story is good. The man telling it is terrified. He is lying to you.",
                   "goTo": "hale_bye",
-                  "setFlags": ["heard_of_the_under_archive", "caught_hale_lying"]
+                  "setFlags": ["heard_of_the_under_archive", "caught_hale_lying", "hale_lie_uncovered"]
                 },
                 "failure": {
                   "text": "\"Most nights,\" he says. \"Low. In a language I can read but have never heard spoken.\" He is afraid, but everyone in this city is afraid, and he has more reason than most.",
@@ -1620,12 +1634,12 @@
                 "success": {
                   "text": "\"Her name is Wenna,\" Hale says. \"She's eleven. They took her to Thornhaven for her schooling, the Queen said, a great honour.\" He wipes his eyes with an ink-stained cuff. \"The mines. It's the mines, it was always the mines. There's a geode at the bottom of the deep workings that the whole city is drinking from, and while it stands, what's in Thornhaven can't be stopped.\"",
                   "goTo": "hale_bye",
-                  "setFlags": ["hale_confessed", "hale_named_the_geode"]
+                  "setFlags": ["hale_confessed", "hale_named_the_geode", "hale_confronted"]
                 },
                 "failure": {
                   "text": "\"You don't know anything,\" Hale says, too loudly for a library, and then, in a whisper: \"Please go away.\"",
                   "goTo": "hale_bye",
-                  "setFlags": ["hale_stonewalled"]
+                  "setFlags": ["hale_stonewalled", "hale_confronted"]
                 }
               },
               "requires": {
@@ -1641,12 +1655,12 @@
                 "success": {
                   "text": "\"Because I'm the only one who'll tell you the truth!\" He is on his feet and shaking. \"The mines. The geode in the deep workings. Break it and Thornhaven's gates can be opened — he can't hold the ritual without it.\" He sits back down. \"She has my daughter.\"",
                   "goTo": "hale_bye",
-                  "setFlags": ["hale_confessed", "hale_named_the_geode"]
+                  "setFlags": ["hale_confessed", "hale_named_the_geode", "hale_confronted"]
                 },
                 "failure": {
                   "text": "Hale flinches, and then — to his own evident surprise — doesn't. \"There is nothing you can do to me that she hasn't already,\" he says, quite calmly.",
                   "goTo": "hale_bye",
-                  "setFlags": ["hale_stonewalled"]
+                  "setFlags": ["hale_stonewalled", "hale_confronted"]
                 }
               },
               "requires": {
@@ -1674,12 +1688,12 @@
                 "success": {
                   "text": "\"Her name is Wenna,\" Hale says. \"She's eleven. They took her to Thornhaven for her schooling, the Queen said, a great honour.\" He wipes his eyes with an ink-stained cuff. \"The mines. It's the mines, it was always the mines. There's a geode at the bottom of the deep workings that the whole city is drinking from, and while it stands, what's in Thornhaven can't be stopped.\"",
                   "goTo": "hale_bye",
-                  "setFlags": ["hale_confessed", "hale_named_the_geode"]
+                  "setFlags": ["hale_confessed", "hale_named_the_geode", "hale_confronted"]
                 },
                 "failure": {
                   "text": "\"You don't know anything,\" Hale says, too loudly for a library, and then, in a whisper: \"Please go away.\"",
                   "goTo": "hale_bye",
-                  "setFlags": ["hale_stonewalled"]
+                  "setFlags": ["hale_stonewalled", "hale_confronted"]
                 }
               },
               "requires": {
@@ -1695,12 +1709,12 @@
                 "success": {
                   "text": "\"Because I'm the only one who'll tell you the truth!\" He is on his feet and shaking. \"The mines. The geode in the deep workings. Break it and Thornhaven's gates can be opened — he can't hold the ritual without it.\" He sits back down. \"She has my daughter.\"",
                   "goTo": "hale_bye",
-                  "setFlags": ["hale_confessed", "hale_named_the_geode"]
+                  "setFlags": ["hale_confessed", "hale_named_the_geode", "hale_confronted"]
                 },
                 "failure": {
                   "text": "Hale flinches, and then — to his own evident surprise — doesn't. \"There is nothing you can do to me that she hasn't already,\" he says, quite calmly.",
                   "goTo": "hale_bye",
-                  "setFlags": ["hale_stonewalled"]
+                  "setFlags": ["hale_stonewalled", "hale_confronted"]
                 }
               },
               "requires": {
@@ -2054,6 +2068,128 @@
           "id": "jory_bye",
           "title": "Jory Tallow",
           "body": "Jory goes back to his broadsheet.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_010_sal",
+      "entries": [
+        {
+          "scene": "sal_again",
+          "requires": ["met_sal"]
+        },
+        { "scene": "sal_open" }
+      ],
+      "scenes": [
+        {
+          "id": "sal_open",
+          "title": "Sal Mercy",
+          "body": "The woman with the mule looks you over the way a buyer looks over a horse. \"Mercy's the name,\" she says, \"and it's the only thing I give away.\"",
+          "options": [
+            {
+              "id": "greet",
+              "label": "Ask her business",
+              "say": "What brings you out here?",
+              "outcome": {
+                "text": "\"Selling. Buying, if it's worth it. Listening, always.\" The mule shifts, and its bell clanks once.",
+                "goTo": "sal_talk",
+                "setFlags": ["met_sal"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave her be",
+              "outcome": {
+                "text": "She is already counting again.",
+                "goTo": "sal_bye",
+                "setFlags": ["met_sal"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "sal_talk",
+          "title": "Sal Mercy",
+          "body": "Sal waits, one hand on the mule's neck.",
+          "options": [
+            {
+              "id": "ask_road",
+              "label": "Ask where she travels",
+              "say": "Where do your roads go?",
+              "outcome": {
+                "text": "\"Wherever there's somebody with coin and a reason not to go to town for it.\" She jerks her chin at the mule. \"Patience and I don't stay anywhere long. Stand still in this country and something comes up out of the ground to see why.\"",
+                "goTo": "sal_talk",
+                "setFlags": ["sal_told_of_the_roads"]
+              },
+              "requires": {
+                "notFlags": ["sal_told_of_the_roads"]
+              }
+            },
+            {
+              "id": "ask_stock",
+              "label": "Ask what she is carrying",
+              "say": "What's on the mule today?",
+              "outcome": {
+                "text": "\"Today? Whatever didn't sell yesterday.\" She slaps a pannier. \"Things a town merchant won't carry and a few he's never heard of. Different every time you find me — if you find me.\"",
+                "goTo": "sal_talk",
+                "setFlags": ["sal_told_of_her_stock"]
+              },
+              "requires": {
+                "notFlags": ["sal_told_of_her_stock"]
+              }
+            },
+            {
+              "id": "rumour",
+              "label": "[Diplomacy] Ask what she has heard on the roads",
+              "say": "You've been on every road in the valley. What's worth knowing?",
+              "check": { "stat": "diplomacy", "dc": 15 },
+              "outcomes": {
+                "success": {
+                  "text": "\"That the Mere Road's got a bell on it that rings for nobody, and the men who wait by it are paid in the Sparrow.\" She taps the side of her nose. \"And that nothing that goes south from Millhaven is carrying a child. Whatever took the Whitmore girl went west, into the trees.\"",
+                  "goTo": "sal_talk",
+                  "setFlags": ["sal_rumoured", "sal_warned_of_the_mere"]
+                },
+                "failure": {
+                  "text": "\"That it costs to know things,\" she says, \"and you aren't buying.\"",
+                  "goTo": "sal_talk",
+                  "setFlags": ["sal_rumoured"]
+                }
+              },
+              "requires": {
+                "notFlags": ["sal_rumoured"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "say": "Safe roads.",
+              "outcome": { "text": "\"There aren't any,\" says Sal Mercy, cheerfully.", "goTo": "sal_bye" }
+            }
+          ]
+        },
+        {
+          "id": "sal_again",
+          "title": "Sal Mercy",
+          "body": "Sal Mercy squints at you. \"You again. Anyone would think you were following me.\"",
+          "options": [
+            {
+              "id": "talk",
+              "label": "Talk",
+              "say": "Just passing, same as you.",
+              "outcome": { "text": "\"Go on, then.\"", "goTo": "sal_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "The mule's bell clanks as you go.", "goTo": "sal_bye" }
+            }
+          ]
+        },
+        {
+          "id": "sal_bye",
+          "title": "Sal Mercy",
+          "body": "The mule's bell clanks as she shifts her weight.",
           "isEnding": true
         }
       ]

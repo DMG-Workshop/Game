@@ -10,6 +10,7 @@ import '../campaign/npc.dart';
 import '../campaign/world.dart';
 import '../campaign/world_item.dart';
 import '../party/equipment.dart';
+import '../party/experience.dart';
 import 'encounter_session.dart';
 import 'game_session.dart';
 import 'session_actor.dart';
@@ -134,7 +135,12 @@ class WorldSession {
     int hour = 8,
     PartyInventory? inventory,
     String? cameFrom,
+    Experience? experience,
   })  : _actors = List.of(actors),
+        _experience = experience ?? Experience(),
+        // Salted off the world's own starting point, so a seed still fixes
+        // everything, but a traveller's wandering never shifts a fight.
+        _roadDice = DiceRoller(roller.state ^ 0x9E3779B9),
         _cameFrom = cameFrom,
         _roller = roller,
         _roomId = roomId ?? _firstRoomOf(campaign),
@@ -149,6 +155,11 @@ class WorldSession {
     if (campaign.locations.roomById(_roomId) == null) {
       throw ArgumentError.value(_roomId, 'roomId', 'no such room');
     }
+    _experience.reconcile([
+      for (final a in _actors)
+        (id: a.id, level: a.character.level, sheetXp: a.character.xp),
+    ]);
+
     // Without a pack of its own, a session works out what it is carrying from
     // the flags, which is how everything else here describes progress. It
     // also means a save written before the pack existed still has its loot.
@@ -159,6 +170,9 @@ class WorldSession {
         if (campaign.gear.byId(id) != null) _inventory.add(id);
       }
       _inventory.earn(_startingCoin(_actors));
+    }
+    for (final npc in campaign.npcs.travellers) {
+      _moveOn(npc);
     }
     _enter(_roomId);
   }
@@ -173,6 +187,22 @@ class WorldSession {
   final Set<String> _flags;
   int _hour;
   final PartyInventory _inventory;
+  final Experience _experience;
+
+  /// Dice for who is where on the roads, kept apart from the world's dice.
+  ///
+  /// Travellers wander on these alone, so adding one to a campaign changes
+  /// no fight, drop or weather roll in a game that was seeded before them.
+  DiceRoller _roadDice;
+
+  /// Steps the party has taken, which is what travellers keep time by.
+  int _steps = 0;
+
+  /// Where each traveller is; null while they are on the road between stops.
+  final Map<String, String?> _whereabouts = {};
+
+  /// What a travelling shop has on hand at its current stop.
+  final Map<String, List<String>> _onHand = {};
 
   /// Topics already raised, keyed by npc id, so a conversation does not
   /// re-award a flag every time the same question is asked.
@@ -202,6 +232,9 @@ class WorldSession {
 
   /// What the party is carrying and who is wearing what.
   PartyInventory get inventory => _inventory;
+
+  /// Who has earned how much experience.
+  Experience get experience => _experience;
 
   Set<String> get flags => Set.unmodifiable(_flags);
 
@@ -240,7 +273,7 @@ class WorldSession {
       room: room,
       openDirections: room.openDirections(_flags),
       barredDirections: barred,
-      npcs: campaign.npcs.inRoom(_roomId),
+      npcs: _npcsHere(),
       items: campaign.items.visibleIn(_roomId, _flags),
       encounters: campaign.bestiary.availableIn(_roomId, _flags),
       town: currentTown,
@@ -302,6 +335,11 @@ class WorldSession {
     _cameFrom = from;
     final set = _enter(exit.to);
 
+    _steps++;
+    for (final npc in campaign.npcs.travellers) {
+      if (_steps % npc.route!.every == 0) _moveOn(npc);
+    }
+
     return MoveResult(
       from: from,
       to: exit.to,
@@ -344,8 +382,10 @@ class WorldSession {
   }
 
   void _payReward(String flag) {
-    final copper = campaign.economy.rewardFor(flag);
-    if (copper > 0) _inventory.earn(copper);
+    final payout = campaign.payoutFor(flag);
+    if (payout == null) return;
+    if (payout.copper > 0) _inventory.earn(payout.copper);
+    _experience.award(_actors.map((a) => a.id), payout.xp);
   }
 
   /// `MH_001_Square` becomes `MH_001`.
@@ -362,7 +402,7 @@ class WorldSession {
   /// first objective waits on `keyword_quest_unlocked`, and its second tier
   /// on `dialogue_complete_queen_liora`.
   TalkResult talk(String who, {String? topic}) {
-    final npc = campaign.npcs.findInRoom(_roomId, who);
+    final npc = _findNpcHere(who);
     if (npc == null) {
       throw InvalidMoveException('There is nobody called "$who" here.');
     }
@@ -413,7 +453,7 @@ class WorldSession {
   /// world until [concludeConversation], so a conversation abandoned halfway
   /// still counts for whatever was said before it was.
   ({Npc npc, GameSession talk})? beginConversation(String who) {
-    final npc = campaign.npcs.findInRoom(_roomId, who);
+    final npc = _findNpcHere(who);
     if (npc == null) {
       throw InvalidMoveException('There is nobody called "$who" here.');
     }
@@ -585,6 +625,8 @@ class WorldSession {
     for (final item in fight.loot) {
       _inventory.add(item.id);
     }
+    _inventory.earn(fight.coinEarned);
+    _experience.award(_actors.map((a) => a.id), fight.xpEarned);
     return set..sort();
   }
 
@@ -647,13 +689,64 @@ class WorldSession {
   // --- trade ---------------------------------------------------------------
 
   /// The shop kept in this room, if there is one.
-  Shop? get shopHere => campaign.economy.shopIn(_roomId);
+  Shop? get shopHere {
+    final fixed = campaign.economy.shopIn(_roomId);
+    if (fixed != null) return fixed;
+    for (final npc in _npcsHere()) {
+      final shop = campaign.economy.shopKeptBy(npc.id);
+      if (shop != null && shop.travels) return shop;
+    }
+    return null;
+  }
+
+  // --- travellers ----------------------------------------------------------
+
+  /// Everyone in this room: those who stay put, and any traveller whose
+  /// road has brought them here.
+  List<Npc> _npcsHere() => [
+        ...campaign.npcs.inRoom(_roomId),
+        for (final npc in campaign.npcs.travellers)
+          if (_whereabouts[npc.id] == _roomId) npc,
+      ];
+
+  Npc? _findNpcHere(String who) => NpcDirectory.findAmong(_npcsHere(), who);
+
+  /// Where a traveller is now, or null while they are on the road.
+  String? whereIs(String npcId) => _whereabouts[npcId];
+
+  /// What a travelling shop has on hand at its current stop.
+  List<String> onHandAt(String shopId) =>
+      List.unmodifiable(_onHand[shopId] ?? const []);
+
+  /// Sends [npc] to their next stop, or out onto the road, and packs their
+  /// shop afresh: a different few things each time they are found.
+  void _moveOn(Npc npc) {
+    final route = npc.route!;
+    final away = _roadDice.rollDie(100) <= route.awayChance;
+    _whereabouts[npc.id] =
+        away ? null : route.stops[_roadDice.rollDie(route.stops.length) - 1];
+
+    final shop = campaign.economy.shopKeptBy(npc.id);
+    if (shop == null || !shop.travels) return;
+    final pool = shop.onSaleFor(_flags);
+    final count = (shop.carries ?? pool.length).clamp(0, pool.length);
+    // A partial shuffle on the road's dice: the first [count] are the pick.
+    for (var i = 0; i < count; i++) {
+      final j = i + _roadDice.rollDie(pool.length - i) - 1;
+      final held = pool[i];
+      pool[i] = pool[j];
+      pool[j] = held;
+    }
+    _onHand[shop.id] = pool.take(count).toList();
+  }
 
   /// What is on the shelf here, cheapest first, at what the party would pay.
   List<({GearItem item, int price})> wares() {
     final shop = _requireShop();
     final rows = [
-      for (final id in shop.onSaleFor(_flags))
+      for (final id in shop.travels
+          ? (_onHand[shop.id] ?? const <String>[])
+          : shop.onSaleFor(_flags))
         if (campaign.gear.byId(id) case final item?)
           (item: item, price: shop.priceFor(item, _flags)),
     ];
@@ -771,10 +864,21 @@ class WorldSession {
   /// Owed rather than applied automatically at the moment they become due,
   /// because an arc finishing is something a client will want to announce
   /// before the world quietly changes underneath the player.
-  List<String> applyPendingWorldState() {
+  List<String> applyPendingWorldState() => settleArcs().worldState;
+
+  /// Marks finished any quest whose last objective has been met — paying its
+  /// reward — and applies what finishing it changes about the world.
+  ///
+  /// The quests come back separately from the world-state flags, because
+  /// "quest complete" and "the world shifts" are two different things to say.
+  ({List<CampaignArc> completed, List<String> worldState}) settleArcs() {
+    final completed = campaign.arcs.justCompleted(_flags);
+    for (final arc in completed) {
+      _set(arc.completionFlag);
+    }
     final pending = campaign.arcs.pendingWorldStateChanges(_flags);
     pending.forEach(_set);
-    return pending;
+    return (completed: completed, worldState: pending);
   }
 
   /// Captures enough state to resume exactly where this left off.
@@ -783,8 +887,17 @@ class WorldSession {
         'roomId': _roomId,
         'cameFrom': _cameFrom,
         'hour': _hour,
+        'road': {
+          'dice': _roadDice.state,
+          'steps': _steps,
+          'whereabouts': Map<String, String?>.from(_whereabouts),
+          'onHand': {
+            for (final e in _onHand.entries) e.key: List<String>.from(e.value),
+          },
+        },
         'flags': (_flags.toList()..sort()),
         'inventory': _inventory.toJson(),
+        'experience': _experience.toJson(),
         'rollerState': _roller.state,
         'weather': Map<String, String>.from(_weatherByRegion),
         'topicsRaised': {
@@ -823,8 +936,32 @@ class WorldSession {
       hour: (snapshot['hour'] as num?)?.toInt() ?? 8,
       inventory: inventory,
       cameFrom: snapshot['cameFrom']?.toString(),
+      experience: snapshot.containsKey('experience')
+          ? Experience.fromJson(snapshot['experience'])
+          : null,
     );
     final savedPack = snapshot['inventory'];
+    // The roads pick up where they were, rather than re-rolled on load.
+    final road = snapshot['road'];
+    if (road is Map) {
+      session._roadDice =
+          DiceRoller.fromState((road['dice'] as num?)?.toInt() ?? 0);
+      session._steps = (road['steps'] as num?)?.toInt() ?? 0;
+      session._whereabouts
+        ..clear()
+        ..addAll({
+          for (final e in (road['whereabouts'] as Map? ?? const {}).entries)
+            e.key.toString(): e.value?.toString(),
+        });
+      session._onHand
+        ..clear()
+        ..addAll({
+          for (final e in (road['onHand'] as Map? ?? const {}).entries)
+            e.key.toString(): [
+              for (final id in (e.value as List? ?? const [])) id.toString(),
+            ],
+        });
+    }
     if (savedPack is Map && !savedPack.containsKey('coin')) {
       session._inventory.earn(_startingCoin(actors));
     }

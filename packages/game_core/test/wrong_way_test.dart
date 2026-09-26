@@ -256,7 +256,8 @@ void main() {
       _fightItOut(world);
 
       final reveal = world.take('bundle');
-      expect(reveal.flagsSet, ['deception_revealed_mere_road']);
+      expect(reveal.flagsSet,
+          ['deception_revealed_mere_road', 'wendel_lie_uncovered']);
       expect(reveal.said, contains('a bell begins to ring'));
 
       // Turn round. The reed beds are full again, and this time home is the
@@ -380,7 +381,8 @@ void main() {
         },
       );
       final reveal = world.take('letter');
-      expect(reveal.flagsSet, ['deception_revealed_under_archive']);
+      expect(reveal.flagsSet,
+          ['deception_revealed_under_archive', 'hale_lie_uncovered']);
       expect(reveal.said, contains('Hale has done well'));
 
       final back = world.move('up');

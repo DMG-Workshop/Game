@@ -44,6 +44,17 @@
       "drops": [{ "from": "c_hollow_thrall", "chance": 8 }]
     },
     {
+      "item_id": "w_029_drovers_goad",
+      "name": "Drover's Goad",
+      "level": 3,
+      "type": "weapon",
+      "rarity": "uncommon",
+      "traits": ["simple", "magical", "trip"],
+      "description": "An ash staff shod with iron at one end and a bronze hook at the other, worn smooth by a lifetime of arguing with cattle. The bronze is a good deal older than the ash.",
+      "stats": { "damage": "1d6", "bonus": 1, "magic": true },
+      "special": "+1 item bonus to Nature checks made to Command an Animal."
+    },
+    {
       "item_id": "w_004_whisperwood_bow",
       "name": "Whisperwood Longbow",
       "level": 4,
@@ -77,6 +88,17 @@
       "special": "Extra 1d4 damage vs. Shadow entities."
     },
     {
+      "item_id": "a_030_oilskin_brigandine",
+      "name": "Oilskin Brigandine",
+      "level": 5,
+      "type": "armor",
+      "rarity": "uncommon",
+      "traits": ["medium", "magical"],
+      "description": "Road armour: steel plates riveted inside a coat of oiled canvas that has been rained on across three kingdoms and has kept out every drop.",
+      "stats": { "ac": 14, "bonus": 1, "magic": true, "ac_bonus": 3, "dex_cap": 2 },
+      "special": "+1 item bonus to Fortitude saves against cold and exposure."
+    },
+    {
       "item_id": "a_006_ravencrest_hide",
       "name": "Ravencrest Hide",
       "level": 6,
@@ -95,6 +117,17 @@
       "description": "A miner's lamp that was still burning when they brought it up, and has not needed oil since. The flame leans away from the mine face rather than toward the draught.",
       "stats": { "bonus": 1, "magic": true },
       "special": "Sheds light in a 30-foot radius. Creatures with the shadow trait take a -1 status penalty to attack rolls while within it, and the flame leans toward the nearest one."
+    },
+    {
+      "item_id": "w_031_tollkeepers_hook",
+      "name": "Tollkeeper's Hook",
+      "level": 7,
+      "type": "weapon",
+      "rarity": "uncommon",
+      "traits": ["martial", "magical", "trip", "reach"],
+      "description": "A polearm with a hook for pulling riders out of the saddle and a spike for the ones who would not pay. The tollhouse it came from has stood empty since the road was closed.",
+      "stats": { "damage": "1d10", "bonus": 1, "magic": true, "striking": "striking" },
+      "special": "Striking rune. On a critical hit against a mounted or flying creature, it is knocked prone."
     },
     {
       "item_id": "a_008_grave_wardens_mail",
@@ -127,6 +160,17 @@
       "stats": { "damage": "1d4", "bonus": 1, "magic": true, "striking": "striking" },
       "special": "Striking rune. On a critical hit, roots hold the target in place until the end of your next turn, whether or not there is any soil.",
       "drops": [{ "from": "c_hollow_avatar", "chance": 25 }]
+    },
+    {
+      "item_id": "a_032_mourners_mail",
+      "name": "Mourner's Mail",
+      "level": 9,
+      "type": "armor",
+      "rarity": "uncommon",
+      "traits": ["light", "magical"],
+      "description": "A fine chain shirt worn under mourning black by a professional mourner, back when that was a trade. It makes a sound like quiet weeping when you move, and after a day you stop hearing it.",
+      "stats": { "ac": 17, "bonus": 1, "magic": true, "ac_bonus": 2, "dex_cap": 3 },
+      "special": "+1 item bonus to saves against effects that would make you frightened."
     },
     {
       "item_id": "w_024_crown_spike",
