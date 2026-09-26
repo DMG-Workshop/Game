@@ -31,6 +31,19 @@ void main() {
       expect(game.log, contains('> inventory'));
       expect(await GameController.hasSave(), isTrue);
 
+      game.send('talk npc_009_jory');
+      await pumpEventQueue();
+      expect(game.prompt, 'say> ');
+      final labels = game.chips.map((c) => c.label).toList();
+      expect(labels, contains('Ask to see his stock'));
+      expect(labels.last, 'Walk away');
+      game.send(
+        game.chips.firstWhere((c) => c.label == 'Ask to see his stock').command,
+      );
+      await pumpEventQueue();
+      expect(game.log, contains("Tallow's Cart"), reason: 'the wares, listed');
+      expect(game.log, contains('Minor Hearth-Water'));
+
       final back = await GameController.resume();
       await pumpEventQueue();
       expect(back.log, contains('Picked up where you left off'));

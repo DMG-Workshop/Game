@@ -99,6 +99,15 @@ class GameConsole {
   /// wrap on a screen that wraps text itself.
   final int width;
 
+  /// The choices on offer while a conversation waits for an answer: what
+  /// to send, and what it says. Empty the rest of the time.
+  List<({String command, String label})> get choices =>
+      List.unmodifiable(_choices);
+  List<({String command, String label})> _choices = const [];
+
+  /// Options that mean "show me what you sell", when a shopkeeper has them.
+  static const _browsing = {'look', 'wares', 'stock', 'browse'};
+
   String _wrapped(String text, {String indent = ''}) =>
       wrap(text, width: width, indent: indent);
 
@@ -538,8 +547,14 @@ class GameConsole {
             '${_checkHint(talk, options[i], solo: solo)}');
       }
       out.writeln('  0. Walk away');
+      _choices = [
+        for (var i = 0; i < options.length; i++)
+          (command: '${i + 1}', label: options[i].label),
+        (command: '0', label: 'Walk away'),
+      ];
 
       final line = await nextCommand(prompt: 'say> ');
+      _choices = const [];
       if (line == null) {
         out.writeln('\n(script exhausted mid-conversation)');
         keepGoing = false;
@@ -584,6 +599,11 @@ class GameConsole {
             '${check.wasShiftedByNatural ? ' (natural ${check.dieRoll})' : ''}');
       }
       out.writeln('\n${_wrapped(event.narration)}');
+      // Asking a shopkeeper to see the stock shows it, prices and all.
+      if (_browsing.contains(option.id) &&
+          session.shopHere?.keeperId == npc.id) {
+        _renderWares(session);
+      }
 
       // A new scene is a new beat; returning to the same one is not, and
       // repeating its opening every time would read like a stuck record.
