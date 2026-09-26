@@ -111,6 +111,9 @@ saying so, so this is worth checking per source rather than assuming.
   These are test fixtures, not characters in the game.
 - `packages/pf2e_core/lib/src/model/skill.dart` — the sixteen core skill
   names, needed to map Pathbuilder's proficiency keys.
+- `content/pf2e_remaster/` — the content package: spell names with the
+  numbers the engine needs to resolve them in a fight (no rules text). It
+  has its own `NOTICE.md`, and the engine runs without it.
 
 Everything else in `pf2e_core` is arithmetic and schema handling, and
 everything in `game_core` is original.

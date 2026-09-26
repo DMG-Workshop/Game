@@ -99,6 +99,75 @@ void main() {
     });
   });
 
+  group('a detailed roll', () {
+    test('keeps every die and adds up to what roll() gives', () {
+      final d = DamageExpression.parse('3d6+2');
+      for (var seed = 0; seed < 50; seed++) {
+        final detailed = d.rollDetailed(DiceRoller(seed));
+        expect(detailed.dice, hasLength(3));
+        expect(detailed.total, d.roll(DiceRoller(seed)));
+        expect(detailed.total, detailed.dice.reduce((a, b) => a + b) + 2);
+      }
+    });
+
+    test('takes exactly the dice roll() takes, so a seed replays the same', () {
+      final a = DiceRoller(11);
+      final b = DiceRoller(11);
+      DamageExpression.parse('4d8+1').roll(a);
+      DamageExpression.parse('4d8+1').rollDetailed(b);
+      expect(a.state, b.state);
+    });
+
+    test('a critical is the same dice, doubled', () {
+      final d = DamageExpression.parse('2d10+4');
+      final crit = d.rollDetailed(DiceRoller(99), critical: true);
+      expect(crit.dice, d.rollDetailed(DiceRoller(99)).dice);
+      expect(crit.total, crit.base * 2);
+      expect(crit.total, d.rollCritical(DiceRoller(99)));
+    });
+
+    test('reads the way a player would check it', () {
+      final roll = DamageRoll(
+        expression: DamageExpression.parse('2d10+4'),
+        dice: const [7, 3],
+      );
+      expect(roll.toString(), '2d10+4 (7+3+4) = 14');
+      expect(
+        DamageRoll(
+          expression: DamageExpression.parse('2d10+4'),
+          dice: const [7, 3],
+          critical: true,
+        ).toString(),
+        '2d10+4 (7+3+4) = 14, doubled to 28',
+      );
+      expect(
+        DamageRoll(expression: DamageExpression.parse('1d4-1'), dice: const [3])
+            .toString(),
+        '1d4-1 (3-1) = 2',
+      );
+      expect(
+        DamageRoll(
+            expression: DamageExpression.parse('2d6'),
+            dice: const [1, 6]).toString(),
+        '2d6 (1+6) = 7',
+      );
+      expect(
+        DamageRoll(expression: DamageExpression.parse('5'), dice: const [])
+            .toString(),
+        '5',
+      );
+    });
+
+    test('is floored at zero like any other damage', () {
+      final roll = DamageRoll(
+        expression: DamageExpression.parse('1d4-10'),
+        dice: const [2],
+      );
+      expect(roll.total, 0);
+      expect(roll.toString(), '1d4-10 (2-10) = 0');
+    });
+  });
+
   test('value equality', () {
     expect(DamageExpression.parse('2d6+1'), DamageExpression.parse('2d6+1'));
     expect(DamageExpression.parse('2d6+1').hashCode,

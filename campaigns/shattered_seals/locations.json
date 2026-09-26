@@ -8,7 +8,8 @@
       "zones": {
         "z_01_proper": ["MH_001_Square", "MH_002_GuardHall", "MH_003_Tavern", "MH_004_Temple", "MH_005_Forge"],
         "z_02_whisperwood": ["WW_001_Edge", "WW_002_Deep", "WW_003_HollowGrove"],
-        "z_03_ravencrest": ["RF_001_Farm", "RF_002_OakGrove"]
+        "z_03_ravencrest": ["RF_001_Farm", "RF_002_OakGrove"],
+        "z_07_mere_road": ["MR_001_MereRoad", "MR_002_ReedBeds", "MR_003_DrownedMill"]
       }
     },
     "town_02_valorheim_capital": {
@@ -19,7 +20,8 @@
       "zones": {
         "z_04_palace_district": ["VC_001_Plaza", "VC_002_ThroneRoom", "VC_003_GrandLibrary"],
         "z_05_bloodstone_mines": ["BM_001_Entrance", "BM_002_DeepMine"],
-        "z_06_thornhaven": ["TH_001_Gates", "TH_002_RitualChamber"]
+        "z_06_thornhaven": ["TH_001_Gates", "TH_002_RitualChamber"],
+        "z_08_under_archive": ["UA_001_SealedStacks", "UA_002_OssuaryStair", "UA_003_FalseSeal"]
       }
     }
   },
@@ -38,61 +40,123 @@
           "requires": ["Unlock_Travel_to_Valorheim"],
           "blocked": "The king's road runs northeast, and the tollgate is shut. Whatever is happening in Millhaven has to end before anyone here is let out."
         }
-      }
+      },
+      "ambiance": [
+        "A bread seller calls out a price, then lowers it without being asked.",
+        "Pigeons settle on the fountain's rim and will not drink from it.",
+        "Two women stop talking as you pass, and start again when you have."
+      ]
     },
     {
       "room_id": "MH_002_GuardHall",
       "title": "The Guard Hall",
       "description": "A low stone room that smells of oil, wet wool and old iron. Half the weapon racks are empty and nobody has written down why. A duty roster hangs by the door with three names struck through and not replaced.",
-      "exits": { "south": "MH_001_Square" }
+      "exits": { "south": "MH_001_Square" },
+      "shelter": true,
+      "ambiance": [
+        "A guard oils a blade that is already oiled.",
+        "The duty roster by the door has names crossed out in a newer ink.",
+        "Somebody has left a cold cup of tea on the map table."
+      ]
     },
     {
       "room_id": "MH_003_Tavern",
       "title": "The Drowned Sparrow",
       "description": "Low beams, low voices. The fire is built higher than the season calls for, and the seats nearest the door stay empty however crowded it gets. The landlord keeps a lamp burning at the back stair even at noon.",
-      "exits": { "west": "MH_001_Square" }
+      "exits": { "west": "MH_001_Square" },
+      "shelter": true,
+      "ambiance": [
+        "The fire spits, and three people look at the door at once.",
+        "A tankard is set down very carefully on the bar.",
+        "Somebody in the corner is humming a song they stop halfway through."
+      ]
     },
     {
       "room_id": "MH_004_Temple",
       "title": "The Temple of Ashkyr",
       "description": "Whitewashed walls, a plain stone altar, and a smell of cold ash that no amount of scrubbing lifts. Offerings have been left in unusual numbers this week: bread, coins, milk, and in one case a child's shoe.",
-      "exits": { "north": "MH_001_Square" }
+      "exits": {
+        "north": "MH_001_Square",
+        "south": {
+          "to": "MR_001_MereRoad",
+          "requires": ["heard_of_the_mere_road"],
+          "blocked": "Past the graveyard wall the old Mere Road runs south into the reeds. Nobody in Millhaven uses it, and nobody has yet given you a reason to."
+        }
+      },
+      "shelter": true,
+      "ambiance": [
+        "A candle gutters on the altar, and nobody moves to relight it.",
+        "Somebody has left a loaf by the step, still warm.",
+        "The smell of cold ash comes and goes like breath."
+      ]
     },
     {
       "room_id": "MH_005_Forge",
       "title": "Harrow's Forge",
       "description": "Heat, soot, and the steady ring of a hammer that stops the moment you step inside. Commissions are stacked unclaimed along the back wall. The west door stands open onto the cart track toward the treeline.",
-      "exits": { "east": "MH_001_Square", "west": "WW_001_Edge" }
+      "exits": { "east": "MH_001_Square", "west": "WW_001_Edge" },
+      "shelter": true,
+      "ambiance": [
+        "The coals tick as they settle.",
+        "A horseshoe cools in the trough with a long hiss.",
+        "The hammer rests on the anvil, waiting."
+      ]
     },
     {
       "room_id": "WW_001_Edge",
       "title": "The Edge of Whisperwood",
       "description": "The cart track gives out where the trees begin. Someone has driven a line of iron nails into the trunks at shoulder height, an old charm against old things, and the nails are new.",
-      "exits": { "east": "MH_005_Forge", "west": "WW_002_Deep", "north": "RF_001_Farm" }
+      "exits": { "east": "MH_005_Forge", "west": "WW_002_Deep", "north": "RF_001_Farm" },
+      "ambiance": [
+        "One of the iron nails in the trunks is weeping rust.",
+        "A cart track fades into the leaf mould, and stops.",
+        "Wind moves in the canopy, and not down here."
+      ]
     },
     {
       "room_id": "WW_002_Deep",
       "title": "Deep Whisperwood",
       "description": "The canopy closes overhead and the light goes the colour of weak tea. There is no birdsong. Twice now you have heard something keeping pace to the north and stopping when you stop.",
-      "exits": { "east": "WW_001_Edge", "west": "WW_003_HollowGrove" }
+      "exits": { "east": "WW_001_Edge", "west": "WW_003_HollowGrove" },
+      "ambiance": [
+        "A twig snaps somewhere north of you, once.",
+        "No birds. Not one.",
+        "The light gets no brighter however long you stand here."
+      ]
     },
     {
       "room_id": "WW_003_HollowGrove",
       "title": "The Hollow Grove",
       "description": "A clearing where nothing grows and the ground gives underfoot like the crust on a healing wound. The trees around it lean inward. In the center the earth has been turned recently, by hands rather than tools.",
-      "exits": { "east": "WW_002_Deep" }
+      "exits": { "east": "WW_002_Deep" },
+      "ambiance": [
+        "The ground gives underfoot like a healing crust.",
+        "The leaning trees creak without any wind.",
+        "The turned earth in the centre is not quite still."
+      ]
     },
     {
       "room_id": "RF_001_Farm",
       "title": "Ravencrest Farm",
       "description": "A working farm gone quiet. The stock are penned when they should be grazing and none of them will face the treeline. A child's washing still hangs on the line, stiff with three days of rain.",
-      "exits": { "south": "WW_001_Edge", "east": "RF_002_OakGrove" }
+      "exits": { "south": "WW_001_Edge", "east": "RF_002_OakGrove" },
+      "shelter": true,
+      "ambiance": [
+        "A penned cow lows at the treeline, and backs away from it.",
+        "The washing on the line moves, stiff as boards.",
+        "A kitchen door bangs somewhere, open and shut."
+      ]
     },
     {
       "room_id": "RF_002_OakGrove",
       "title": "The Old Oak Grove",
       "description": "Nine oaks in a ring, older than the farm and older than the town. Children play here, or did. The bark of the largest has been scored through at eye height in a pattern that is not a word in any language spoken in Millhaven.",
-      "exits": { "west": "RF_001_Farm" }
+      "exits": { "west": "RF_001_Farm" },
+      "ambiance": [
+        "The scored bark on the largest oak seems deeper in this light.",
+        "Acorns drop, one, two, and roll to the centre of the ring.",
+        "Children's footprints, old ones, dried into the mud."
+      ]
     },
     {
       "room_id": "VC_001_Plaza",
@@ -108,43 +172,163 @@
           "requires": ["Unlock_Travel_to_Valorheim"],
           "blocked": "The southwest road is closed to traffic by order of the crown."
         }
-      }
+      },
+      "ambiance": [
+        "A crimson banner snaps on its lamp post.",
+        "Palace bells toll the hour, and one of them is off-key.",
+        "A patrol in red cloaks marches past without looking at anyone."
+      ]
     },
     {
       "room_id": "VC_002_ThroneRoom",
       "title": "The Royal Throne Room",
       "description": "An enormous hall of vaulted ceilings. The air is thick with tension and the smell of heavy perfumes meant to mask the scent of decay.",
-      "exits": { "south": "VC_001_Plaza" }
+      "exits": { "south": "VC_001_Plaza" },
+      "shelter": true,
+      "ambiance": [
+        "A courtier laughs at something, too loudly.",
+        "The perfume in the air cannot quite cover what is under it.",
+        "Somewhere behind a curtain, the King is coughing."
+      ]
     },
     {
       "room_id": "VC_003_GrandLibrary",
       "title": "The Grand Library",
       "description": "Eight floors of shelving around an open well of air, and a silence that feels enforced rather than kept. Whole sections have been emptied within the last year. The catalogue still lists what is missing, which is either an oversight or a message.",
-      "exits": { "west": "VC_001_Plaza" }
+      "exits": {
+        "west": "VC_001_Plaza",
+        "down": {
+          "to": "UA_001_SealedStacks",
+          "requires": ["heard_of_the_under_archive"],
+          "blocked": "Behind the catalogue desk there is a low iron door with no handle on this side. Whatever is under the library, the library does not show it to visitors.",
+          "minutes": 10
+        }
+      },
+      "shelter": true,
+      "ambiance": [
+        "A page turns, very loudly, three floors up.",
+        "Dust hangs in the light from the high windows.",
+        "Somebody coughs, and is shushed by nobody you can see."
+      ]
     },
     {
       "room_id": "BM_001_Entrance",
       "title": "The Bloodstone Mine Head",
       "description": "Winch gear, spoil heaps, and a shift bell that rings on a schedule nobody works to any more. The rock at the cut face has a red grain running through it that catches the light wrong. The tally board shows more men going down than coming up.",
-      "exits": { "north": "VC_001_Plaza", "down": "BM_002_DeepMine" }
+      "exits": { "north": "VC_001_Plaza", "down": "BM_002_DeepMine" },
+      "ambiance": [
+        "The shift bell rings for a shift that is not coming.",
+        "The winch cable creaks, though nobody is at the handle.",
+        "Red grit drifts across the spoil heaps."
+      ]
     },
     {
       "room_id": "BM_002_DeepMine",
       "title": "The Deep Workings",
       "description": "The air is warm here, which it has no business being. The red grain in the walls has thickened into veins, and the veins run in the direction you are walking, whichever way you turn. Somewhere below, water is moving.",
-      "exits": { "up": "BM_001_Entrance" }
+      "exits": { "up": "BM_001_Entrance" },
+      "shelter": true,
+      "ambiance": [
+        "The red veins in the walls pulse, very faintly.",
+        "The air is warmer every step down.",
+        "Far off, a pick strikes stone, on the beat."
+      ]
     },
     {
       "room_id": "TH_001_Gates",
       "title": "The Gates of Thornhaven",
       "description": "Wrought iron worked into a briar pattern, standing open. The gravel of the drive has been raked this morning and shows no wheel tracks, no hoof prints, and no footprints leading out. Above, the estate's upper windows are lit.",
-      "exits": { "east": "VC_001_Plaza", "up": "TH_002_RitualChamber" }
+      "exits": { "east": "VC_001_Plaza", "up": "TH_002_RitualChamber" },
+      "ambiance": [
+        "Somebody has raked the gravel since you last looked.",
+        "The briar pattern in the iron gates catches at your sleeve.",
+        "A window high in the house is lit, and then is not."
+      ]
     },
     {
       "room_id": "TH_002_RitualChamber",
       "title": "The Grand Ritual Chamber",
       "description": "A circular room at the estate's peak. The floor is covered in intricate ritual circles drawn in silver and blood. Tall windows overlook the burning city.",
-      "exits": { "down": "TH_001_Gates" }
+      "exits": { "down": "TH_001_Gates" },
+      "shelter": true,
+      "ambiance": [
+        "The silver in the circles shifts like mercury.",
+        "Below the windows, the city burns in silence.",
+        "Something under the floor turns over in its sleep."
+      ]
+    },
+    {
+      "room_id": "MR_001_MereRoad",
+      "title": "The Mere Road",
+      "description": "An embanked causeway older than the town, running south across the flats with black water on either side. The ruts are fresh. So are the footprints, and there are a great many of them, all going south and all in step, as if whoever made them had taken care to leave exactly one trail and to make it easy to follow.",
+      "exits": { "north": "MH_004_Temple", "south": "MR_002_ReedBeds" },
+      "ambiance": [
+        "Black water laps at the causeway, and there is no wind.",
+        "The bell out on the mere rings once.",
+        "Fresh footprints in the mud, going south, and none coming back."
+      ]
+    },
+    {
+      "room_id": "MR_002_ReedBeds",
+      "title": "The Reed Beds",
+      "description": "The causeway sinks until the mere laps across it. Reeds stand higher than a rider on either side, and something has been through them lately, snapping the stems at knee height in a line that runs beside the road for a long way and then simply stops. Someone has built a cairn of river stones at the water's edge this week. It marks nothing.",
+      "exits": { "north": "MR_001_MereRoad", "south": "MR_003_DrownedMill" },
+      "ambiance": [
+        "The reeds hiss and close behind you.",
+        "Something moves under the water, big and slow.",
+        "A rope trails across the causeway into the shallows."
+      ]
+    },
+    {
+      "room_id": "MR_003_DrownedMill",
+      "title": "The Drowned Mill",
+      "description": "The mill stands to its sills in the mere, its wheel locked in weed. Inside, the floor is dry on the millstone dais and nowhere else. The dais has been swept. A lamp on the beam above it has been lit and left to burn down, the way you would leave a light for someone you expected.",
+      "exits": { "north": "MR_002_ReedBeds" },
+      "shelter": true,
+      "ambiance": [
+        "The locked wheel creaks against the weed.",
+        "Water drips from the dais and dries on the floor.",
+        "The mill smells of wet flour and old rot."
+      ]
+    },
+    {
+      "room_id": "UA_001_SealedStacks",
+      "title": "The Sealed Stacks",
+      "description": "The library's missing sections are down here, or their shelves are: row on row of them, empty, dusted and labelled. Every label has been corrected in the same neat hand to read NOT HELD. The dust between them has been walked into one clean path, straight down the middle, to a door at the far end.",
+      "exits": {
+        "up": { "to": "VC_003_GrandLibrary", "minutes": 10 },
+        "down": "UA_002_OssuaryStair"
+      },
+      "shelter": true,
+      "ambiance": [
+        "Empty shelves, dusted and labelled, going back into the dark.",
+        "A corrected label hangs by one pin, swinging.",
+        "Your lamp finds nothing to read."
+      ]
+    },
+    {
+      "room_id": "UA_002_OssuaryStair",
+      "title": "The Ossuary Stair",
+      "description": "A spiral stair cut down through a charnel layer older than the library, skulls set into the wall in courses like brick. Half of them have been turned to face the stone. At every landing there are fresh chisel marks with fresh grime rubbed into them: someone has gone to some trouble to make this stair look older than it is.",
+      "exits": { "up": "UA_001_SealedStacks", "down": "UA_003_FalseSeal" },
+      "shelter": true,
+      "ambiance": [
+        "A skull in the wall has turned a little further toward the stair.",
+        "Your footsteps echo down the spiral longer than they should.",
+        "Somewhere below, pages turn."
+      ]
+    },
+    {
+      "room_id": "UA_003_FalseSeal",
+      "title": "The Sealed Vault",
+      "description": "A round vault at the foot of the stair, and on its far wall a great seal in red and black of the kind the Covenant breaks: circles inside circles, and at the centre, a handprint. The chanting the archivist heard through the floor is here — a wind-organ set in the ceiling, turning slowly in a draught from nowhere, sounding its three notes over and over for nobody.",
+      "exits": { "up": "UA_002_OssuaryStair" },
+      "shelter": true,
+      "ambiance": [
+        "The painted seal shows its brush strokes when the light moves.",
+        "The kneeling mats are worn in two places, as if by knees.",
+        "Small sounds on the stair above, coming closer."
+      ]
     }
   ]
 }

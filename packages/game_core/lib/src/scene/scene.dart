@@ -77,6 +77,7 @@ class SceneOption {
   const SceneOption({
     required this.id,
     required this.label,
+    this.say,
     this.check,
     this.outcomes = const {},
     this.automatic,
@@ -84,7 +85,16 @@ class SceneOption {
   });
 
   final String id;
+
+  /// What the menu shows.
   final String label;
+
+  /// What the character actually says aloud, when the option is speech.
+  ///
+  /// Separate from [label] because a menu wants "Haggle over the reward" and
+  /// the scene wants the words; and absent for options that are actions, so
+  /// walking away is not rendered as a line of dialogue.
+  final String? say;
 
   /// Null for an option that simply happens, with no roll.
   final StatCheck? check;

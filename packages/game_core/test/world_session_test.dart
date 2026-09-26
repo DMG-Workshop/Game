@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:game_core/game_core.dart';
@@ -314,6 +315,195 @@ void main() {
       } else {
         expect(set, isEmpty, reason: 'only a win earns the flag');
       }
+    });
+
+    test('what the thralls were carrying is recorded as the party takes it',
+        () {
+      // Drops are a roll, so this hunts for a seed where something turned up
+      // rather than pretending a particular seed is meaningful. Finding none
+      // at all would mean the loot table never fires.
+      final campaign = loadShatteredSeals();
+      for (var seed = 1; seed <= 60; seed++) {
+        final world = newWorld(
+          seed: seed,
+          room: 'WW_002_Deep',
+          campaign: campaign,
+        );
+        final f = world.beginEncounter();
+        var guard = 0;
+        while (!f.isOver && guard++ < 200) {
+          if (f.isPartyTurn) {
+            final targets = f.targetsInReach();
+            if (targets.isEmpty) {
+              f.stride();
+            } else {
+              f.strike(targets.first.id);
+            }
+            if (f.actionsLeft == 0 && !f.isOver) f.endTurn();
+          } else {
+            f.endTurn();
+          }
+        }
+        if (f.outcome != EncounterOutcome.victory || f.loot.isEmpty) continue;
+
+        final set = world.concludeEncounter(f);
+        expect(set, containsAll(f.lootFlags));
+        expect(world.recoveredGear.map((i) => i.id),
+            containsAll(f.loot.map((i) => i.id)));
+        // It survives a save, because it is a flag like any other.
+        expect(world.snapshot()['flags'], containsAll(f.lootFlags));
+        return;
+      }
+      fail('sixty fights with the thralls and nothing ever dropped');
+    });
+
+    test('nothing is recovered before anything has been killed', () {
+      expect(newWorld().recoveredGear, isEmpty);
+    });
+  });
+
+  group('equipment', () {
+    late Campaign campaign;
+    setUpAll(() => campaign = loadShatteredSeals());
+
+    WorldSession withPack(List<String> itemIds) {
+      final world = newWorld(campaign: campaign);
+      for (final id in itemIds) {
+        world.inventory.add(id);
+      }
+      return world;
+    }
+
+    test('a session started mid-campaign is carrying what it found', () {
+      // Flags describe everything else about where a party has got to, and
+      // the pack is no exception.
+      final world = newWorld(
+        campaign: campaign,
+        flags: {'loot_w_024_crown_spike', 'loot_of_nothing'},
+      );
+      expect(world.inventory.carried.single.id, 'w_024_crown_spike');
+    });
+
+    test('what the party carries starts and stays theirs', () {
+      final world = withPack(['w_006_shadowbane_dagger']);
+      expect(world.inventory.carried.single.name, 'Shadowbane Dagger');
+      expect(world.recoveredGear, world.inventory.carried);
+    });
+
+    test('wearing better armour is worth exactly what the rules say', () {
+      final world = withPack(['a_011_monarchs_vestment']);
+      expect(world.statsFor('korash').armorClass, 25);
+
+      final result = world.equip('monarch');
+      expect(result.slot, EquipSlot.armor);
+      expect(result.actor.id, 'korash');
+      // Full plate +6 and a +2 rune, against the +1 full plate he came in.
+      expect(world.statsFor('korash').armorClass, 26);
+    });
+
+    test('a smaller weapon keeps the attack and costs the damage', () {
+      // The dagger is +1 striking like his scythe, so it swings just as
+      // often; it is the die that is smaller, and that is the trade.
+      final world = withPack(['w_006_shadowbane_dagger']);
+      expect(world.statsFor('korash').damage.toString(), '2d10+4');
+
+      world.equip('shadowbane');
+      final after = world.statsFor('korash');
+      expect(after.attackBonus, 15);
+      expect(after.damage.toString(), '2d4+4');
+    });
+
+    test('a fight is fought with what is actually held', () {
+      final world = newWorld(
+        campaign: campaign,
+        room: 'WW_002_Deep',
+      );
+      world.inventory.add('w_019_the_last_nail');
+      world.equip('last nail');
+
+      final fight = world.beginEncounter();
+      final korash = fight.party.single;
+      // Major striking, 1d6 base: four dice and Strength, at +3 potency.
+      expect(korash.damage.toString(), '4d6+4');
+      expect(korash.attackBonus, 17);
+    });
+
+    test('taking it off puts the imported kit back', () {
+      final world = withPack(['w_006_shadowbane_dagger']);
+      world.equip('shadowbane');
+      final removed = world.unequip('weapon');
+      expect(removed.removed?.id, 'w_006_shadowbane_dagger');
+      expect(world.statsFor('korash').damage.toString(), '2d10+4');
+      expect(world.inventory.isCarrying('w_006_shadowbane_dagger'), isTrue);
+    });
+
+    test('refuses to equip what is not in the pack', () {
+      expect(() => newWorld(campaign: campaign).equip('crown spike'),
+          throwsA(isA<InvalidMoveException>()));
+    });
+
+    test('finds an item however its punctuation is typed', () {
+      // "The Avatar's Crown-Spike": the hyphen and the apostrophe are the
+      // author's, not something a player should have to reproduce.
+      for (final typed in [
+        'crown spike',
+        'crown-spike',
+        'avatars',
+        "avatar's"
+      ]) {
+        final world = withPack(['w_024_crown_spike']);
+        expect(world.equip(typed).item.id, 'w_024_crown_spike', reason: typed);
+      }
+    });
+
+    test('refuses a slot that does not exist', () {
+      expect(() => newWorld(campaign: campaign).unequip('hat'),
+          throwsA(isA<InvalidMoveException>()));
+    });
+
+    test('refuses somebody who is not in the party', () {
+      expect(() => newWorld(campaign: campaign).statsFor('nobody'),
+          throwsA(isA<InvalidMoveException>()));
+      expect(newWorld(campaign: campaign).knowsActor('korash'), isTrue);
+      expect(newWorld(campaign: campaign).knowsActor('liora'), isFalse);
+    });
+
+    test('a save remembers the pack and what is worn', () {
+      final world = withPack([
+        'w_006_shadowbane_dagger',
+        'a_011_monarchs_vestment',
+      ]);
+      world
+        ..equip('shadowbane')
+        ..equip('monarch');
+
+      final restored = WorldSession.restore(
+        campaign: campaign,
+        actors: [SessionActor(id: 'korash', character: _korash())],
+        snapshot:
+            jsonDecode(jsonEncode(world.snapshot())) as Map<String, Object?>,
+      );
+      expect(restored.inventory.carried.map((i) => i.id),
+          world.inventory.carried.map((i) => i.id));
+      expect(restored.statsFor('korash').armorClass, 26);
+      expect(restored.statsFor('korash').damage.toString(), '2d4+4');
+    });
+
+    test('a save from before the pack existed keeps its loot', () {
+      // Loot was recorded as flags first. Those saves still load, and the
+      // gear comes back into the pack rather than vanishing.
+      final restored = WorldSession.restore(
+        campaign: campaign,
+        actors: [SessionActor(id: 'korash', character: _korash())],
+        snapshot: {
+          'campaignId': campaign.id,
+          'roomId': 'MH_001_Square',
+          'hour': 8,
+          'flags': ['loot_w_021_thralls_nail'],
+          'rollerState': 1,
+        },
+      );
+      expect(restored.inventory.carried.single.id, 'w_021_thralls_nail');
     });
 
     test('the whole tier one chain is reachable in order', () {

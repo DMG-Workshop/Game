@@ -1,3 +1,5 @@
+import 'economy.dart';
+
 /// One step of a campaign arc.
 class ArcObjective {
   const ArcObjective({
@@ -22,8 +24,11 @@ class ArcObjective {
   String toString() => '$id. $task ($condition)';
 }
 
-/// A tier of the campaign: a level band, its objectives, and what finishing
-/// it changes about the world.
+/// A quest: a tier of the main story, or a side quest along the way.
+///
+/// Both are the same thing to the engine — a trigger, some objectives, and
+/// what finishing changes — so a side quest is an arc marked as one, not a
+/// second system with its own rules to learn.
 class CampaignArc {
   const CampaignArc({
     required this.id,
@@ -32,6 +37,9 @@ class CampaignArc {
     required this.startTrigger,
     required this.objectives,
     this.worldStateChanges = const [],
+    this.isSide = false,
+    this.reward,
+    this.zone,
   });
 
   final String id;
@@ -47,6 +55,19 @@ class CampaignArc {
 
   /// Flags set when every objective is met.
   final List<String> worldStateChanges;
+
+  /// True for a side quest rather than a tier of the main story.
+  final bool isSide;
+
+  /// What finishing it pays, once.
+  final Payout? reward;
+
+  /// The part of the map it is set in, or null for one that follows the
+  /// party wherever they go.
+  final String? zone;
+
+  /// Set the moment this arc is finished, which is what its reward is paid on.
+  String get completionFlag => 'completed_$id';
 
   int get minLevel => levels.isEmpty ? 1 : levels.first;
   int get maxLevel => levels.length < 2 ? minLevel : levels[1];
@@ -106,6 +127,24 @@ class ArcTrack {
         for (final arc in _arcs)
           if (arc.hasStarted(flags) && !arc.isComplete(flags)) arc,
       ];
+
+  /// Arcs whose last objective has been met but that have not yet been
+  /// marked finished — and paid.
+  List<CampaignArc> justCompleted(Set<String> flags) => [
+        for (final arc in _arcs)
+          if (arc.hasStarted(flags) &&
+              arc.isComplete(flags) &&
+              !flags.contains(arc.completionFlag))
+            arc,
+      ];
+
+  /// The arc [flag] marks as finished, if it is a completion flag.
+  CampaignArc? completedBy(String flag) {
+    for (final arc in _arcs) {
+      if (arc.completionFlag == flag) return arc;
+    }
+    return null;
+  }
 
   /// Flags that should be set now, because their arc just finished.
   ///

@@ -9,6 +9,7 @@ class Exit {
     required this.to,
     this.requiredFlags = const [],
     this.blockedMessage,
+    this.minutes,
   });
 
   final String direction;
@@ -22,6 +23,11 @@ class Exit {
   /// What the player is told when it is barred. A closed road should say why,
   /// not pretend it was never there.
   final String? blockedMessage;
+
+  /// How long the way takes in fair weather, when it is not what the map's
+  /// shape would suggest: a stair is quicker than a new part of the map, and
+  /// the king's road is a day.
+  final int? minutes;
 
   bool get isGated => requiredFlags.isNotEmpty;
 
@@ -40,11 +46,19 @@ class Room {
     required this.title,
     required this.description,
     this.exits = const {},
+    this.shelter = false,
+    this.ambiance = const [],
   });
 
   final String id;
   final String title;
   final String description;
+
+  /// True for somewhere with a roof: a storm can be waited out here.
+  final bool shelter;
+
+  /// Small things that happen here while the party is about, one at a time.
+  final List<String> ambiance;
 
   /// Direction to the exit leading that way.
   final Map<String, Exit> exits;

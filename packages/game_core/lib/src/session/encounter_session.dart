@@ -1,6 +1,12 @@
 import 'package:pf2e_core/pf2e_core.dart';
 
 import '../campaign/creature.dart';
+import '../campaign/gear.dart';
+import '../campaign/spell.dart';
+import '../party/equipment.dart';
+import '../party/experience.dart';
+import '../party/vitals.dart';
+import 'casting.dart';
 import 'session_actor.dart';
 
 /// Thrown when an action is not legal right now.
@@ -32,7 +38,8 @@ class Combatant {
     this.agile = false,
     this.creature,
     this.actor,
-  }) : hp = maxHp;
+    int? hp,
+  }) : hp = (hp ?? maxHp).clamp(0, maxHp);
 
   final String id;
   final String name;
@@ -82,6 +89,112 @@ class Combatant {
   String toString() => '$name ($hp/$maxHp)';
 }
 
+/// One combatant's initiative: a d20 plus their Perception.
+class InitiativeRoll {
+  const InitiativeRoll({
+    required this.combatant,
+    required this.die,
+    required this.modifier,
+  });
+
+  final Combatant combatant;
+  final int die;
+  final int modifier;
+
+  int get total => die + modifier;
+
+  @override
+  String toString() {
+    final sign = modifier >= 0 ? '+' : '';
+    return '${combatant.name}: d20($die) $sign$modifier = $total';
+  }
+}
+
+/// One d100 against a creature's drop table.
+class LootRoll {
+  const LootRoll({
+    required this.creature,
+    required this.item,
+    required this.die,
+    required this.chance,
+  });
+
+  final Creature creature;
+  final GearItem item;
+
+  /// The d100's face; the item drops on [chance] or under.
+  final int die;
+  final int chance;
+
+  bool get dropped => die <= chance;
+
+  @override
+  String toString() => '${item.name} from ${creature.name}: d100($die) '
+      'against $chance% — ${dropped ? 'found' : 'not there'}';
+}
+
+/// What one defeated creature was worth.
+class XpAward {
+  const XpAward({
+    required this.creature,
+    required this.partyLevel,
+    required this.xp,
+  });
+
+  final Creature creature;
+  final int partyLevel;
+  final int xp;
+
+  int get difference => creature.level - partyLevel;
+
+  @override
+  String toString() {
+    final sign = difference >= 0 ? '+' : '';
+    return '${creature.name} (level ${creature.level}, $sign$difference): '
+        '$xp XP';
+  }
+}
+
+/// What one spell did to one target.
+class SpellHit {
+  const SpellHit({
+    required this.target,
+    required this.check,
+    required this.damage,
+    this.damageRoll,
+    this.dropped = false,
+  });
+
+  final Combatant target;
+
+  /// The spell attack against their AC, or their save against the caster.
+  final CheckOutcome check;
+
+  /// What they took, after any save.
+  final int damage;
+
+  /// The damage dice, for a spell attack; a save spell's are on the result.
+  final DamageRoll? damageRoll;
+  final bool dropped;
+}
+
+/// The record of one spell cast.
+class SpellResult {
+  const SpellResult({
+    required this.caster,
+    required this.option,
+    required this.hits,
+    this.damageRoll,
+  });
+
+  final Combatant caster;
+  final CastOption option;
+  final List<SpellHit> hits;
+
+  /// For a save spell, the damage rolled once for everyone it caught.
+  final DamageRoll? damageRoll;
+}
+
 /// The record of one strike.
 class StrikeResult {
   const StrikeResult({
@@ -90,7 +203,9 @@ class StrikeResult {
     required this.outcome,
     required this.damage,
     required this.penalty,
+    this.damageRoll,
     this.targetDropped = false,
+    this.weatherPenalty = 0,
   });
 
   final Combatant attacker;
@@ -100,8 +215,14 @@ class StrikeResult {
   /// Damage dealt; zero on a miss.
   final int damage;
 
+  /// The damage dice as they fell, or null on a miss.
+  final DamageRoll? damageRoll;
+
   /// The multiple attack penalty that applied.
   final int penalty;
+
+  /// What the weather took off a strike that had to cross open ground.
+  final int weatherPenalty;
   final bool targetDropped;
 
   bool get isHit => outcome.degree.isSuccess;
@@ -127,7 +248,21 @@ class EncounterSession {
     required Bestiary bestiary,
     required List<SessionActor> actors,
     required DiceRoller roller,
-  })  : _roller = roller,
+    GearTable? gear,
+    Map<String, Loadout> loadouts = const {},
+    List<Creature>? foes,
+    Map<String, int> hp = const {},
+    Set<String> fatigued = const {},
+    this.rangedPenalty = 0,
+    SpellBook? spells,
+    Map<String, ActorVitals> vitals = const {},
+  })  : _spells = spells ?? SpellBook(),
+        _vitals = vitals,
+        _roller = roller,
+        _gear = gear,
+        _loadouts = loadouts,
+        _startingHp = hp,
+        _fatigued = fatigued,
         _resolver = CheckResolver(roller) {
     if (actors.isEmpty) {
       throw ArgumentError.value(actors, 'actors', 'a fight needs a party');
@@ -139,12 +274,7 @@ class EncounterSession {
 
     final startIndex = encounter.zones.indexOf(encounter.startZone);
     var n = 0;
-    for (final id in encounter.creatureIds) {
-      final creature = bestiary.creatureById(id);
-      if (creature == null) {
-        throw ArgumentError('Encounter "${encounter.id}" names unknown '
-            'creature "$id".');
-      }
+    for (final creature in foes ?? _lookUp(encounter, bestiary)) {
       _combatants.add(_combatantForCreature(
         creature,
         suffix: ++n,
@@ -155,15 +285,54 @@ class EncounterSession {
     _rollInitiative();
   }
 
+  static List<Creature> _lookUp(Encounter encounter, Bestiary bestiary) => [
+        for (final id in encounter.creatureIds)
+          bestiary.creatureById(id) ??
+              (throw ArgumentError('Encounter "${encounter.id}" names unknown '
+                  'creature "$id".')),
+      ];
+
   final Encounter encounter;
+
+  /// Taken off any strike that has to cross open ground, by the weather.
+  final int rangedPenalty;
+
+  /// What each actor comes into the fight with, when it is not full.
+  final Map<String, int> _startingHp;
+
+  /// Actors fighting Fatigued: -1 to AC, as Pathfinder has it.
+  final Set<String> _fatigued;
+
+  /// The spells the engine has numbers for.
+  final SpellBook _spells;
+
+  /// What each actor has left to cast with, shared with the world, so a
+  /// spell spent here stays spent.
+  final Map<String, ActorVitals> _vitals;
+
   final DiceRoller _roller;
   final CheckResolver _resolver;
+
+  /// The campaign's loot tables, when the caller wants drops rolled.
+  final GearTable? _gear;
+
+  /// What each actor is wielding and wearing, keyed by actor id. An actor
+  /// with no entry fights with the kit their sheet was imported with.
+  final Map<String, Loadout> _loadouts;
 
   final List<Combatant> _combatants = [];
   int _turnIndex = 0;
   int _round = 1;
   int _actionsLeft = actionsPerTurn;
   EncounterOutcome? _outcome;
+  List<GearItem> _loot = const [];
+  int _coinEarned = 0;
+  int _xpEarned = 0;
+  final List<InitiativeRoll> _initiative = [];
+  final List<StrikeResult> _opening = [];
+  DamageRoll? _coinRoll;
+  final List<LootRoll> _lootRolls = [];
+  final List<XpAward> _xpAwards = [];
 
   /// Pathfinder gives three actions a turn, which is what makes a third
   /// attack a real choice rather than a free one.
@@ -192,6 +361,43 @@ class EncounterSession {
   /// Flags the party earns by winning.
   List<String> get victoryFlags =>
       _outcome == EncounterOutcome.victory ? encounter.victoryFlags : const [];
+
+  /// What the defeated were carrying.
+  ///
+  /// Rolled once, at the moment the fight is won, rather than each time this
+  /// is read — a drop that changed depending on how often the client asked
+  /// about it would be no drop at all.
+  List<GearItem> get loot => _loot;
+
+  /// Coin found on the defeated, in copper. Zero unless the fight was won.
+  int get coinEarned => _coinEarned;
+
+  /// XP each member of the party earns for winning.
+  ///
+  /// Pathfinder's: each creature is worth XP by its level against the party's,
+  /// and everyone in the party earns the total. Worked out here because the
+  /// fight is the one place that knows both who fought and what they fought.
+  int get xpEarned => _xpEarned;
+
+  /// Everyone's initiative roll, in the order they act.
+  List<InitiativeRoll> get initiativeRolls => List.unmodifiable(_initiative);
+
+  /// Strikes made before anyone in the party had a turn: enemies that beat
+  /// the whole party's initiative act first, and the party should see it.
+  List<StrikeResult> get openingStrikes => List.unmodifiable(_opening);
+
+  /// The dice the coin was rolled on, once the fight is won.
+  DamageRoll? get coinRoll => _coinRoll;
+
+  /// Every d100 rolled against a drop table, found or not.
+  List<LootRoll> get lootRolls => List.unmodifiable(_lootRolls);
+
+  /// What each defeated creature was worth, adding up to [xpEarned].
+  List<XpAward> get xpAwards => List.unmodifiable(_xpAwards);
+
+  /// The loot as flags, so recovering something is recorded the same way as
+  /// everything else the party has done.
+  List<String> get lootFlags => [for (final item in _loot) 'loot_${item.id}'];
 
   Combatant? combatantById(String id) {
     for (final c in _combatants) {
@@ -236,6 +442,134 @@ class EncounterSession {
     return result;
   }
 
+  /// The spells the current combatant could cast, with what they have left.
+  List<CastOption> castOptions() {
+    final actor = current.actor;
+    final vitals = actor == null ? null : _vitals[actor.id];
+    if (actor == null || vitals == null) return const [];
+    return castOptionsFor(actor, vitals, _spells);
+  }
+
+  /// Casts [spellName] at [targetId], at its highest rank still available
+  /// unless [rank] says which.
+  ///
+  /// Pathfinder's arithmetic throughout. A spell attack is rolled against AC
+  /// with the caster's spell attack modifier, and counts toward the multiple
+  /// attack penalty like any attack. A save spell is a basic save by every
+  /// target against the caster's spell DC, with the damage rolled once: none
+  /// on a critical success, half on a success, double on a critical failure.
+  /// A burst catches everyone standing in the target's zone, the party
+  /// included.
+  SpellResult cast(String spellName, {String? targetId, int? rank}) {
+    _requirePartyTurn();
+    final caster = current;
+    final needle = spellName.trim().toLowerCase();
+    final options = castOptions()
+        .where((o) =>
+            o.spell.name.toLowerCase() == needle &&
+            (rank == null || o.rank == rank))
+        .toList();
+    if (options.isEmpty) {
+      throw InvalidActionException(
+          '${caster.name} has no "$spellName" to cast.');
+    }
+    final option = options.firstWhere((o) => o.isAvailable,
+        orElse: () => throw InvalidActionException(
+            '${caster.name} has no ${options.first.spell.name} left today.'));
+    final spell = option.spell;
+    _requireActions(spell.actions);
+
+    final target =
+        targetId == null ? _nearestOpponent(caster) : combatantById(targetId);
+    if (target == null || target.isDown) {
+      throw InvalidActionException('There is nothing there to cast it at.');
+    }
+    final reach = encounter.zones.indexOf(spell.range);
+    if (_distance(caster, target) > (reach < 0 ? 0 : reach)) {
+      throw InvalidActionException('${target.name} is out of range for '
+          '${spell.name}.');
+    }
+
+    final damage = spell.damageAt(option.rank);
+    final hits = <SpellHit>[];
+    DamageRoll? shared;
+
+    if (spell.defense == SpellDefense.ac) {
+      final penalty = caster.nextAttackPenalty;
+      final weather = _distance(caster, target) > 0 ? -rangedPenalty : 0;
+      final check = _resolver.resolve(
+        modifier: option.attackBonus + penalty + weather,
+        dc: target.armorClass,
+        label: '${spell.name} (spell attack)',
+      );
+      caster.attacksThisTurn++;
+      final roll = check.degree.isSuccess
+          ? damage.rollDetailed(_roller,
+              critical: check.degree == DegreeOfSuccess.criticalSuccess)
+          : null;
+      final standing = !target.isDown;
+      if (roll != null) target.takeDamage(roll.total);
+      hits.add(SpellHit(
+        target: target,
+        check: check,
+        damage: roll?.total ?? 0,
+        damageRoll: roll,
+        dropped: standing && target.isDown,
+      ));
+    } else {
+      final caught = spell.area
+          ? [
+              for (final c in _combatants)
+                if (!c.isDown && c.zoneIndex == target.zoneIndex) c,
+            ]
+          : [target];
+      shared = damage.rollDetailed(_roller);
+      for (final victim in caught) {
+        final check = _resolver.resolve(
+          modifier: _saveOf(victim, spell.defense),
+          dc: option.dc,
+          label: '${spell.defense.name[0].toUpperCase()}'
+              '${spell.defense.name.substring(1)} against ${spell.name}',
+        );
+        final taken = switch (check.degree) {
+          DegreeOfSuccess.criticalSuccess => 0,
+          DegreeOfSuccess.success => shared.total ~/ 2,
+          DegreeOfSuccess.failure => shared.total,
+          DegreeOfSuccess.criticalFailure => shared.total * 2,
+        };
+        final standing = !victim.isDown;
+        victim.takeDamage(taken);
+        hits.add(SpellHit(
+          target: victim,
+          check: check,
+          damage: taken,
+          dropped: standing && victim.isDown,
+        ));
+      }
+    }
+
+    _actionsLeft -= spell.actions;
+    final vitals = _vitals[caster.id];
+    if (vitals != null) spendCast(option, vitals);
+    _checkOutcome();
+    return SpellResult(
+      caster: caster,
+      option: option,
+      hits: hits,
+      damageRoll: shared,
+    );
+  }
+
+  /// A combatant's save of [kind]: a creature's own, or a character's sheet.
+  int _saveOf(Combatant c, SpellDefense kind) {
+    final creature = c.creature;
+    if (creature != null) return creature.saveFor(kind.name) ?? 0;
+    final actor = c.actor;
+    // Fatigued is -1 to saves as well as AC.
+    final tired = _fatigued.contains(c.id) ? 1 : 0;
+    return (actor?.statFor(kind.name)?.total ?? 0) - tired;
+  }
+
   /// Moves the current combatant one zone toward the enemy, or away.
   ({String zone, bool closer}) stride({bool closer = true}) {
     _requirePartyTurn();
@@ -245,6 +579,13 @@ class EncounterSession {
     final target = _nearestOpponent(actor);
     if (target == null) {
       throw InvalidActionException('There is nobody left to close on.');
+    }
+
+    // Level with the nearest enemy is as close as it gets. Without this check,
+    // "not further along" read as "behind", and closing on someone already at
+    // arm's length walked you a zone away from them.
+    if (closer && actor.zoneIndex == target.zoneIndex) {
+      throw InvalidActionException('You are already as close as you can get.');
     }
 
     final before = actor.zoneIndex;
@@ -322,19 +663,21 @@ class EncounterSession {
 
   StrikeResult _resolveStrike(Combatant attacker, Combatant target) {
     final penalty = attacker.nextAttackPenalty;
+    final weather = _distance(attacker, target) > 0 ? -rangedPenalty : 0;
     final outcome = _resolver.resolve(
-      modifier: attacker.attackBonus + penalty,
+      modifier: attacker.attackBonus + penalty + weather,
       dc: target.armorClass,
       label: '${attacker.name} strikes ${target.name}',
     );
     attacker.attacksThisTurn++;
 
-    var damage = 0;
-    if (outcome.degree == DegreeOfSuccess.criticalSuccess) {
-      damage = attacker.damage.rollCritical(_roller);
-    } else if (outcome.degree == DegreeOfSuccess.success) {
-      damage = attacker.damage.roll(_roller);
-    }
+    final damageRoll = outcome.degree.isSuccess
+        ? attacker.damage.rollDetailed(
+            _roller,
+            critical: outcome.degree == DegreeOfSuccess.criticalSuccess,
+          )
+        : null;
+    final damage = damageRoll?.total ?? 0;
 
     final wasStanding = !target.isDown;
     if (damage > 0) target.takeDamage(damage);
@@ -344,7 +687,9 @@ class EncounterSession {
       target: target,
       outcome: outcome,
       damage: damage,
+      damageRoll: damageRoll,
       penalty: penalty,
+      weatherPenalty: weather,
       targetDropped: wasStanding && target.isDown,
     );
   }
@@ -393,14 +738,75 @@ class EncounterSession {
     if (_outcome != null) return;
     if (enemies.every((c) => c.isDown)) {
       _outcome = EncounterOutcome.victory;
+      _rollLoot();
+      _rollCoin();
+      _countXp();
     } else if (party.every((c) => c.isDown)) {
       _outcome = EncounterOutcome.defeat;
     }
   }
 
+  void _rollCoin() {
+    final dice = encounter.coin;
+    if (dice == null) return;
+    final roll = DamageExpression.parse(dice).rollDetailed(_roller);
+    _coinRoll = roll;
+    _coinEarned = roll.total * 100;
+  }
+
+  void _countXp() {
+    final level = partyLevel([
+      for (final c in party)
+        if (c.actor case final actor?) actor.character.level,
+    ]);
+    for (final c in enemies) {
+      final creature = c.creature;
+      if (creature == null) continue;
+      _xpAwards.add(XpAward(
+        creature: creature,
+        partyLevel: level,
+        xp: creatureXp(creature.level - level),
+      ));
+    }
+    _xpEarned = _xpAwards.fold(0, (sum, a) => sum + a.xp);
+  }
+
+  /// Rolls each defeated creature's drop table.
+  ///
+  /// Rolled on the session's own dice, so a seed replays the same loot on a
+  /// phone as in a browser. The same item never drops twice from one fight:
+  /// three thralls is three chances at the nail, not three nails.
+  void _rollLoot() {
+    final gear = _gear;
+    if (gear == null) return;
+
+    final found = <String, GearItem>{};
+    for (final enemy in enemies) {
+      final creature = enemy.creature;
+      if (creature == null) continue;
+      for (final item in gear.droppedBy(creature.id)) {
+        if (found.containsKey(item.id)) continue;
+        final roll = LootRoll(
+          creature: creature,
+          item: item,
+          die: _roller.rollDie(100),
+          chance: item.dropFrom(creature.id)!.chance,
+        );
+        _lootRolls.add(roll);
+        if (roll.dropped) found[item.id] = item;
+      }
+    }
+
+    _loot = found.values.toList()..sort((a, b) => a.level.compareTo(b.level));
+  }
+
   void _rollInitiative() {
+    final rolls = <Combatant, InitiativeRoll>{};
     for (final c in _combatants) {
-      c.initiative = _roller.d20() + c.perception;
+      final roll = InitiativeRoll(
+          combatant: c, die: _roller.d20(), modifier: c.perception);
+      rolls[c] = roll;
+      c.initiative = roll.total;
     }
     // Ties go to the party, which is the usual table convention and spares a
     // tie-breaking roll nobody wants to narrate.
@@ -410,13 +816,15 @@ class EncounterSession {
       if (a.isEnemy == b.isEnemy) return a.name.compareTo(b.name);
       return a.isEnemy ? 1 : -1;
     });
+    _initiative.addAll([for (final c in _combatants) rolls[c]!]);
     _turnIndex = 0;
     _actionsLeft = actionsPerTurn;
 
-    // An enemy may act before anyone in the party does.
+    // An enemy may act before anyone in the party does. What it does is kept:
+    // a party that opens the fight already bleeding should know why.
     if (current.isEnemy) {
       while (!isOver && current.isEnemy) {
-        _runEnemyTurn();
+        _opening.addAll(_runEnemyTurn());
         if (isOver) break;
         _advanceTurn();
       }
@@ -424,26 +832,25 @@ class EncounterSession {
   }
 
   Combatant _combatantFor(SessionActor actor) {
-    final stats = actor.stats;
-    final weapon =
-        actor.character.weapons.isEmpty ? null : actor.character.weapons.first;
-
-    final damage = weapon == null
-        ? DamageExpression.parse('1d4')
-        : DamageExpression.tryParse(weapon.damageFormula) ??
-            DamageExpression.parse('1d4');
+    // Equipment is applied here rather than baked into the sheet: what a
+    // character is holding changes between fights, and the import does not.
+    final equipped = EquippedStats(
+      actor.stats,
+      _loadouts[actor.id] ?? const Loadout(),
+    );
 
     return Combatant(
       id: actor.id,
       name: actor.name,
       isEnemy: false,
-      armorClass: stats.armorClass,
-      maxHp: stats.maxHp,
-      attackBonus: weapon?.attackBonus ?? stats.perception.total,
-      damage: damage,
-      perception: stats.perception.total,
+      armorClass: equipped.armorClass - (_fatigued.contains(actor.id) ? 1 : 0),
+      maxHp: actor.stats.maxHp,
+      hp: _startingHp[actor.id],
+      attackBonus: equipped.attackBonus,
+      damage: equipped.damage,
+      perception: actor.stats.perception.total,
       zoneIndex: 0,
-      agile: weapon?.runes.any((r) => r.toLowerCase() == 'agile') ?? false,
+      agile: equipped.isAgile,
       actor: actor,
     );
   }

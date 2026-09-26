@@ -44,13 +44,57 @@ EncounterSession fight({
   required Encounter encounter,
   List<Creature> creatures = const [_straw],
   int seed = 1,
+  GearTable? gear,
 }) =>
     EncounterSession(
       encounter: encounter,
       bestiary: Bestiary(creatures: creatures, encounters: [encounter]),
       actors: _party(),
       roller: DiceRoller(seed),
+      gear: gear,
     );
+
+/// A table where the straw dummy carries one certainty and one long shot.
+GearTable _lootTable() => GearTable(const [
+      GearItem(
+        id: 'i_certain',
+        name: 'Certain Thing',
+        level: 1,
+        type: 'weapon',
+        description: 'Always on it.',
+        rarity: ItemRarity.unique,
+        drops: [DropSource(creatureId: 'c_straw', chance: 100)],
+      ),
+      GearItem(
+        id: 'i_longshot',
+        name: 'Long Shot',
+        level: 1,
+        type: 'weapon',
+        description: 'Hardly ever on it.',
+        rarity: ItemRarity.rare,
+        drops: [DropSource(creatureId: 'c_straw', chance: 1)],
+      ),
+    ]);
+
+/// Plays a winnable fight to its end. The dummy strikes at -10 against AC 25,
+/// so the only question is how many swings it takes.
+EncounterSession _playOut(EncounterSession f) {
+  var guard = 0;
+  while (!f.isOver && guard++ < 100) {
+    if (f.isPartyTurn) {
+      final targets = f.targetsInReach();
+      if (targets.isEmpty) {
+        f.stride();
+      } else {
+        f.strike(targets.first.id);
+      }
+      if (f.actionsLeft == 0 && !f.isOver) f.endTurn();
+    } else {
+      f.endTurn();
+    }
+  }
+  return f;
+}
 
 const _adjacent = Encounter(
   id: 'e_test',
@@ -199,6 +243,31 @@ void main() {
       expect(f.targetsInReach(), isNotEmpty);
     });
 
+    test('closing on an enemy already level with you does not step away', () {
+      // The edge of the map used to hide this: the clamp stopped the step.
+      // In the middle zone, "closing" on someone at arm's length walked the
+      // party a zone backwards, out of their own reach.
+      final f = fight(
+        encounter: const Encounter(
+          id: 'e_middle',
+          location: 'anywhere',
+          name: 'Middle',
+          creatureIds: ['c_wall'],
+          startZone: 'near',
+        ),
+        creatures: const [_wall],
+      );
+      expect(f.stride().zone, 'near');
+      expect(f.targetsInReach(), isNotEmpty);
+      expect(
+        () => f.stride(),
+        throwsA(isA<InvalidActionException>()
+            .having((e) => e.message, 'message', contains('as close'))),
+      );
+      expect(f.current.zoneIndex, 1, reason: 'still level with the stone');
+      expect(f.actionsLeft, 2, reason: 'a refused step costs nothing');
+    });
+
     test('cannot close past an enemy already in reach', () {
       final f = fight(encounter: _adjacent);
       expect(
@@ -243,6 +312,187 @@ void main() {
       f.strike('c_straw_1');
       expect(f.outcome, EncounterOutcome.victory);
       expect(f.victoryFlags, ['test_won']);
+    });
+  });
+
+  group('loot', () {
+    test('a fight with no loot table drops nothing', () {
+      final f = _playOut(fight(encounter: _adjacent, seed: 3));
+      expect(f.outcome, EncounterOutcome.victory);
+      expect(f.loot, isEmpty);
+      expect(f.lootFlags, isEmpty);
+    });
+
+    test('a guaranteed drop is on every one of them', () {
+      for (var seed = 1; seed <= 12; seed++) {
+        final f = _playOut(
+            fight(encounter: _adjacent, seed: seed, gear: _lootTable()));
+        expect(f.outcome, EncounterOutcome.victory);
+        expect(f.loot.map((i) => i.id), contains('i_certain'),
+            reason: 'seed $seed');
+      }
+    });
+
+    test('a long shot stays a long shot', () {
+      // One percent, so across forty fights it should turn up rarely or not
+      // at all. A drop table that ignored its own chances would show here.
+      var found = 0;
+      for (var seed = 1; seed <= 40; seed++) {
+        final f = _playOut(
+            fight(encounter: _adjacent, seed: seed, gear: _lootTable()));
+        if (f.loot.any((i) => i.id == 'i_longshot')) found++;
+      }
+      expect(found, lessThan(5));
+    });
+
+    test('two of the same creature is two chances, not two copies', () {
+      final f = _playOut(fight(
+        encounter: const Encounter(
+          id: 'e',
+          location: 'anywhere',
+          name: 'T',
+          creatureIds: ['c_straw', 'c_straw'],
+          startZone: 'engaged',
+        ),
+        gear: _lootTable(),
+      ));
+      expect(f.outcome, EncounterOutcome.victory);
+      expect(f.loot.where((i) => i.id == 'i_certain'), hasLength(1));
+    });
+
+    test('the same seed drops the same things', () {
+      // Replayability: a phone and a browser must agree about what was on
+      // the body, or a saved game is not the same game.
+      final a =
+          _playOut(fight(encounter: _adjacent, seed: 7, gear: _lootTable()));
+      final b =
+          _playOut(fight(encounter: _adjacent, seed: 7, gear: _lootTable()));
+      expect(a.loot.map((i) => i.id), b.loot.map((i) => i.id));
+    });
+
+    test('reading the loot twice does not roll it again', () {
+      final f =
+          _playOut(fight(encounter: _adjacent, seed: 4, gear: _lootTable()));
+      expect(
+          f.loot.map((i) => i.id).toList(), f.loot.map((i) => i.id).toList());
+    });
+
+    test('nothing is carried off a fight that was not won', () {
+      final f = fight(
+          encounter: _standoff, creatures: const [_wall], gear: _lootTable());
+      f.flee();
+      expect(f.outcome, EncounterOutcome.fled);
+      expect(f.loot, isEmpty);
+    });
+
+    test('loot is recorded as flags, like everything else', () {
+      final f =
+          _playOut(fight(encounter: _adjacent, seed: 3, gear: _lootTable()));
+      expect(f.lootFlags, contains('loot_i_certain'));
+    });
+  });
+
+  group('every roll is kept for the player to see', () {
+    test('initiative: one d20 each, plus Perception, in the order they act',
+        () {
+      final f = fight(encounter: _adjacent, seed: 4);
+      expect(f.initiativeRolls.map((r) => r.combatant), f.combatants);
+      for (final roll in f.initiativeRolls) {
+        expect(roll.die, inInclusiveRange(1, 20));
+        expect(roll.modifier, roll.combatant.perception);
+        expect(roll.total, roll.combatant.initiative);
+      }
+    });
+
+    test('strikes made before the party moves are kept, not thrown away', () {
+      // Faster than anyone and three swings in reach: all three land before
+      // the party's first turn. They used to happen and never be told.
+      const quick = Creature(
+        id: 'c_quick',
+        name: 'Quick Thing',
+        level: 1,
+        armorClass: 5,
+        maxHp: 1,
+        perception: 40,
+        attacks: [CreatureAttack(name: 'jab', attackBonus: 0, damage: '1')],
+      );
+      final f = fight(
+        encounter: const Encounter(
+          id: 'e_quick',
+          location: 'anywhere',
+          name: 'Quick',
+          creatureIds: ['c_quick'],
+          startZone: 'engaged',
+        ),
+        creatures: const [quick],
+      );
+      expect(f.initiativeRolls.first.combatant.name, 'Quick Thing');
+      expect(f.openingStrikes, hasLength(3));
+      expect(f.openingStrikes.map((s) => s.penalty), [0, -5, -10]);
+      expect(f.isPartyTurn, isTrue);
+    });
+
+    test('a party that goes first has nothing in the opening', () {
+      final f = fight(encounter: _adjacent);
+      expect(f.initiativeRolls.first.combatant.isEnemy, isFalse);
+      expect(f.openingStrikes, isEmpty);
+    });
+
+    test('every hit carries its damage dice, and they add up to the damage',
+        () {
+      for (var seed = 0; seed < 20; seed++) {
+        final f =
+            fight(encounter: _standoff, creatures: const [_wall], seed: seed);
+        final log = [
+          f.strike(f.targetsInReach().first.id),
+          ...f.endTurn(),
+        ];
+        for (final strike in log) {
+          if (strike.isHit) {
+            expect(strike.damageRoll, isNotNull);
+            expect(strike.damageRoll!.total, strike.damage);
+            expect(strike.damageRoll!.critical, strike.isCritical);
+          } else {
+            expect(strike.damageRoll, isNull);
+            expect(strike.damage, 0);
+          }
+        }
+      }
+    });
+
+    test('the coin is rolled on dice the player can see', () {
+      final f = _playOut(fight(
+        encounter: const Encounter(
+          id: 'e_paid',
+          location: 'anywhere',
+          name: 'Paid',
+          creatureIds: ['c_straw'],
+          startZone: 'engaged',
+          coin: '3d6+2',
+        ),
+      ));
+      expect(f.outcome, EncounterOutcome.victory);
+      expect(f.coinRoll!.dice, hasLength(3));
+      expect(f.coinEarned, f.coinRoll!.total * 100);
+    });
+
+    test('every d100 against a drop table is kept, found or not', () {
+      final f = _playOut(fight(encounter: _adjacent, gear: _lootTable()));
+      expect(f.lootRolls.map((r) => r.item.id),
+          unorderedEquals(['i_certain', 'i_longshot']));
+      for (final roll in f.lootRolls) {
+        expect(roll.die, inInclusiveRange(1, 100));
+        expect(f.loot.contains(roll.item), roll.dropped);
+      }
+    });
+
+    test('the XP is itemised by creature, and adds up', () {
+      final f = _playOut(fight(encounter: _adjacent));
+      expect(f.xpAwards, hasLength(f.enemies.length));
+      expect(f.xpAwards.fold(0, (sum, a) => sum + a.xp), f.xpEarned);
+      // A level -1 dummy against a level 6 is seven below: worth nothing.
+      expect(f.xpAwards.single.difference, -7);
+      expect(f.xpAwards.single.xp, 0);
     });
   });
 

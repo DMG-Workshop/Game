@@ -11,7 +11,22 @@
         "quest": "The roads are unsafe. Caravans vanish, and young Elara Whitmore was taken three days ago.",
         "elara": "Sweet child. Disappeared from her farm. Her mother Marta is beside herself. Fifty gold if you find her.",
         "creatures": "Farmers speak of shadows moving. Animals found dead, or worse... corrupted. Brother Aldus believes it's dark magic."
-      }
+      },
+      "barks": [
+        {
+          "requires": ["boss_defeated_hollow_avatar"],
+          "line": "Millhaven owes you. Sit down before you fall down."
+        },
+        {
+          "requires": ["deception_revealed_mere_road"],
+          "unless": ["thorne_asked_about_mere_road"],
+          "line": "You are wet to the knee. Where have you been?"
+        },
+        {
+          "requires": ["met_thorne"],
+          "line": "Anything?"
+        }
+      ]
     },
     {
       "npc_id": "npc_005_queen_liora",
@@ -24,7 +39,22 @@
         "king": "The King is adjusting to recent pressures. His paranoia is tiresome, but I remain steadfast.",
         "covenant": "Ah, you know. How delightful. We are not murderers, we are gravediggers for a dead world.",
         "corruption": "Such an ugly word. I call it 'transformation.' The shadow will purge the weak."
-      }
+      },
+      "barks": [
+        {
+          "requires": ["boss_defeated_malachai_vex"],
+          "line": ""
+        },
+        {
+          "requires": ["deception_revealed_under_archive"],
+          "unless": ["liora_confronted"],
+          "line": "Back from the library so soon? How diligent."
+        },
+        {
+          "requires": ["met_liora"],
+          "line": "Again? The court will talk."
+        }
+      ]
     },
     {
       "npc_id": "npc_006_malachai",
@@ -37,7 +67,225 @@
         "vision": "The old order is a fossil. We will be perfected through the shadow.",
         "shadow": "Shadow is entropy—the natural force of ending. It grants clarity and power.",
         "ascension": "I am a Vessel. Soon, I will be consumed, and the true god will wear this flesh."
-      }
+      },
+      "barks": [
+        {
+          "requires": ["boss_defeated_malachai_vex"],
+          "line": ""
+        }
+      ]
+    },
+    {
+      "npc_id": "npc_002_marta",
+      "name": "Marta Whitmore",
+      "location": "RF_001_Farm",
+      "tier": 1,
+      "appearance": "A farm woman in a coat buttoned wrong stands at the fence, watching the treeline as if it might hand something back.",
+      "greeting": "Are you from the Captain? Have you— no. No, you'd have said.",
+      "keywords": {
+        "elara": "She's nine. She's got my mother's temper and her father's ears, and she has never once in her life come home when she was called.",
+        "grove": "The oak ring, back of the barn. Every child in the valley plays there, and every mother tells them not to.",
+        "doll": "She takes it everywhere. She'd have had it with her."
+      },
+      "barks": [
+        {
+          "requires": ["boss_defeated_hollow_avatar"],
+          "line": "Elara! Look who has come."
+        },
+        {
+          "requires": ["item_acquired_elaras_doll"],
+          "unless": ["marta_saw_doll"],
+          "line": "What is that you are carrying? Let me see."
+        },
+        {
+          "requires": ["met_marta"],
+          "line": "Any news? No. You would have said."
+        }
+      ]
+    },
+    {
+      "npc_id": "npc_003_aldus",
+      "name": "Brother Aldus",
+      "location": "MH_004_Temple",
+      "tier": 1,
+      "appearance": "A priest in a plain grey habit kneels at the altar, sorting the week's offerings into what can be eaten and what cannot.",
+      "greeting": "Ashkyr keep you. If you've come to leave something, there is room on the step.",
+      "keywords": {
+        "burials": "Four this week. Each of them dead longer than they'd been missing, and each of them came to me with their eyes full of earth.",
+        "shoe": "Elara Whitmore's. Her mother brought it in. I keep meaning to give it back, and I can't decide whether that would be a kindness.",
+        "ashkyr": "Ashkyr keeps the hearth and the grave. Lately the grave has been keeping me."
+      },
+      "barks": [
+        {
+          "requires": ["boss_defeated_hollow_avatar"],
+          "line": "Ashkyr keep you. I mean it rather more than usual."
+        },
+        {
+          "requires": ["met_aldus"],
+          "line": "Back again? The bread is fresh, if you want it."
+        }
+      ]
+    },
+    {
+      "npc_id": "npc_004_harrow",
+      "name": "Ada Harrow",
+      "location": "MH_005_Forge",
+      "tier": 1,
+      "appearance": "The smith, broad and soot-grey, rests her hammer on the anvil and watches you the way she'd watch a horse she hadn't been told about.",
+      "greeting": "If you want a horse shod, it'll be a week. If you want anything else, it'll be longer.",
+      "keywords": {
+        "nails": "People buy nails. I sell them.",
+        "commissions": "Four this week I'll not be paid for. I stack them in the order I heard.",
+        "maul": "Seal-stone in the head, off the old boundary marker. I made three and finished one."
+      },
+      "barks": [
+        {
+          "requires": ["boss_defeated_hollow_avatar"],
+          "line": "Hammer is quieter these days. Good."
+        },
+        {
+          "requires": ["met_harrow"],
+          "line": "Still here, then."
+        }
+      ]
+    },
+    {
+      "npc_id": "npc_007_wendel",
+      "name": "Wendel Pike",
+      "location": "MH_003_Tavern",
+      "tier": 1,
+      "appearance": "The landlord, a round and pleasant man with a cloth over his shoulder, has a habit of standing near whoever is talking.",
+      "greeting": "Welcome to the Sparrow! Sit anywhere but by the door — there's a draught.",
+      "keywords": {
+        "ale": "Best in the valley, and the only one in the valley, which helps.",
+        "news": "Tollgate on the capital road's shut till the Captain says otherwise, so half the county's drinking my cellar dry waiting on it. Ill wind.",
+        "lamp": "For the late ones. Nobody wants to break their neck on the back stair in the dark."
+      },
+      "barks": [
+        {
+          "requires": ["wendel_arrested"],
+          "line": "Come to gloat? Go on, then. Everyone else has."
+        },
+        {
+          "requires": ["wendel_fled"],
+          "line": ""
+        },
+        {
+          "requires": ["deception_revealed_mere_road"],
+          "unless": ["wendel_confessed"],
+          "line": "You. You came back up the Mere Road."
+        },
+        {
+          "requires": ["met_wendel"],
+          "line": "Back again! What will it be?"
+        }
+      ]
+    },
+    {
+      "npc_id": "npc_008_hale",
+      "name": "Master Archivist Oswin Hale",
+      "location": "VC_003_GrandLibrary",
+      "tier": 2,
+      "appearance": "A thin man in ink-stained cuffs sits behind the catalogue desk, with the fixed, careful attention of someone who has not slept properly in a year.",
+      "greeting": "Quietly, please. The library is open to all subjects of the Crown. Mostly.",
+      "keywords": {
+        "catalogue": "Every volume this library has ever held, in the order it came to us. Including the ones it no longer holds.",
+        "missing": "Removed for conservation, by order of the Crown.",
+        "seals": "Not here. Not in front of the shelves. Ask me properly."
+      },
+      "barks": [
+        {
+          "requires": ["boss_defeated_malachai_vex"],
+          "line": "Quietly, please. Oh. It is you. Thank you."
+        },
+        {
+          "requires": ["hale_confessed"],
+          "line": "Find her. Please."
+        },
+        {
+          "requires": ["deception_revealed_under_archive"],
+          "line": "You found the letter. I can see it on your faces."
+        },
+        {
+          "requires": ["met_hale"],
+          "line": "Yes?"
+        }
+      ]
+    },
+    {
+      "npc_id": "npc_009_jory",
+      "name": "Jory Tallow",
+      "location": "MH_001_Square",
+      "tier": 1,
+      "appearance": "A pedlar's cart stands against the fountain with its shutters propped open on more stock than a market town can afford. Its owner leans on the wheel, reading the same broadsheet for what is clearly the fifth time.",
+      "greeting": "Customers! Actual customers.",
+      "keywords": {
+        "road": "Tollgate's shut till the Captain says the roads are safe, and the roads are not safe, so here I sit.",
+        "nails": "Plenty of call for iron nails in this town, and nobody will buy mine. Somebody local is selling them cheaper, and I'd dearly like to know who.",
+        "prices": "Capital prices. But they're fair capital prices."
+      },
+      "barks": [
+        {
+          "requires": ["Unlock_Travel_to_Valorheim"],
+          "line": "The wagon is in! Come and look, come and look!"
+        },
+        {
+          "requires": ["met_jory"],
+          "line": "Back for more? I knew you had taste."
+        }
+      ]
+    },
+    {
+      "npc_id": "npc_010_sal",
+      "name": "Sal Mercy",
+      "location": "WW_001_Edge",
+      "tier": 1,
+      "appearance": "A mule stands in the road loaded higher than any mule should be, a bell on its bridle, and beside it a small woman as brown as a walnut, counting something on her fingers that she does not intend to tell you about.",
+      "greeting": "Mercy's the name, and it's the only thing I give away.",
+      "keywords": {
+        "mule": "Her name is Patience. She has none.",
+        "road": "I go where the roads go. Lately they go to graveyards.",
+        "prices": "Dear. It all rides on one mule, and you're paying for her feet."
+      },
+      "route": {
+        "stops": ["WW_001_Edge", "RF_001_Farm", "MH_004_Temple", "VC_001_Plaza", "BM_001_Entrance"],
+        "every": 8,
+        "away_chance": 30
+      },
+      "barks": [
+        {
+          "requires": ["hunted_first"],
+          "unless": ["sal_named_the_broker"],
+          "line": "You are on the board, you know. Everybody is reading it."
+        },
+        {
+          "requires": ["met_sal"],
+          "line": "You again. Anyone would think you were following me."
+        }
+      ]
+    },
+    {
+      "npc_id": "npc_011_brask",
+      "name": "Foreman Ruel Brask",
+      "location": "BM_001_Entrance",
+      "tier": 2,
+      "appearance": "A heavyset man in a foreman's leather apron sits on an upturned ore cart by the tally board, turning a brass token over and over in his fingers.",
+      "greeting": "If you're from the Crown, the answer's still no. If you're not, mind the shaft.",
+      "keywords": {
+        "shift": "Nine went down on the last shift. None came up. I have their tokens out, and nobody to give them back to me.",
+        "tally": "A token going down, the token back coming up. That board has been wrong for a month.",
+        "deep workings": "Crown's men put a guard on the bottom. Then the guard stopped coming up and all."
+      },
+      "barks": [
+        {
+          "requires": ["brask_given_the_tallies"],
+          "line": "Board is clean. First time in a month."
+        },
+        {
+          "requires": ["brask_asked_after_the_shift"],
+          "line": "Well? Anything down there?"
+        }
+      ]
     }
   ]
 }

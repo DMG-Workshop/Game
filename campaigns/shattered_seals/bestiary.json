@@ -26,7 +26,19 @@
       "specials": [
         "Cannot be commanded away from the tether that raised it.",
         "Takes no action of its own if the Avatar falls."
-      ]
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The thrall leans in close, its jaw working without a sound."
+        ],
+        "hurt": [
+          "The thrall looks down at the wound as if it belonged to someone else."
+        ],
+        "dying": [
+          "The thrall sits down in the leaves, carefully, and is still."
+        ]
+      }
     },
     {
       "creature_id": "c_hollow_avatar",
@@ -62,7 +74,14 @@
       "specials": [
         "Draws one Hollow Thrall upright again at the start of each round while any remain standing.",
         "Cannot leave the Hollow Grove while the turned earth at its centre is undisturbed."
-      ]
+      ],
+      "voice": {
+        "taunts": ["Cold, isn't it? It gets colder.", "I will keep you. I keep everything."],
+        "hurt": ["You... take from me? From ME?"],
+        "dying": [
+          "Tell him... tell him I kept them... for him..."
+        ]
+      }
     },
     {
       "creature_id": "c_covenant_acolyte",
@@ -96,7 +115,12 @@
       ],
       "specials": [
         "Flees the chamber if Malachai falls, and is not pursued."
-      ]
+      ],
+      "voice": {
+        "taunts": ["For the Vessel!", "You see? You see what faith can do?"],
+        "hurt": ["This was not in the catechism."],
+        "dying": ["I was promised... I was promised..."]
+      }
     },
     {
       "creature_id": "c_malachai_vex",
@@ -132,7 +156,705 @@
       "specials": [
         "While the ritual circles are intact, damage that would drop him instead leaves him at 1 Hit Point once per fight.",
         "Speaks throughout, and will stop to answer a genuine question."
-      ]
+      ],
+      "voice": {
+        "taunts": [
+          "Did that hurt? It will stop. Everything stops.",
+          "Such a small life, and so much of it on the floor."
+        ],
+        "hurt": ["Interesting. Truly. Do that again."],
+        "dying": ["You have... only... postponed... it..."]
+      }
+    },
+    {
+      "creature_id": "c_covenant_cutthroat",
+      "name": "Covenant Cutthroat",
+      "level": 2,
+      "description": "A Millhaven face you half recognise from the market, with a cudgel in one hand and a length of red cord tied round the other wrist. Paid, and not paid enough to look you in the eye.",
+      "ac": 18,
+      "hp": 30,
+      "perception": 7,
+      "fortitude": 9,
+      "reflex": 9,
+      "will": 5,
+      "speed": 25,
+      "traits": ["human", "covenant"],
+      "attacks": [
+        { "name": "cudgel", "bonus": 10, "damage": "1d6+4", "damage_type": "B", "reach": "engaged" },
+        { "name": "sling", "bonus": 9, "damage": "1d6+2", "damage_type": "B", "reach": "far" }
+      ],
+      "specials": [
+        "Breaks and runs at the first real wound once the others are down."
+      ],
+      "voice": {
+        "taunts": ["Should have stayed in the Sparrow.", "Nothing personal. It's paid."],
+        "hurt": [
+          "Not paid enough for this. Not near enough."
+        ],
+        "dying": [
+          "Tell Wendel... tell him he still owes me..."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_mere_drowned",
+      "name": "Mere-Drowned",
+      "level": 3,
+      "description": "Something that went into the mere a long time ago with a rope round its ankles and a stone on the rope, and has come back up with both. It is not one of the Avatar's. Somebody else asked it up.",
+      "ac": 17,
+      "hp": 50,
+      "perception": 8,
+      "fortitude": 12,
+      "reflex": 5,
+      "will": 8,
+      "speed": 20,
+      "traits": ["undead", "mindless", "water"],
+      "attacks": [
+        {
+          "name": "waterlogged grip",
+          "bonus": 12,
+          "damage": "1d10+5",
+          "damage_type": "B",
+          "reach": "engaged"
+        }
+      ],
+      "specials": [
+        "Drags whatever it holds toward the water's edge instead of striking it again."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The drowned thing drags you toward the water's edge."
+        ],
+        "hurt": [
+          "Black water pours from the wound, and keeps pouring."
+        ],
+        "dying": [
+          "It goes back into the mere, and the stone on its rope pulls it down."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_archive_warden",
+      "name": "Archive Warden",
+      "level": 10,
+      "description": "A suit of palace armour with nobody in it, walking a patrol it was given before the library had its present name. There is a key in its back, and the key is turning.",
+      "ac": 30,
+      "hp": 150,
+      "perception": 18,
+      "fortitude": 22,
+      "reflex": 15,
+      "will": 18,
+      "speed": 20,
+      "traits": ["construct", "mindless"],
+      "attacks": [
+        { "name": "halberd", "bonus": 22, "damage": "2d10+12", "damage_type": "S", "reach": "near" }
+      ],
+      "specials": [
+        "Stops mid-swing if the key in its back is drawn out. Nobody can reach it from the front."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The warden's halberd comes round on its patrol, and you are in the way."
+        ],
+        "hurt": [
+          "Something inside the warden's armour grinds and slips a gear."
+        ],
+        "dying": ["The key in its back stops turning."]
+      }
+    },
+    {
+      "creature_id": "c_ossuary_reader",
+      "name": "Ossuary Reader",
+      "level": 9,
+      "description": "It was an archivist once, by the ink still in the creases of its knuckles. It has been kept down here to guard the stair, and fed just enough, and it is hungry now in a way that has nothing to do with reading.",
+      "ac": 28,
+      "hp": 145,
+      "perception": 18,
+      "fortitude": 18,
+      "reflex": 19,
+      "will": 17,
+      "speed": 30,
+      "traits": ["undead", "ghoul"],
+      "attacks": [
+        { "name": "jaws", "bonus": 20, "damage": "2d8+10", "damage_type": "P", "reach": "engaged" },
+        {
+          "name": "claw",
+          "bonus": 20,
+          "damage": "2d6+10",
+          "damage_type": "S",
+          "reach": "engaged",
+          "traits": ["agile"]
+        }
+      ],
+      "specials": [
+        "Its claws numb; whatever they open finds its hands slow to answer."
+      ],
+      "voice": {
+        "taunts": ["Quiet. Quiet. Quiet.", "Mmm. Fresh margins."],
+        "hurt": ["Hurts. Hurts like paper cuts."],
+        "dying": [
+          "Shelve me... shelve me... in the... right... place..."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_ravencrest_scarecrow",
+      "name": "The Ravencrest Scarecrow",
+      "level": 2,
+      "description": "Marta's scarecrow, down off its pole and three fields from where it was put: a turnip head gone soft, a coat that was her father's, and a child's ribbon round one wrist. It stands with its arms out, as though it were still keeping birds off something.",
+      "ac": 17,
+      "hp": 30,
+      "perception": 8,
+      "fortitude": 11,
+      "reflex": 5,
+      "will": 8,
+      "speed": 20,
+      "traits": ["construct", "shadow"],
+      "attacks": [
+        {
+          "name": "straw-stuffed grip",
+          "bonus": 11,
+          "damage": "1d10+4",
+          "damage_type": "B",
+          "reach": "engaged"
+        }
+      ],
+      "specials": [
+        "Burns. It has stood in the rain for years, and it burns anyway."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The scarecrow swings its stuffed arms, and there is something hard inside the straw."
+        ],
+        "hurt": [
+          "Straw bursts out of the coat, and it does not seem to notice."
+        ],
+        "dying": [
+          "The scarecrow falls back into its crucifix stretch and topples over, stiff as a post."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_red_veined_miner",
+      "name": "Red-Veined Miner",
+      "level": 12,
+      "description": "Nine went down on the last shift. What is left of them is still down here, still working, with the red grain of the stone grown up through their arms like ivy up a wall. They do not stop swinging when you speak to them.",
+      "ac": 30,
+      "hp": 269,
+      "perception": 22,
+      "fortitude": 25,
+      "reflex": 19,
+      "will": 22,
+      "speed": 20,
+      "traits": ["human", "bloodstone"],
+      "attacks": [
+        {
+          "name": "miner's pick",
+          "bonus": 26,
+          "damage": "3d10+14",
+          "damage_type": "P",
+          "reach": "engaged"
+        }
+      ],
+      "specials": [
+        "Keeps the rhythm of a working shift, and strikes on the beat."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The miner's pick comes down on the beat, and you are the face."
+        ],
+        "hurt": [
+          "Red light bleeds from the miner instead of blood."
+        ],
+        "dying": [
+          "The miner stops mid-swing, and the red goes out of its eyes."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_thornhaven_warden",
+      "name": "Thornhaven Gate-Warden",
+      "level": 13,
+      "description": "Malachai's household guard, in red-lacquered plate with the Vex crest filed off, and a halberd each. They are guarding the gatehouse from the outside, and its door from the inside, which tells you what it is for.",
+      "ac": 33,
+      "hp": 235,
+      "perception": 23,
+      "fortitude": 26,
+      "reflex": 23,
+      "will": 20,
+      "speed": 25,
+      "traits": ["human", "covenant"],
+      "attacks": [
+        { "name": "halberd", "bonus": 27, "damage": "3d10+16", "damage_type": "S", "reach": "near" }
+      ],
+      "specials": [
+        "Holds the gatehouse door rather than give chase."
+      ],
+      "voice": {
+        "taunts": ["Back from the door.", "Vex pays for every one of you we drop."],
+        "hurt": ["Hold. Hold, damn it."],
+        "dying": ["Should have... walked away... myself..."]
+      }
+    },
+    {
+      "creature_id": "c_hunt_copper_rat",
+      "name": "Copper-Tongue Rat",
+      "level": 0,
+      "description": "A rat the size of a terrier with a green stain round its muzzle, the colour a penny goes. They follow coin. Nobody in Millhaven can tell you how they know where it is.",
+      "ac": 16,
+      "hp": 13,
+      "perception": 8,
+      "fortitude": 6,
+      "reflex": 9,
+      "will": 3,
+      "speed": 30,
+      "traits": ["animal", "hunter"],
+      "attacks": [
+        { "name": "jaws", "bonus": 8, "damage": "1d6+2", "damage_type": "P", "reach": "engaged" }
+      ],
+      "specials": [
+        "Goes for the purse, not the throat, until something stands in the way."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The rat gets its teeth into your belt pouch and worries it."
+        ],
+        "hurt": [
+          "The rat squeals, and three more squeals answer from the ditch."
+        ],
+        "dying": [
+          "The rat drops, with a copper penny still in its teeth."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_hunt_hedge_footpad",
+      "name": "Hedge Footpad",
+      "level": 2,
+      "description": "Somebody who was in the Sparrow when you paid for your drinks, and a sister-in-law's hatchet, and a scarf over the face that fools nobody.",
+      "ac": 18,
+      "hp": 26,
+      "perception": 10,
+      "fortitude": 5,
+      "reflex": 11,
+      "will": 8,
+      "speed": 25,
+      "traits": ["human", "hunter"],
+      "attacks": [
+        {
+          "name": "hatchet",
+          "bonus": 11,
+          "damage": "1d10+4",
+          "damage_type": "S",
+          "reach": "engaged",
+          "traits": ["agile"]
+        },
+        {
+          "name": "thrown stone",
+          "bonus": 9,
+          "damage": "1d8+4",
+          "damage_type": "B",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Runs the moment it is clear the money is not coming quietly."
+      ],
+      "voice": {
+        "taunts": ["Purses. Now.", "I did say nobody needed to be brave."],
+        "hurt": ["This was meant to be easy!"],
+        "dying": [
+          "My sister-in-law... wants her hatchet back..."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_hunt_tithe_taker",
+      "name": "Covenant Tithe-Taker",
+      "level": 4,
+      "description": "The Covenant keeps an account of what everybody has. This one carries the page with your names on it, and a knife for crossing a name out.",
+      "ac": 20,
+      "hp": 60,
+      "perception": 11,
+      "fortitude": 11,
+      "reflex": 11,
+      "will": 14,
+      "speed": 25,
+      "traits": ["human", "covenant", "hunter"],
+      "attacks": [
+        {
+          "name": "tally knife",
+          "bonus": 14,
+          "damage": "2d8+5",
+          "damage_type": "S",
+          "reach": "engaged",
+          "traits": ["agile"]
+        },
+        { "name": "red cord", "bonus": 12, "damage": "2d6+5", "damage_type": "B", "reach": "near" }
+      ],
+      "specials": [
+        "Reads out the sum you are worth before it starts, and gets it right to the copper."
+      ],
+      "voice": {
+        "taunts": ["Tithe paid in part.", "The Covenant is patient. I am not."],
+        "hurt": ["You will be charged for that."],
+        "dying": ["The account... is not... closed..."]
+      }
+    },
+    {
+      "creature_id": "c_hunt_gilt_harpy",
+      "name": "Gilt Harpy",
+      "level": 6,
+      "description": "Feathers the colour of old brass, and a woman's face that has never had to smile at anyone. She lines her nest with rings, and with the fingers that were in them.",
+      "ac": 24,
+      "hp": 81,
+      "perception": 16,
+      "fortitude": 14,
+      "reflex": 17,
+      "will": 11,
+      "speed": 40,
+      "traits": ["beast", "hunter"],
+      "attacks": [
+        { "name": "talons", "bonus": 17, "damage": "2d8+9", "damage_type": "S", "reach": "engaged" },
+        {
+          "name": "diving rake",
+          "bonus": 15,
+          "damage": "2d6+8",
+          "damage_type": "P",
+          "reach": "near",
+          "traits": ["agile"]
+        }
+      ],
+      "specials": [
+        "Sings when she is winning. Stop the song and she stops being sure of herself."
+      ],
+      "voice": {
+        "taunts": ["Pretty rings. Pretty fingers.", "Sing with me! Sing!"],
+        "hurt": [
+          "My feathers! You will pay in gold for my feathers!"
+        ],
+        "dying": ["My nest... my shining nest..."]
+      }
+    },
+    {
+      "creature_id": "c_hunt_hoard_wight",
+      "name": "Hoard-Wight",
+      "level": 8,
+      "description": "He was buried with his money on the understanding that it would stay with him. It did not. He has been walking the valley ever since, following gold he hopes is his.",
+      "ac": 26,
+      "hp": 135,
+      "perception": 16,
+      "fortitude": 19,
+      "reflex": 13,
+      "will": 16,
+      "speed": 25,
+      "traits": ["undead", "hunter"],
+      "attacks": [
+        {
+          "name": "grave-cold grip",
+          "bonus": 20,
+          "damage": "2d10+11",
+          "damage_type": "negative",
+          "reach": "engaged",
+          "on_critical": "A coin in your purse goes black and will not come clean."
+        },
+        {
+          "name": "miser's curse",
+          "bonus": 18,
+          "damage": "2d8+9",
+          "damage_type": "negative",
+          "reach": "near"
+        }
+      ],
+      "specials": [
+        "Stops to count any coin that is thrown down, and counts slowly."
+      ],
+      "voice": {
+        "taunts": ["Mine.", "Mine. Mine. Mine."],
+        "hurt": ["You cannot take it with you. I tried."],
+        "dying": ["Was it... ever... mine..."]
+      }
+    },
+    {
+      "creature_id": "c_hunt_ash_ogre",
+      "name": "Ash Ogre",
+      "level": 10,
+      "description": "Nine feet of ogre gone grey from the fall of ash off the mines, carrying a club that was a pit prop and a sack that is already half full of other people's valuables.",
+      "ac": 27,
+      "hp": 219,
+      "perception": 19,
+      "fortitude": 22,
+      "reflex": 16,
+      "will": 19,
+      "speed": 25,
+      "traits": ["giant", "hunter"],
+      "attacks": [
+        {
+          "name": "pit-prop club",
+          "bonus": 23,
+          "damage": "2d12+13",
+          "damage_type": "B",
+          "reach": "near"
+        }
+      ],
+      "specials": [
+        "Wants the sack filled more than it wants you dead, and will take a bribe that is big enough."
+      ],
+      "voice": {
+        "taunts": ["In the sack you go!", "Shiny things for the sack!"],
+        "hurt": ["Ow! Ow! Not the sack!"],
+        "dying": ["Sack... was... nearly... full..."]
+      }
+    },
+    {
+      "creature_id": "c_hunt_cinder_drake",
+      "name": "Cinder Drake",
+      "level": 12,
+      "description": "A drake can smell gold the way a hound smells meat, and this one has smelled yours from the other side of the valley. Its scales shed sparks when it breathes.",
+      "ac": 30,
+      "hp": 269,
+      "perception": 22,
+      "fortitude": 25,
+      "reflex": 22,
+      "will": 22,
+      "speed": 40,
+      "traits": ["dragon", "fire", "hunter"],
+      "attacks": [
+        { "name": "jaws", "bonus": 26, "damage": "3d10+14", "damage_type": "P", "reach": "engaged" },
+        {
+          "name": "cinder spit",
+          "bonus": 24,
+          "damage": "3d8+12",
+          "damage_type": "fire",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Will not leave while it can smell the gold; will not stay once the gold is out of reach."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The drake snaps, and sparks shower off its teeth."
+        ],
+        "hurt": [
+          "The drake hisses, and the air around the wound shimmers with heat."
+        ],
+        "dying": [
+          "The drake's fire goes out, and it cools to ash in front of you."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_hunt_red_vein_stalker",
+      "name": "Red-Vein Stalker",
+      "level": 14,
+      "description": "Bloodstone ore given legs and a single instruction by somebody in the Covenant. The instruction was your names. The red grain in it pulses when it is near what it wants.",
+      "ac": 35,
+      "hp": 255,
+      "perception": 25,
+      "fortitude": 28,
+      "reflex": 22,
+      "will": 25,
+      "speed": 25,
+      "traits": ["construct", "bloodstone", "hunter"],
+      "attacks": [
+        {
+          "name": "ore fist",
+          "bonus": 29,
+          "damage": "3d10+18",
+          "damage_type": "B",
+          "reach": "engaged"
+        },
+        {
+          "name": "shard volley",
+          "bonus": 27,
+          "damage": "3d8+15",
+          "damage_type": "P",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Does not tire, does not sleep, and does not stop walking toward you until it is broken."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The stalker's fist comes down like a hammer on an anvil."
+        ],
+        "hurt": [
+          "A crack runs through the stalker, and the red light in it flickers."
+        ],
+        "dying": [
+          "The stalker comes apart into ore, and the red goes out of it."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_hunt_crimson_inquisitor",
+      "name": "Crimson Inquisitor",
+      "level": 16,
+      "description": "A woman in a red coat and a clerk's spectacles who has read your names in a ledger with a very large sum written next to them, and who does not like sums that stay large.",
+      "ac": 38,
+      "hp": 295,
+      "perception": 28,
+      "fortitude": 28,
+      "reflex": 28,
+      "will": 30,
+      "speed": 25,
+      "traits": ["human", "covenant", "hunter"],
+      "attacks": [
+        {
+          "name": "ledger-blade",
+          "bonus": 32,
+          "damage": "3d12+18",
+          "damage_type": "S",
+          "reach": "engaged"
+        },
+        {
+          "name": "word of the Vessel",
+          "bonus": 30,
+          "damage": "3d10+15",
+          "damage_type": "negative",
+          "reach": "far",
+          "on_critical": "For a moment you cannot remember what you were carrying."
+        }
+      ],
+      "specials": [
+        "Will talk, if you ask what she wants. What she wants is everything."
+      ],
+      "voice": {
+        "taunts": ["Recorded.", "You are worth less already."],
+        "hurt": [
+          "That will be entered in the ledger against you."
+        ],
+        "dying": ["Balance... carried... forward..."]
+      }
+    },
+    {
+      "creature_id": "c_hunt_tithe_knight",
+      "name": "The Tithe-Knight",
+      "level": 18,
+      "description": "An armoured revenant who collected the Crown's taxes three hundred years ago, and who has never been told to stop. Its writ is still nailed to its breastplate.",
+      "ac": 39,
+      "hp": 419,
+      "perception": 30,
+      "fortitude": 33,
+      "reflex": 27,
+      "will": 33,
+      "speed": 25,
+      "traits": ["undead", "hunter"],
+      "attacks": [
+        {
+          "name": "tax-collector's mace",
+          "bonus": 35,
+          "damage": "3d12+20",
+          "damage_type": "B",
+          "reach": "engaged"
+        },
+        {
+          "name": "summons",
+          "bonus": 33,
+          "damage": "3d10+17",
+          "damage_type": "negative",
+          "reach": "near"
+        }
+      ],
+      "specials": [
+        "Accepts payment in full. Nobody has ever had enough."
+      ],
+      "voice": {
+        "taunts": ["Monies owed.", "The Crown will be paid."],
+        "hurt": ["Obstruction of a collector. Noted."],
+        "dying": ["Account... settled..."]
+      }
+    },
+    {
+      "creature_id": "c_hunt_vessel_hound",
+      "name": "Hound of the Vessel",
+      "level": 20,
+      "description": "Something the Shadow Vessel has let off its leash. It has the outline of a hound and the manners of a debt collector, and everywhere it has walked the gold has gone dull.",
+      "ac": 45,
+      "hp": 319,
+      "perception": 35,
+      "fortitude": 33,
+      "reflex": 36,
+      "will": 33,
+      "speed": 50,
+      "traits": ["shadow", "fiend", "hunter"],
+      "attacks": [
+        {
+          "name": "unmaking bite",
+          "bonus": 38,
+          "damage": "4d10+22",
+          "damage_type": "negative",
+          "reach": "engaged"
+        },
+        {
+          "name": "shadow lunge",
+          "bonus": 36,
+          "damage": "4d8+19",
+          "damage_type": "negative",
+          "reach": "near",
+          "traits": ["agile"]
+        }
+      ],
+      "specials": [
+        "Tarnishes gold it touches. What it takes, it takes for the Vessel, not for itself."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The hound's bite leaves no mark, and the gold at your belt goes dull."
+        ],
+        "hurt": [
+          "The hound flickers, like a shadow when a lamp gutters."
+        ],
+        "dying": [
+          "The hound lies down, and there is only a shadow on the ground, and then not even that."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_hunt_hoardmother",
+      "name": "The Hoardmother",
+      "level": 23,
+      "description": "Old enough to remember when Valorheim paid her tribute, and offended that it stopped. She has heard what you are worth. She considers it hers.",
+      "ac": 46,
+      "hp": 575,
+      "perception": 37,
+      "fortitude": 40,
+      "reflex": 37,
+      "will": 40,
+      "speed": 60,
+      "traits": ["dragon", "hunter"],
+      "attacks": [
+        { "name": "jaws", "bonus": 42, "damage": "4d12+24", "damage_type": "P", "reach": "engaged" },
+        { "name": "tail", "bonus": 40, "damage": "4d10+20", "damage_type": "B", "reach": "near" },
+        {
+          "name": "breath of the hoard",
+          "bonus": 40,
+          "damage": "4d10+20",
+          "damage_type": "fire",
+          "reach": "far",
+          "on_critical": "Whatever gold you carried is a puddle."
+        }
+      ],
+      "specials": [
+        "Talks before she fights, and means every word of it."
+      ],
+      "voice": {
+        "taunts": ["Tribute. At last.", "Kneel, and I may leave you your teeth."],
+        "hurt": [
+          "You scratched me. Nobody has scratched me in four hundred years."
+        ],
+        "dying": ["Valorheim... owes me... still..."]
+      }
     }
   ],
   "encounters": [
@@ -144,7 +866,39 @@
       "creatures": ["c_hollow_thrall", "c_hollow_thrall"],
       "start_zone": "near",
       "repeatable": false,
-      "victory_flags": ["cleared_whisperwood_thralls"]
+      "victory_flags": ["cleared_whisperwood_thralls"],
+      "ambush": true,
+      "coin": "2d6",
+      "scene": {
+        "setting": "A week ago these were Millhaven people: a drover, a farmhand, somebody who kept bees. Whatever raised them walked them out into the wood and left them to keep it.",
+        "ambiance": [
+          "Leaves come down in the still air, a few at a time.",
+          "Somewhere behind you, a third set of footsteps starts, and stops.",
+          "The thralls make no sound at all, not even breathing."
+        ],
+        "opening": [
+          {
+            "text": "The nearer one turns its head toward you the way a sleeper turns toward a voice. Its boots are still laced."
+          },
+          { "pc": "Whoever you were, I am sorry. Stay down this time." }
+        ],
+        "first_down": [
+          { "pc": "That one had a name. Remember it was somebody." }
+        ],
+        "victory": [
+          { "text": "They lie in the leaves as if they had only sat down to rest." },
+          { "pc": "Aldus will want to know. He will want their names." }
+        ],
+        "defeat": [
+          {
+            "text": "The last thing you see is a pair of good boots, standing patiently by your head, waiting for instructions."
+          }
+        ],
+        "flee": [
+          { "pc": "Back! Back to the track!" },
+          { "text": "They do not follow past the nails. Not yet." }
+        ]
+      }
     },
     {
       "encounter_id": "e_hollow_grove",
@@ -154,7 +908,40 @@
       "creatures": ["c_hollow_avatar", "c_hollow_thrall", "c_hollow_thrall"],
       "start_zone": "far",
       "requires": ["item_acquired_elaras_doll"],
-      "victory_flags": ["boss_defeated_hollow_avatar"]
+      "victory_flags": ["boss_defeated_hollow_avatar"],
+      "coin": "6d10+40",
+      "scene": {
+        "setting": "The heart of it. Elara is somewhere under that turned earth, kept, and the thing standing over the grave has been waiting for somebody to come for her.",
+        "ambiance": [
+          "The trees lean in a little further, as if to watch.",
+          "The turned earth in the centre heaves once, like breath.",
+          "Every shadow in the clearing points toward the Avatar, whatever the light says."
+        ],
+        "opening": [
+          { "enemy": "You are not the one I kept her for. Still. You will do to begin with." },
+          { "pc": "She is going home. Stand aside or be put aside." },
+          { "enemy": "Home. I remember home. It was cold there too." }
+        ],
+        "bloodied": [
+          { "pc": "It can be hurt. Keep on it!" }
+        ],
+        "first_down": [
+          { "pc": "One less of its puppets. The strings are next." }
+        ],
+        "victory": [
+          {
+            "text": "The shadows in the clearing let go of the Avatar all at once, and there is nothing inside them."
+          },
+          { "text": "Under the turned earth, very faintly, a child is crying." },
+          { "pc": "Dig. Carefully. She is alive." }
+        ],
+        "defeat": [
+          { "enemy": "Lie down with the others. I will keep you too." }
+        ],
+        "flee": [
+          { "enemy": "Run, then. The wood is mine to the nails, and the nails are coming out." }
+        ]
+      }
     },
     {
       "encounter_id": "e_ritual_chamber",
@@ -164,7 +951,430 @@
       "creatures": ["c_malachai_vex", "c_covenant_acolyte", "c_covenant_acolyte"],
       "start_zone": "near",
       "requires": ["item_destroyed_bloodstone_geode"],
-      "victory_flags": ["boss_defeated_malachai_vex"]
+      "victory_flags": ["boss_defeated_malachai_vex"],
+      "coin": "10d20+600",
+      "scene": {
+        "setting": "The top of Thornhaven, with the city burning below the windows. Every circle on the floor is drawn to open something, and Malachai has been drawing them for years.",
+        "ambiance": [
+          "The circles on the floor brighten, dim, brighten, like a pulse.",
+          "Below the windows the city burns without a sound reaching up here.",
+          "Something under the floor answers every word Malachai says."
+        ],
+        "opening": [
+          {
+            "enemy": "Ah. The farmers' friends. You broke the geode; I felt it. You have no idea what you let out doing it."
+          },
+          { "pc": "Then tell us, Vex. You like talking." },
+          { "enemy": "I do. I shall talk the whole time I am killing you." }
+        ],
+        "bloodied": [
+          { "pc": "He bleeds like anyone. Keep him off the circles!" }
+        ],
+        "first_down": [
+          { "enemy": "Acolytes are cheap. Faith is not. Do not flatter yourselves." },
+          { "pc": "Your turn next." }
+        ],
+        "victory": [
+          {
+            "text": "The circles go out one ring at a time, from the outside in, and the thing under the floor stops answering."
+          },
+          { "pc": "It is over. It is actually over." }
+        ],
+        "defeat": [
+          { "enemy": "Lie still. You will want to be facing the right way when it opens." }
+        ],
+        "flee": [
+          { "enemy": "Go. Tell them what you saw. Fear makes such a good congregation." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_mere_road_cutthroats",
+      "location": "MR_001_MereRoad",
+      "name": "Paid to Wait",
+      "description": "Two figures stand up out of the reeds on either side of the causeway with cudgels already in hand. Neither of them looks surprised to see you.",
+      "rearm_description": "There are two more of them on the causeway now, standing exactly where the first two stood, red cord at their wrists. They have been waiting for you to come back up this road. They knew you would.",
+      "creatures": ["c_covenant_cutthroat", "c_covenant_cutthroat"],
+      "start_zone": "near",
+      "ambush": true,
+      "rearm_on": ["deception_revealed_mere_road"],
+      "victory_flags": ["cleared_mere_road"],
+      "coin": "3d6",
+      "scene": {
+        "setting": "The Mere Road was never a road anyone used. Somebody wanted you on it anyway, and paid these two to be waiting when you came.",
+        "ambiance": [
+          "The black water on either side of the causeway does not move.",
+          "A bell rings once, far out on the mere, for nobody.",
+          "Reeds hiss in a wind you cannot feel."
+        ],
+        "opening": [
+          { "enemy": "Wendel said you'd be along. Said you'd have a look about you. You do." },
+          { "pc": "Wendel said a lot of things. How much did he get for us?" },
+          { "enemy": "More than you'll be worth by teatime." }
+        ],
+        "bloodied": [
+          { "enemy": "This isn't what we were paid for." }
+        ],
+        "first_down": [
+          { "pc": "Your friend's done. You can still walk away." }
+        ],
+        "victory": [
+          { "text": "Red cord on both their wrists. Covenant money, paid in the Sparrow." },
+          { "pc": "Wendel sent us down here to die. I want to hear him explain it." }
+        ],
+        "defeat": [
+          { "enemy": "Take their purses. Leave them for the mere. Wendel owes us a drink." }
+        ],
+        "flee": [
+          { "enemy": "That's it, run home! Tell Wendel we said hello!" }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_reed_beds_drowned",
+      "location": "MR_002_ReedBeds",
+      "name": "Up Out of the Water",
+      "description": "The water on either side of the causeway stands up, and keeps standing up, and has arms.",
+      "rearm_description": "The reeds you cut through have closed again, and the mere on either side of the road is standing up the way it did before. Something has called them back — the same something that rang the bell.",
+      "creatures": ["c_mere_drowned", "c_mere_drowned"],
+      "start_zone": "near",
+      "ambush": true,
+      "rearm_on": ["deception_revealed_mere_road"],
+      "victory_flags": ["cleared_reed_beds"],
+      "coin": "2d4",
+      "scene": {
+        "setting": "The mere keeps what goes into it. These went in with stones on their ankles, a long time ago, and somebody has asked them back up.",
+        "ambiance": [
+          "Water runs off them in sheets and never stops running.",
+          "The reeds close behind you. There is no path now but through.",
+          "A stone on a rope drags across the causeway, grinding."
+        ],
+        "opening": [
+          {
+            "text": "They come up out of the water without a ripple, stones still swinging from their ankles, and walk toward you on the bottom of the shallows."
+          },
+          { "pc": "Stay on the causeway. Whatever you do, stay out of the water." }
+        ],
+        "first_down": [
+          { "pc": "It went back down. Let it stay there." }
+        ],
+        "victory": [
+          { "text": "The water takes them back. The ropes go down last." },
+          { "pc": "Somebody tied those stones on. Somebody in Millhaven." }
+        ],
+        "defeat": [
+          {
+            "text": "Cold water closes over your face, and a hand holds you under, patiently, the way it was once held under itself."
+          }
+        ],
+        "flee": [
+          { "pc": "North! Get back up the causeway!" },
+          {
+            "text": "They wade after you a little way, and then stand in the shallows, watching, water running off them."
+          }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_drowned_mill",
+      "location": "MR_003_DrownedMill",
+      "name": "The Miller's Welcome",
+      "description": "They were sitting in the dark on the far side of the millstone, and they are on their feet the moment your boots touch the dry boards. One of them is still holding a length of the same red cord as the bundle.",
+      "creatures": ["c_covenant_cutthroat", "c_mere_drowned", "c_covenant_cutthroat"],
+      "start_zone": "near",
+      "ambush": true,
+      "victory_flags": ["cleared_drowned_mill"],
+      "coin": "4d6+5",
+      "scene": {
+        "setting": "The end of the Mere Road. Nobody ever took Elara down here, and the people waiting in the mill have known that all along.",
+        "ambiance": [
+          "The locked wheel creaks against the weed, trying to turn.",
+          "Water drips from the millstone dais onto the dry floor, and dries.",
+          "The sacking bundle in the corner is exactly the size of a child."
+        ],
+        "opening": [
+          { "enemy": "Didn't think you'd make it past the reeds. Wendel owes me two silver." },
+          { "pc": "Where is the girl?" },
+          { "enemy": "Girl? Never was a girl. Just a bundle of sacking and a story for fools." }
+        ],
+        "bloodied": [
+          { "enemy": "Get it up out of the water! Get it on them!" }
+        ],
+        "first_down": [
+          { "pc": "Talk, and you live. Who paid you?" }
+        ],
+        "victory": [
+          { "text": "The last of them goes into the mere and does not come up." },
+          { "pc": "A decoy. The whole road was a decoy. She was never here." }
+        ],
+        "defeat": [
+          { "enemy": "Wrap them in the sacking. Wendel can have them for his next story." }
+        ],
+        "flee": [
+          { "enemy": "Go on, then! It's a long road back, and it's filling up behind you." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_sealed_stacks_warden",
+      "location": "UA_001_SealedStacks",
+      "name": "The Night Patrol",
+      "description": "At the end of a row of empty shelves, something in palace armour turns on its heel and begins, without hurrying, to walk towards you.",
+      "rearm_description": "There is a suit on patrol between the shelves again — another, or the same one put back together. Someone came down the stair behind you and wound it; the key in its back is still turning.",
+      "creatures": ["c_archive_warden"],
+      "start_zone": "far",
+      "ambush": true,
+      "rearm_on": ["deception_revealed_under_archive"],
+      "victory_flags": ["cleared_sealed_stacks"],
+      "coin": "4d20+120",
+      "scene": {
+        "setting": "Under the Grand Library, where the missing books went. The warden was set to walk these stacks before the library had its name, and no one has told it to stop.",
+        "ambiance": [
+          "The key in the warden's back turns, click, click, click.",
+          "Empty shelves go back into the dark further than any lamp.",
+          "Dust falls from the ceiling at every step the warden takes."
+        ],
+        "opening": [
+          {
+            "text": "The warden stops mid-patrol. The helm turns toward you with a grinding of old iron, and the halberd comes down level."
+          },
+          { "pc": "Get behind it. The key. Somebody get to the key." }
+        ],
+        "bloodied": [
+          { "pc": "It is slowing. The key is winding down!" }
+        ],
+        "first_down": [
+          { "pc": "Down. Pull the key before it gets up." }
+        ],
+        "victory": [
+          {
+            "text": "The key stops turning. The armour stands a moment longer on nothing, then comes apart like a dropped tray of cutlery."
+          },
+          { "pc": "Hale knew this was down here. He sent us anyway." }
+        ],
+        "defeat": [
+          {
+            "text": "The warden resumes its patrol, stepping over you on the second pass as carefully as it steps over the fallen shelves."
+          }
+        ],
+        "flee": [
+          { "pc": "Up! Up the stair!" },
+          { "text": "It does not follow. Its patrol does not go that way." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_ossuary_readers",
+      "location": "UA_002_OssuaryStair",
+      "name": "The Readers",
+      "description": "Two of the skulls in the wall are not set in mortar, and neither are the things behind them. They climb down.",
+      "rearm_description": "The skulls you left facing out have all been turned back to the wall, and the two empty niches are not empty any more.",
+      "creatures": ["c_ossuary_reader", "c_ossuary_reader"],
+      "start_zone": "near",
+      "ambush": true,
+      "rearm_on": ["deception_revealed_under_archive"],
+      "victory_flags": ["cleared_ossuary_stair"],
+      "coin": "6d20+150",
+      "scene": {
+        "setting": "The Readers were archivists once, sent down to catalogue the sealed stacks and kept down here since. They have been fed just enough.",
+        "ambiance": [
+          "Skulls in the wall seem to turn a little further as you pass.",
+          "One of the Readers licks ink from its knuckles.",
+          "Somewhere below, pages turn in the dark."
+        ],
+        "opening": [
+          { "enemy": "Shh. Quiet in the stacks. Quiet." },
+          { "pc": "You were people. Archivists. Do you remember?" },
+          { "enemy": "We remember hunger. Hunger is quieter than you." }
+        ],
+        "bloodied": [
+          { "pc": "They feel it. Keep them off the stair!" }
+        ],
+        "first_down": [
+          { "enemy": "Pell. Pell is gone. More for us." }
+        ],
+        "victory": [
+          {
+            "text": "The last one folds over itself on the stair with a sound like a book being closed."
+          },
+          { "pc": "Somebody sent them down here and told their families a story." }
+        ],
+        "defeat": [
+          { "enemy": "Quiet now. Quiet. We will catalogue you." }
+        ],
+        "flee": [
+          { "enemy": "Come back. Come back when you are hungrier." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_false_seal",
+      "location": "UA_003_FalseSeal",
+      "name": "The Vault's Keepers",
+      "description": "Two figures in crimson rise from where they were kneeling in front of the seal, and a third thing, on a chain, rises with them. They were not praying. They were listening for your feet on the stair.",
+      "creatures": ["c_covenant_acolyte", "c_covenant_acolyte", "c_ossuary_reader"],
+      "start_zone": "near",
+      "ambush": true,
+      "victory_flags": ["cleared_false_seal"],
+      "coin": "8d20+250",
+      "scene": {
+        "setting": "The seal at the bottom of the stair is painted plaster. Everything about the Under-Archive was a lie to keep you busy, and these are the people told to keep it.",
+        "ambiance": [
+          "Brush strokes show in the painted seal when the light moves.",
+          "Up the stair behind you, small sounds, getting closer.",
+          "The kneeling mats are still warm."
+        ],
+        "opening": [
+          { "enemy": "You were meant to stay below longer. The Queen will be so disappointed." },
+          { "pc": "The Queen can tell us herself." },
+          { "enemy": "Oh, she will. She always does." }
+        ],
+        "bloodied": [
+          { "enemy": "Hold them here! Hold them as long as you can!" }
+        ],
+        "first_down": [
+          { "pc": "Holding us here for what? What are we missing up there?" }
+        ],
+        "victory": [
+          {
+            "text": "The satchel by the mats is still open, and there is a letter in it under a black wax seal."
+          },
+          { "pc": "A painted seal. We have been digging in the wrong place." }
+        ],
+        "defeat": [
+          { "enemy": "Keep them below. As long as they are willing to stay." }
+        ],
+        "flee": [
+          { "enemy": "Run upstairs, then. It is all the same to us. You are late either way." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_oak_grove_scarecrow",
+      "location": "RF_002_OakGrove",
+      "name": "Still Keeping Watch",
+      "description": "In the middle of the oak ring, where no field has ever been, a scarecrow stands with its arms out. It was not here before. Its head turns to follow you.",
+      "creatures": ["c_ravencrest_scarecrow"],
+      "start_zone": "near",
+      "requires": ["marta_told_of_the_scarecrow"],
+      "victory_flags": ["scarecrow_burned"],
+      "coin": "2d6+4",
+      "scene": {
+        "setting": "Marta's scarecrow, walked three fields off its pole into the oak ring the night Elara went, and standing guard over nothing since. Whatever took the girl passed close enough to wake it.",
+        "ambiance": [
+          "Straw sifts out of the old coat with every movement.",
+          "A crow lands on an oak branch, looks at the scarecrow, and leaves in a hurry.",
+          "Elara's ribbon flutters at its wrist."
+        ],
+        "opening": [
+          {
+            "text": "Its arms come down from their crucifix stretch, slowly, and the turnip head tilts at you, as if you were a crow."
+          },
+          { "pc": "It is only trying to keep the birds off. We are the birds." }
+        ],
+        "first_down": [
+          { "pc": "Get the ribbon. Elara will want it back." }
+        ],
+        "victory": [
+          { "text": "It goes up like a bonfire, all at once, and the coat last." },
+          { "pc": "Save the ribbon. Leave the rest to burn." }
+        ],
+        "defeat": [
+          {
+            "text": "The scarecrow stands over you with its arms out, keeping you from the crows until morning."
+          }
+        ],
+        "flee": [
+          {
+            "text": "It does not chase. It goes back to the middle of the ring and puts its arms out again."
+          }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_lost_shift",
+      "location": "BM_002_DeepMine",
+      "name": "The Last Shift",
+      "description": "Down past the last lamp, picks are ringing in a steady rhythm, the way they would at the start of a shift. Two figures are working the red face with their backs to you. The tally-tokens on their belts catch the light.",
+      "creatures": ["c_red_veined_miner", "c_red_veined_miner"],
+      "start_zone": "near",
+      "requires": ["brask_asked_after_the_shift"],
+      "victory_flags": ["freed_the_lost_shift"],
+      "coin": "6d20+300",
+      "scene": {
+        "setting": "The last shift down the Bloodstone mine: nine men, a token each. The red grain got into them the way it gets into the rock, and they have been working the face ever since.",
+        "ambiance": [
+          "The picks ring on the beat, the way a shift keeps time.",
+          "Red light pulses in the veins of the walls, and in theirs.",
+          "Somewhere up the shaft, the shift bell rings for nobody."
+        ],
+        "opening": [
+          {
+            "text": "Two of them turn from the face together, on the beat, and bring their picks round."
+          },
+          { "pc": "Brask is waiting for you up top. We are taking you home." }
+        ],
+        "bloodied": [
+          { "text": "Red light leaks from the wound instead of blood." }
+        ],
+        "first_down": [
+          { "pc": "Get its token. Brask counts every one." }
+        ],
+        "victory": [
+          { "text": "The picks stop. For the first time in a month there is silence at the face." },
+          { "pc": "Nine tokens. Brask will want to count them himself." }
+        ],
+        "defeat": [
+          {
+            "text": "The shift goes back to the face, and the rhythm picks up where it left off, as if you had never interrupted."
+          }
+        ],
+        "flee": [
+          { "pc": "Up the shaft! Go!" },
+          { "text": "Behind you the picks start again, on the beat." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_thornhaven_watch",
+      "location": "TH_001_Gates",
+      "name": "The Gatehouse Watch",
+      "description": "Two gate-wardens stand in front of the gatehouse door, not the gate. Behind the door, very quietly, someone is crying, and someone else is telling them to hush.",
+      "creatures": ["c_thornhaven_warden", "c_thornhaven_warden"],
+      "start_zone": "near",
+      "victory_flags": ["thornhaven_watch_broken"],
+      "coin": "8d20+400",
+      "scene": {
+        "setting": "The gatehouse at Thornhaven holds the families Malachai keeps to buy obedience: servants' children, a clerk's wife, an archivist's daughter. Two wardens stand between them and you.",
+        "ambiance": [
+          "Behind the gatehouse door, somebody is being hushed.",
+          "The gravel of the drive has been raked into perfect lines.",
+          "Crimson lacquer flakes from the wardens' plate as they move."
+        ],
+        "opening": [
+          { "enemy": "Visiting hours are over. They are always over." },
+          { "pc": "Open that door, and you can walk away." },
+          { "enemy": "We are paid to stand here. We have not been paid to walk." }
+        ],
+        "bloodied": [
+          { "enemy": "Hold the door! Whatever happens, hold the door!" }
+        ],
+        "first_down": [
+          { "pc": "One down. The door is next." }
+        ],
+        "victory": [
+          {
+            "text": "Behind the gatehouse door, the hushing stops. Somebody knocks, very quietly, from the inside."
+          },
+          { "pc": "We are here. We are getting you out." }
+        ],
+        "defeat": [
+          { "enemy": "Put them in with the others. Vex likes a full house." }
+        ],
+        "flee": [
+          { "enemy": "Come back with more friends. The door is not going anywhere." }
+        ]
+      }
     }
   ]
 }
