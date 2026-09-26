@@ -123,9 +123,9 @@ class GameController extends ChangeNotifier {
   /// Chips for what makes sense right now.
   List<CommandChip> get chips {
     if (_prompt.startsWith('say')) {
+      // The conversation's own choices, in its words.
       return [
-        for (var i = 1; i <= 6; i++) (label: '$i', command: '$i'),
-        (label: 'Walk away', command: '0'),
+        for (final c in _console.choices) (label: c.label, command: c.command),
       ];
     }
     if (_prompt.startsWith('fight')) {
