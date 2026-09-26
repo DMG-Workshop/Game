@@ -1,0 +1,80 @@
+{
+  "about": "Numbers the engine needs to resolve these spells in a fight, and nothing else: no rules text. Written from memory of the Remaster rules and to be checked against Player Core before release.",
+  "spells": [
+    {
+      "name": "Daze",
+      "rank": 0,
+      "defense": "will",
+      "damage": "1d6",
+      "range": "far",
+      "heighten": { "every": 2, "damage": "1d6" }
+    },
+    {
+      "name": "Electric Arc",
+      "rank": 0,
+      "defense": "reflex",
+      "damage": "2d4",
+      "range": "far",
+      "heighten": { "every": 1, "damage": "1d4" }
+    },
+    {
+      "name": "Ignition",
+      "rank": 0,
+      "defense": "ac",
+      "damage": "2d4",
+      "range": "near",
+      "heighten": { "every": 1, "damage": "1d4" }
+    },
+    {
+      "name": "Needle Darts",
+      "rank": 0,
+      "defense": "ac",
+      "damage": "3d4",
+      "range": "far",
+      "heighten": { "every": 1, "damage": "1d4" }
+    },
+    {
+      "name": "Telekinetic Projectile",
+      "rank": 0,
+      "defense": "ac",
+      "damage": "2d6",
+      "range": "far",
+      "heighten": { "every": 1, "damage": "1d6" }
+    },
+    {
+      "name": "Void Warp",
+      "rank": 0,
+      "defense": "fortitude",
+      "damage": "2d4",
+      "range": "near",
+      "heighten": { "every": 1, "damage": "1d4" }
+    },
+    {
+      "name": "Breathe Fire",
+      "rank": 1,
+      "defense": "reflex",
+      "damage": "2d6",
+      "range": "near",
+      "area": true,
+      "heighten": { "every": 1, "damage": "2d6" }
+    },
+    {
+      "name": "Fireball",
+      "rank": 3,
+      "defense": "reflex",
+      "damage": "6d6",
+      "range": "far",
+      "area": true,
+      "heighten": { "every": 1, "damage": "2d6" }
+    },
+    {
+      "name": "Lightning Bolt",
+      "rank": 3,
+      "defense": "reflex",
+      "damage": "4d12",
+      "range": "far",
+      "area": true,
+      "heighten": { "every": 1, "damage": "1d12" }
+    }
+  ]
+}

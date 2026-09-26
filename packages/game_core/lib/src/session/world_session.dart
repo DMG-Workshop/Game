@@ -307,7 +307,18 @@ class WorldSession {
   static int _startingCoin(List<SessionActor> actors) =>
       actors.fold(0, (sum, actor) => sum + actor.character.money.totalInCopper);
 
+  /// Where a new game begins: where the first main quest starts, when it
+  /// starts by walking in somewhere, as Campaign I does in Millhaven's
+  /// square; otherwise the first room by id.
   static String _firstRoomOf(Campaign campaign) {
+    for (final arc in campaign.arcs.all) {
+      if (arc.isSide || !arc.startTrigger.startsWith('enter_')) continue;
+      final prefix = arc.startTrigger.substring('enter_'.length);
+      final ids = campaign.locations.rooms.keys.toList()..sort();
+      for (final id in ids) {
+        if (id == prefix || id.startsWith('${prefix}_')) return id;
+      }
+    }
     final rooms = campaign.locations.rooms.keys.toList()..sort();
     if (rooms.isEmpty) {
       throw ArgumentError.value(campaign, 'campaign', 'has no rooms');

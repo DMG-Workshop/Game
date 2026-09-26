@@ -89,11 +89,18 @@ const _directions = {
 /// asynchronous. Both clients are this one console, so they never tell the
 /// game differently.
 class GameConsole {
-  GameConsole(this.session, this.out, this.nextCommand);
+  GameConsole(this.session, this.out, this.nextCommand, {this.width = 70});
 
   final WorldSession session;
   final StringSink out;
   final Future<String?> Function({String prompt}) nextCommand;
+
+  /// Where prose is wrapped: a terminal's width, or wide enough never to
+  /// wrap on a screen that wraps text itself.
+  final int width;
+
+  String _wrapped(String text, {String indent = ''}) =>
+      wrap(text, width: width, indent: indent);
 
   /// Describes where the game starts.
   void begin() {
@@ -182,7 +189,7 @@ class GameConsole {
         if (item == null || rest.isEmpty) {
           out.writeln('There is no "$rest" here to examine.');
         } else {
-          out.writeln('\n${wrap(item.description)}');
+          out.writeln('\n${_wrapped(item.description)}');
         }
         return true;
 
@@ -204,13 +211,13 @@ class GameConsole {
             out.writeln('${_duration(hours * 60)} go by.');
           }
         } on InvalidMoveException catch (e) {
-          out.writeln(wrap(e.message));
+          out.writeln(_wrapped(e.message));
           return true;
         }
         _announceEvents(session);
         out.writeln('\nIt is ${_when(session)}.');
         final echo = session.ambianceEcho();
-        if (echo != null) out.writeln('\n${wrap(echo)}');
+        if (echo != null) out.writeln('\n${_wrapped(echo)}');
         return true;
 
       case 'time':
@@ -236,8 +243,8 @@ class GameConsole {
           final night = session.nightLines(indoors: indoors);
           if (night.said case final said?) _says(said.who.name, said.line);
           final healed = session.rest();
-          if (night.night case final text?) out.writeln('\n${wrap(text)}');
-          if (night.wake case final text?) out.writeln('\n${wrap(text)}');
+          if (night.night case final text?) out.writeln('\n${_wrapped(text)}');
+          if (night.wake case final text?) out.writeln('\n${_wrapped(text)}');
           out.writeln('\nYou slept eight hours, and have made your '
               'preparations for the day.');
           for (final actor in session.actors) {
@@ -248,7 +255,7 @@ class GameConsole {
           out.writeln('  Spell slots and focus restored. Nobody is tired.');
           out.writeln('\nIt is ${_when(session)}.');
         } on InvalidMoveException catch (e) {
-          out.writeln(wrap(e.message));
+          out.writeln(_wrapped(e.message));
         }
         return true;
 
@@ -271,7 +278,7 @@ class GameConsole {
             out.writeln('  Ten minutes, and nothing to show for it.');
           }
         } on InvalidMoveException catch (e) {
-          out.writeln(wrap(e.message));
+          out.writeln(_wrapped(e.message));
         }
         return true;
 
@@ -285,7 +292,7 @@ class GameConsole {
         try {
           _renderUse(session.use(args.what, who: args.who));
         } on InvalidMoveException catch (e) {
-          out.writeln(wrap(e.message));
+          out.writeln(_wrapped(e.message));
         }
         return true;
 
@@ -298,7 +305,7 @@ class GameConsole {
                 '${v.focus}/${v.maxFocus} focus.');
           }
         } on InvalidMoveException catch (e) {
-          out.writeln(wrap(e.message));
+          out.writeln(_wrapped(e.message));
         }
         return true;
 
@@ -309,7 +316,7 @@ class GameConsole {
           out.writeln('\n${built.builder.name} makes shelter: '
               'd20(${c.dieRoll}) ${_signed(c.modifier)} = ${c.total} vs DC '
               '${c.dc} — ${c.degree.displayName}');
-          out.writeln(wrap(
+          out.writeln(_wrapped(
               switch (c.degree) {
                 DegreeOfSuccess.criticalSuccess =>
                   'A windbreak of cut branches and a groundsheet, pegged down '
@@ -324,7 +331,7 @@ class GameConsole {
               },
               indent: '  '));
         } on InvalidMoveException catch (e) {
-          out.writeln(wrap(e.message));
+          out.writeln(_wrapped(e.message));
         }
         return true;
 
@@ -358,7 +365,7 @@ class GameConsole {
           out.writeln('${_keeper(session)} would give you '
               '${formatCoin(quote.price)} for ${quote.item.name}.');
         } on InvalidMoveException catch (e) {
-          out.writeln(wrap(e.message));
+          out.writeln(_wrapped(e.message));
         }
         return true;
 
@@ -421,7 +428,7 @@ class GameConsole {
     try {
       result = session.move(direction);
     } on InvalidMoveException catch (e) {
-      out.writeln(wrap(e.message));
+      out.writeln(_wrapped(e.message));
       return true;
     }
 
@@ -430,10 +437,10 @@ class GameConsole {
     }
     _renderRoom(session, full: true, showWeather: result.changedRegion);
     final here = session.roomAmbiance();
-    if (here != null) out.writeln('\n${wrap(here)}');
+    if (here != null) out.writeln('\n${_wrapped(here)}');
     if (result.changedRegion) {
       final echo = session.ambianceEcho();
-      if (echo != null) out.writeln('\n${wrap(echo)}');
+      if (echo != null) out.writeln('\n${_wrapped(echo)}');
     }
     _announceArcs(session);
     _announceEvents(session);
@@ -450,7 +457,7 @@ class GameConsole {
     if (hunt != null) {
       out.writeln('\n  [The hunt: d100(${roll?.die}) against '
           '${roll?.chance}% — something has your scent]');
-      out.writeln('\n${wrap(hunt.description)}');
+      out.writeln('\n${_wrapped(hunt.description)}');
       return _fight(session, nextCommand, encounterId: hunt.id);
     }
     return true;
@@ -487,7 +494,7 @@ class GameConsole {
     try {
       final result = session.talk(who, topic: topic.isEmpty ? null : topic);
       out.writeln('\n${result.npc.name}:');
-      out.writeln(wrap('"${result.said}"', indent: '  '));
+      out.writeln(_wrapped('"${result.said}"', indent: '  '));
 
       if (result.isGreeting) {
         final left = session.unraisedTopicsFor(result.npc);
@@ -520,7 +527,7 @@ class GameConsole {
       ..writeln('\n${'-' * 70}')
       ..writeln(npc.name.toUpperCase())
       ..writeln('-' * 70)
-      ..writeln('\n${wrap(talk.currentScene.body)}');
+      ..writeln('\n${_wrapped(talk.currentScene.body)}');
 
     var keepGoing = true;
     while (!talk.isFinished) {
@@ -566,7 +573,7 @@ class GameConsole {
       }
 
       if (event.said case final said?) {
-        out.writeln('\n${wrap('${event.actorName} says, "$said"')}');
+        out.writeln('\n${_wrapped('${event.actorName} says, "$said"')}');
       }
       final check = event.check;
       if (check != null) {
@@ -576,13 +583,13 @@ class GameConsole {
             '-> ${check.degree.displayName}'
             '${check.wasShiftedByNatural ? ' (natural ${check.dieRoll})' : ''}');
       }
-      out.writeln('\n${wrap(event.narration)}');
+      out.writeln('\n${_wrapped(event.narration)}');
 
       // A new scene is a new beat; returning to the same one is not, and
       // repeating its opening every time would read like a stuck record.
       final movedTo = event.movedTo;
       if (movedTo != null && movedTo != event.sceneId) {
-        out.writeln('\n${wrap(talk.currentScene.body)}');
+        out.writeln('\n${_wrapped(talk.currentScene.body)}');
       }
     }
 
@@ -619,7 +626,7 @@ class GameConsole {
         out.writeln('  ${name.padRight(30)} '
             'level ${item.level} ${item.rarity.name} ${item.type}$worn');
         if (item.special != null) {
-          out.writeln(wrap(item.special!, indent: '    '));
+          out.writeln(_wrapped(item.special!, indent: '    '));
         }
       }
     }
@@ -666,7 +673,7 @@ class GameConsole {
         if (session.keeperSays('sell') case final k?) _says(k.keeper, k.line);
       }
     } on InvalidMoveException catch (e) {
-      out.writeln(wrap(e.message));
+      out.writeln(_wrapped(e.message));
       if (e.message.contains('and the party has')) {
         if (session.keeperSays('broke') case final k?) _says(k.keeper, k.line);
       }
@@ -730,9 +737,9 @@ class GameConsole {
             ' -> ${_signed(after.attackBonus)} ${after.damage}');
       }
     } on EquipException catch (e) {
-      out.writeln(wrap(e.message));
+      out.writeln(_wrapped(e.message));
     } on InvalidMoveException catch (e) {
-      out.writeln(wrap(e.message));
+      out.writeln(_wrapped(e.message));
     }
     return true;
   }
@@ -756,7 +763,7 @@ class GameConsole {
           ? '${result.actor.name} had nothing there.'
           : '${result.actor.name} puts away ${result.removed!.name}.');
     } on InvalidMoveException catch (e) {
-      out.writeln(wrap(e.message));
+      out.writeln(_wrapped(e.message));
     }
     return true;
   }
@@ -844,16 +851,16 @@ class GameConsole {
         case NewDay():
           out.writeln('\n  *** $event ***');
         case DawnOrDusk(:final echo):
-          if (echo != null) out.writeln('\n${wrap(echo)}');
+          if (echo != null) out.writeln('\n${_wrapped(echo)}');
         case StormBroke(:final weather, :final sheltered):
           out.writeln('\n  *** The ${weather.type.name.toLowerCase()} '
               'breaks. ***');
-          out.writeln(wrap(
+          out.writeln(_wrapped(
               session.look().region?.weatherStates[weather.type.id] ??
                   weather.type.text,
               indent: '  '));
           if (!sheltered) {
-            out.writeln(wrap(
+            out.writeln(_wrapped(
                 'You are out in the open. Find a roof, or make shelter here '
                 '("shelter"). Every hour out in it will cost you.',
                 indent: '  '));
@@ -916,17 +923,17 @@ class GameConsole {
     }
     final size = session.actors.length;
     out
-      ..writeln('\n${wrap('A party of $size level ${standing.partyLevel} '
+      ..writeln('\n${_wrapped('A party of $size level ${standing.partyLevel} '
           '${size == 1 ? 'character' : 'characters'} is expected to be worth '
           '${formatCoin(worth.expected)}. You are at '
           '${worth.percentOfExpected}% of that.', indent: '  ')}')
       ..writeln('\nNotoriety: ${standing.tier.name}')
-      ..writeln(wrap(standing.tier.description, indent: '  '));
+      ..writeln(_wrapped(standing.tier.description, indent: '  '));
 
     final level = standing.hunterLevel;
     final threat = standing.tier.threat;
     if (standing.tier.isHunted && level != null && threat != null) {
-      out.writeln(wrap(
+      out.writeln(_wrapped(
           'Each step there is a ${standing.tier.chance}% chance something '
           'finds you. It would come at level $level, which is a threat of '
           '"${threat.name}" for ${size == 1 ? 'one character' : '$size'}.',
@@ -978,7 +985,7 @@ class GameConsole {
     final rising = now.fromPercent > before.fromPercent;
     out.writeln('\n  *** ${rising ? 'Word spreads' : 'Word dies down'}: you '
         'are ${now.name}. ***');
-    out.writeln(wrap(now.description, indent: '  '));
+    out.writeln(_wrapped(now.description, indent: '  '));
   }
 
   void _announceArcs(WorldSession session) {
@@ -1038,7 +1045,7 @@ class GameConsole {
         ..writeln('\n  ${actor.name} — level ${p.level}')
         ..writeln('  ${numbers.join()}')
         ..writeln('  ${marks.join()}')
-        ..writeln(wrap(_xpLine(p), indent: '    '));
+        ..writeln(_wrapped(_xpLine(p), indent: '    '));
     }
     out.writeln('\n  (■ reached, + earned and waiting on Pathbuilder, '
         '· still to come)');
@@ -1098,15 +1105,15 @@ class GameConsole {
             : now.name,
     ].join(' · ')}');
     out.writeln();
-    if (full) out.writeln(wrap(view.room.description));
+    if (full) out.writeln(_wrapped(view.room.description));
     // Weather is an arrival note, not a per-step refrain: repeating the same
     // fog line every time the party takes a step turns atmosphere into noise.
     if (showWeather && view.weather != null && !view.room.shelter) {
-      out.writeln('\n${wrap(view.weather!)}');
+      out.writeln('\n${_wrapped(view.weather!)}');
     }
 
     for (final npc in view.npcs) {
-      out.writeln('\n${wrap(npc.appearance)}');
+      out.writeln('\n${_wrapped(npc.appearance)}');
     }
     for (final greeting in session.greetingsHere()) {
       _says(greeting.npc.name, greeting.line);
@@ -1118,12 +1125,12 @@ class GameConsole {
 
     for (final item in view.items) {
       if (item.inRoomText != null) {
-        out.writeln('\n${wrap(item.inRoomText!)}');
+        out.writeln('\n${_wrapped(item.inRoomText!)}');
       }
     }
 
     for (final encounter in view.encounters) {
-      out.writeln('\n${wrap(session.describeEncounter(encounter))}');
+      out.writeln('\n${_wrapped(session.describeEncounter(encounter))}');
       out.writeln(encounter.ambush
           ? '\n  (${encounter.name} — between you and the way on)'
           : '\n  (${encounter.name} — type "fight" to begin)');
@@ -1169,13 +1176,13 @@ class GameConsole {
     try {
       final result = destroy ? session.destroy(what) : session.take(what);
       if (result.spoken case final spoken?) _says(spoken.who.name, spoken.line);
-      out.writeln('\n${wrap(result.said)}');
+      out.writeln('\n${_wrapped(result.said)}');
       for (final flag in result.flagsSet) {
         out.writeln('\n  [$flag]');
       }
       _announceArcs(session);
     } on InvalidMoveException catch (e) {
-      out.writeln(wrap(e.message));
+      out.writeln(_wrapped(e.message));
     }
     return true;
   }
@@ -1194,7 +1201,7 @@ class GameConsole {
     try {
       fight = session.beginEncounter(encounterId: encounterId);
     } on InvalidMoveException catch (e) {
-      out.writeln(wrap(e.message));
+      out.writeln(_wrapped(e.message));
       return true;
     }
 
@@ -1218,7 +1225,7 @@ class GameConsole {
 
     final script = FightScript(fight);
     if (script.setting.isNotEmpty) {
-      out.writeln('\n${wrap(script.setting)}');
+      out.writeln('\n${_wrapped(script.setting)}');
     }
     _speak(script.opening());
 
@@ -1235,7 +1242,7 @@ class GameConsole {
       }
 
       final ambiance = script.ambianceFor(fight.round);
-      if (ambiance != null) out.writeln('\n${wrap(ambiance.text)}');
+      if (ambiance != null) out.writeln('\n${_wrapped(ambiance.text)}');
       out.writeln('\n-- ${fight.current.name}, round ${fight.round}, '
           '${fight.actionsLeft} action(s) --');
       final targets = fight.targetsInReach();
@@ -1328,7 +1335,7 @@ class GameConsole {
           for (final item in fight.loot) {
             out.writeln('\n  ${item.name} '
                 '(level ${item.level} ${item.rarity.name} ${item.type})');
-            out.writeln(wrap(item.description, indent: '    '));
+            out.writeln(_wrapped(item.description, indent: '    '));
           }
         }
         for (final flag in flags) {
@@ -1437,7 +1444,8 @@ class GameConsole {
         }
         final missing = session.spellsWithoutNumbers(actor.id);
         if (missing.isNotEmpty) {
-          out.writeln(wrap('Not in the spell table yet: ${missing.join(', ')}.',
+          out.writeln(_wrapped(
+              'Not in the spell table yet: ${missing.join(', ')}.',
               indent: '  '));
         }
       }
@@ -1458,14 +1466,14 @@ class GameConsole {
   void _speak(Iterable<ScriptLine> lines) {
     for (final line in lines) {
       out.writeln(line.isSpeech
-          ? '\n${wrap('${line.speaker} says, "${line.text}"', indent: '  ')}'
-          : '\n${wrap(line.text, indent: '  ')}');
+          ? '\n${_wrapped('${line.speaker} says, "${line.text}"', indent: '  ')}'
+          : '\n${_wrapped(line.text, indent: '  ')}');
     }
   }
 
   /// Somebody in the party, or across a counter, saying something.
   void _says(String who, String line) =>
-      out.writeln('\n${wrap('$who says, "$line"', indent: '  ')}');
+      out.writeln('\n${_wrapped('$who says, "$line"', indent: '  ')}');
 
   /// A strike with its dice: the attack roll against AC, and on a hit the
   /// damage dice as they fell.

@@ -1,0 +1,201 @@
+{
+  "calendar": {
+    "seasons": [
+      { "id": "spring", "name": "Spring", "days": 30 },
+      { "id": "summer", "name": "Summer", "days": 30 },
+      { "id": "autumn", "name": "Autumn", "days": 30 },
+      { "id": "winter", "name": "Winter", "days": 30 }
+    ],
+    "start": { "season": "autumn", "day": 12 }
+  },
+  "travel": {
+    "same_zone_minutes": 15,
+    "new_zone_minutes": 60,
+    "new_town_minutes": 480,
+    "fatigued_after_hours": 8,
+    "exhausted_after_hours": 12,
+    "awake_hours": 16
+  },
+  "weather": [
+    {
+      "id": "clear",
+      "name": "Clear",
+      "severity": "fair",
+      "travel": 1.0,
+      "text": "The sky is clear from one edge to the other.",
+      "remark": "Good walking weather. Let us use it."
+    },
+    {
+      "id": "overcast",
+      "name": "Overcast",
+      "severity": "fair",
+      "travel": 1.0,
+      "text": "Low grey cloud sits over everything like a lid.",
+      "remark": "Grey all day by the look of it."
+    },
+    {
+      "id": "heat",
+      "name": "Heat",
+      "severity": "foul",
+      "travel": 1.25,
+      "text": "The air is heavy and still, and the road throws the heat back up at you.",
+      "remark": "Keep the water skins full. This will get worse."
+    },
+    {
+      "id": "fog",
+      "name": "Fog",
+      "severity": "foul",
+      "travel": 1.25,
+      "ranged_penalty": 2,
+      "text": "Fog lies in every hollow, and anything more than a spear's length away is a guess.",
+      "remark": "Stay close. I cannot see ten feet in this."
+    },
+    {
+      "id": "rain",
+      "name": "Rain",
+      "severity": "foul",
+      "travel": 1.5,
+      "ranged_penalty": 1,
+      "text": "Steady rain, the kind that finds its way in at the collar.",
+      "remark": "We will be wet to the skin by noon."
+    },
+    {
+      "id": "snow",
+      "name": "Snow",
+      "severity": "foul",
+      "travel": 1.5,
+      "ranged_penalty": 1,
+      "text": "Snow comes down thick and quiet and fills the road behind you.",
+      "remark": "Watch the road. It will be gone under this soon."
+    },
+    {
+      "id": "ash_fall",
+      "name": "Ash-fall",
+      "severity": "foul",
+      "travel": 1.25,
+      "ranged_penalty": 1,
+      "text": "Grey ash drifts down out of a sky the colour of pewter.",
+      "remark": "Cover your mouths. That is not snow."
+    },
+    {
+      "id": "storm",
+      "name": "Thunderstorm",
+      "severity": "severe",
+      "travel": 2.0,
+      "ranged_penalty": 2,
+      "exposure": "2d6",
+      "after": "rain",
+      "text": "The storm breaks overhead: rain in sheets, and lightning close enough to taste.",
+      "remark": "That sky is going to break. We need a roof, or we need to make one."
+    },
+    {
+      "id": "blizzard",
+      "name": "Blizzard",
+      "severity": "severe",
+      "travel": 2.5,
+      "ranged_penalty": 4,
+      "exposure": "3d6",
+      "after": "snow",
+      "text": "The blizzard comes in sideways. You cannot see your own hands.",
+      "remark": "If we are caught out in this, we will not walk out of it. Shelter. Now."
+    },
+    {
+      "id": "ash_storm",
+      "name": "Ash-storm",
+      "severity": "severe",
+      "travel": 2.0,
+      "ranged_penalty": 4,
+      "exposure": "2d8",
+      "after": "ash_fall",
+      "text": "The mines breathe out, and the sky goes black with hot grit that scours skin and fills the lungs.",
+      "remark": "The mines are breathing out. Get under cover, all of us."
+    }
+  ],
+  "regions": {
+    "r_001_millhaven_valley": {
+      "spring": [
+        [30, "clear"],
+        [50, "overcast"],
+        [78, "rain"],
+        [92, "fog"],
+        [100, "storm"]
+      ],
+      "summer": [
+        [40, "clear"],
+        [55, "overcast"],
+        [70, "heat"],
+        [85, "rain"],
+        [90, "fog"],
+        [100, "storm"]
+      ],
+      "autumn": [
+        [20, "clear"],
+        [42, "overcast"],
+        [70, "rain"],
+        [90, "fog"],
+        [100, "storm"]
+      ],
+      "winter": [
+        [15, "clear"],
+        [35, "overcast"],
+        [50, "fog"],
+        [80, "snow"],
+        [88, "rain"],
+        [100, "blizzard"]
+      ]
+    },
+    "r_002_valorheim_heartlands": {
+      "spring": [
+        [25, "clear"],
+        [45, "overcast"],
+        [65, "rain"],
+        [85, "ash_fall"],
+        [95, "storm"],
+        [100, "ash_storm"]
+      ],
+      "summer": [
+        [30, "clear"],
+        [50, "heat"],
+        [60, "overcast"],
+        [80, "ash_fall"],
+        [92, "storm"],
+        [100, "ash_storm"]
+      ],
+      "autumn": [
+        [20, "clear"],
+        [40, "overcast"],
+        [60, "rain"],
+        [82, "ash_fall"],
+        [94, "storm"],
+        [100, "ash_storm"]
+      ],
+      "winter": [
+        [15, "clear"],
+        [35, "overcast"],
+        [60, "snow"],
+        [78, "ash_fall"],
+        [85, "rain"],
+        [95, "blizzard"],
+        [100, "ash_storm"]
+      ]
+    }
+  },
+  "rest": {
+    "indoors": [
+      "The fire burns down to embers. Somewhere a door creaks and settles.",
+      "Rain on the roof, and the roof holds.",
+      "Nobody sleeps well, but everybody sleeps."
+    ],
+    "outdoors": [
+      "The night is cold, and the watch is long.",
+      "Something moves at the edge of the firelight, and thinks better of it.",
+      "Stars come out between the clouds, few and far."
+    ],
+    "pc": ["I will take first watch. Get some sleep.", "Wake me if anything comes. Anything.", "We have earned this. Sleep."],
+    "wake": [
+      "Morning comes grey and cold, and you are all still here.",
+      "You wake stiff, but whole.",
+      "Somebody has made tea. It is terrible. It is wonderful."
+    ]
+  }
+}
