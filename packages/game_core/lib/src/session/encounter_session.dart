@@ -272,6 +272,13 @@ class EncounterSession {
       throw InvalidActionException('There is nobody left to close on.');
     }
 
+    // Level with the nearest enemy is as close as it gets. Without this check,
+    // "not further along" read as "behind", and closing on someone already at
+    // arm's length walked you a zone away from them.
+    if (closer && actor.zoneIndex == target.zoneIndex) {
+      throw InvalidActionException('You are already as close as you can get.');
+    }
+
     final before = actor.zoneIndex;
     if (closer) {
       actor.zoneIndex += actor.zoneIndex < target.zoneIndex ? 1 : -1;

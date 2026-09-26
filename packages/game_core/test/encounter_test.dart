@@ -243,6 +243,31 @@ void main() {
       expect(f.targetsInReach(), isNotEmpty);
     });
 
+    test('closing on an enemy already level with you does not step away', () {
+      // The edge of the map used to hide this: the clamp stopped the step.
+      // In the middle zone, "closing" on someone at arm's length walked the
+      // party a zone backwards, out of their own reach.
+      final f = fight(
+        encounter: const Encounter(
+          id: 'e_middle',
+          location: 'anywhere',
+          name: 'Middle',
+          creatureIds: ['c_wall'],
+          startZone: 'near',
+        ),
+        creatures: const [_wall],
+      );
+      expect(f.stride().zone, 'near');
+      expect(f.targetsInReach(), isNotEmpty);
+      expect(
+        () => f.stride(),
+        throwsA(isA<InvalidActionException>()
+            .having((e) => e.message, 'message', contains('as close'))),
+      );
+      expect(f.current.zoneIndex, 1, reason: 'still level with the stone');
+      expect(f.actionsLeft, 2, reason: 'a refused step costs nothing');
+    });
+
     test('cannot close past an enemy already in reach', () {
       final f = fight(encounter: _adjacent);
       expect(
