@@ -118,6 +118,42 @@
       "acquire_flags": ["item_acquired_readers_daybook"],
       "on_take": "The name inside the cover is Pell Aubery, Under-Archivist. There are four more names on the flyleaf, crossed through one at a time in a different ink.",
       "say_on_take": "Pell Aubery. He had a name. They all had names."
+    },
+    {
+      "item_id": "i_patrol_roll",
+      "name": "The Patrol's Watch-Roll",
+      "location": "SD_004_GuardPost",
+      "in_room": "Among what the maw brought up, a leather roll-case with the palace seal on it, chewed at one end.",
+      "description": "The watch-roll of the Third Palace Patrol: eight names, and a tick beside each for every muster. The last muster, the night of the earthquake, has no ticks at all.",
+      "takeable": true,
+      "hidden_until": ["found_the_last_patrol"],
+      "acquire_flags": ["item_acquired_patrol_roll"],
+      "on_take": "Somebody went down the rift after the quake with seven men behind him and a roll to tick them off by. He did not get to tick them off.",
+      "say_on_take": "Eight names. The King will want every one of them read out."
+    },
+    {
+      "item_id": "i_causeway_rubbing",
+      "name": "A Rubbing of the Newest Name",
+      "location": "QK_001_CausewayOfNames",
+      "in_room": "At the near end of the causeway the newest name is cut in plain letters, clean and deep, with the chisel still beside it. A sheet of paper and a stick of wax lie ready, as if whoever cut it meant for somebody to take a copy.",
+      "description": "A wax rubbing of a single name, cut into the causeway this week in a good clerkly hand: WENNA HALE.",
+      "takeable": true,
+      "hidden_until": ["cleared_causeway"],
+      "acquire_flags": ["item_acquired_causeway_rubbing"],
+      "on_take": "The causeway is where the Quiet Kingdom put the names of those it meant to stop first. The Queen has added one on her way down. It is an eleven-year-old girl's, and she has left the wax out so that somebody would carry the news back up.",
+      "say_on_take": "Wenna Hale. That is the archivist's girl. She put a child's name down here."
+    },
+    {
+      "item_id": "i_quiet_charter",
+      "name": "The Charter of the Quiet",
+      "location": "QK_002_QuietCourt",
+      "in_room": "On the arm of the empty throne lies a tablet of black stone, written close on both sides, where the King set it down to rise.",
+      "description": "The Quiet Kingdom's last law, in its own script and, below it, in Valorheim's, cut later by another hand: the first thing the kingdom above ever wrote.",
+      "takeable": true,
+      "hidden_until": ["cleared_quiet_court"],
+      "acquire_flags": ["item_acquired_quiet_charter"],
+      "on_take": "They made the Vessel to end everything, themselves first. At the last they could not bring themselves to wake it, and they sealed it instead, and stopped anyway, one by one, the slow way. The seals only hold against something waking on its own. They do not hold against somebody climbing in.\n\nThe Queen has not come down here to wake the Vessel. She has come down to wear it.",
+      "say_on_take": "Read it. All of it. Then read the last part again."
     }
   ]
 }

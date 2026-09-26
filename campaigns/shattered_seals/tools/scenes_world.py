@@ -339,6 +339,60 @@ ROOM_AMBIANCE = {
         'The kneeling mats are worn in two places, as if by knees.',
         'Small sounds on the stair above, coming closer.',
     ],
+    'SD_001_Rift': [
+        'Grit sifts down from the plaza whenever somebody up there walks too '
+        'near the edge.',
+        'Voices from the plaza come down the crack thin and far away, like '
+        'voices down a well.',
+        'The broken paving shifts under your weight, and settles again.',
+    ],
+    'SD_002_BuriedStreet': [
+        'A shutter swings open and shut on a breeze that is not blowing.',
+        'The bucket on the well chain turns slowly, first one way and then the '
+        'other.',
+        'Every doorway on the street is dark all the way to the back.',
+    ],
+    'SD_003_UnmakingTemple': [
+        'Your footsteps drift toward the middle of the bowl if you do not '
+        'watch them.',
+        'The one carved line near the floor catches the light: WE CHOSE TO '
+        'STOP.',
+        'The air is very still, as if it had been asked to be.',
+    ],
+    'SD_004_GuardPost': [
+        'The lamp on its hook still has oil in it, and nobody to light it.',
+        'The duty board by the door has eight names on it and none crossed '
+        'out.',
+        'The floor gives a little underfoot, as if something below were '
+        'leaning on it.',
+    ],
+    'QK_001_CausewayOfNames': [
+        'The names under your feet are scraped clean before you can finish '
+        'reading them.',
+        'Nothing comes up out of the dark on either side: not a sound, not a '
+        'draught.',
+        'The chisel beside the newest name has not had time to rust.',
+    ],
+    'QK_002_QuietCourt': [
+        'There is no echo here. Every sound you make simply stops.',
+        'The courtiers\' robes have gone the grey of old paper.',
+        'The approach to the dais is exactly as long as it needs to be to make '
+        'you feel small.',
+    ],
+    'QK_003_WellOfSeals': [
+        'Chips of red stone rattle down the shaft from the broken seals '
+        'above.',
+        'The lowest seal hums when you touch it, like a bell with a cloth over '
+        'it.',
+        'Far below, something breathes out, slow as a tide.',
+    ],
+    'QK_004_Cradle': [
+        'The dark in the hollow breathes, and every lamp you brought gutters '
+        'with it.',
+        'The chain on the floor twitches now and then, like something '
+        'dreaming.',
+        'It is very quiet. It is the quietest place you have ever been.',
+    ],
 }
 
 ITEM_LINES = {
@@ -361,6 +415,13 @@ ITEM_LINES = {
                          'coming in!'},
     'i_readers_daybook': {'say_on_take': 'Pell Aubery. He had a name. They '
                           'all had names.'},
+    'i_patrol_roll': {'say_on_take': 'Eight names. The King will want every '
+                      'one of them read out.'},
+    'i_causeway_rubbing': {'say_on_take': 'Wenna Hale. That is the '
+                           'archivist\'s girl. She put a child\'s name down '
+                           'here.'},
+    'i_quiet_charter': {'say_on_take': 'Read it. All of it. Then read the last '
+                        'part again.'},
 }
 
 SHOP_LINES = {
@@ -524,5 +585,12 @@ NPC_BARKS = {
              requires=['brask_given_the_tallies']),
         bark('Well? Anything down there?',
              requires=['brask_asked_after_the_shift']),
+    ],
+    'npc_012_aldric': [
+        bark('You came back up. I had stopped expecting anyone to.',
+             requires=['boss_defeated_shadow_vessel']),
+        bark('Eight good men. Thank you for bringing them home.',
+             requires=['aldric_given_the_roll']),
+        bark('Anything from below?', requires=['met_aldric']),
     ],
 }

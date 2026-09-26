@@ -1,3 +1,4 @@
+import '../party/experience.dart';
 import 'arc.dart';
 import 'conversation.dart';
 import 'creature.dart';
@@ -93,6 +94,7 @@ class Campaign {
             .map((n) => n)
             .toList(),
         gearLevelGaps: gear.levelGaps(world.metadata.levelCap),
+        levelsWithoutAFight: _levelsWithoutAFight(),
         unreachableArcConditions: _unreachableArcConditions(),
         misplacedEncounters: bestiary.misplacedIn(locations.rooms.keys.toSet()),
         misplacedItems: items.misplacedIn(locations.rooms.keys.toSet()),
@@ -126,6 +128,33 @@ class Campaign {
           levels: [for (var l = 1; l <= world.metadata.levelCap; l++) l],
         ),
       );
+
+  /// Party levels with no fixed fight worth having: none that is at least a
+  /// low threat and at most an extreme one for a party of four.
+  ///
+  /// A level with nothing to fight is a stretch of the game a party can only
+  /// walk through, or wait out until the hunt finds them. A creature more
+  /// than four levels up is off Pathfinder's table altogether, so a fight
+  /// with one in it fits no party that low.
+  List<int> _levelsWithoutAFight() {
+    final fights = [
+      for (final e in bestiary.encounters)
+        [
+          for (final id in e.creatureIds)
+            if (bestiary.creatureById(id) case final creature?) creature.level,
+        ],
+    ];
+    bool fits(List<int> levels, int party) {
+      if (levels.isEmpty || levels.any((l) => l - party > 4)) return false;
+      final xp = levels.fold(0, (sum, l) => sum + creatureXp(l - party));
+      return xp >= Threat.low.budget && xp <= Threat.extreme.budget;
+    }
+
+    return [
+      for (var level = 1; level <= world.metadata.levelCap; level++)
+        if (!fights.any((f) => fits(f, level))) level,
+    ];
+  }
 
   /// Items no amount of playing would turn up: nothing drops them, no shop
   /// stocks them, and nobody hands them over.
@@ -346,6 +375,7 @@ class CampaignReport {
     this.oneWayExits = const [],
     this.misplacedNpcs = const [],
     this.gearLevelGaps = const [],
+    this.levelsWithoutAFight = const [],
     this.unreachableArcConditions = const [],
     this.misplacedEncounters = const [],
     this.misplacedItems = const [],
@@ -377,6 +407,9 @@ class CampaignReport {
 
   /// Character levels with no gear written for them.
   final List<int> gearLevelGaps;
+
+  /// Party levels with no fixed fight between a low and an extreme threat.
+  final List<int> levelsWithoutAFight;
 
   /// Arc conditions nothing in the data can set.
   final List<String> unreachableArcConditions;
@@ -431,6 +464,7 @@ class CampaignReport {
       oneWayExits.isEmpty &&
       misplacedNpcs.isEmpty &&
       gearLevelGaps.isEmpty &&
+      levelsWithoutAFight.isEmpty &&
       unreachableArcConditions.isEmpty &&
       misplacedEncounters.isEmpty &&
       misplacedItems.isEmpty &&
@@ -486,6 +520,12 @@ class CampaignReport {
       b
         ..writeln('Levels with no gear (${gearLevelGaps.length}):')
         ..writeln('  ${gearLevelGaps.join(', ')}');
+    }
+    if (levelsWithoutAFight.isNotEmpty) {
+      b
+        ..writeln('Levels with no fight worth having '
+            '(${levelsWithoutAFight.length}):')
+        ..writeln('  ${levelsWithoutAFight.join(', ')}');
     }
     section(
       'Fights in rooms that do not exist',

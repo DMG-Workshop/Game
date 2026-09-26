@@ -54,7 +54,8 @@
           "requires": ["met_liora"],
           "line": "Again? The court will talk."
         }
-      ]
+      ],
+      "leaves_after": ["Trigger_Sundering_Earthquake_Event"]
     },
     {
       "npc_id": "npc_006_malachai",
@@ -284,6 +285,34 @@
         {
           "requires": ["brask_asked_after_the_shift"],
           "line": "Well? Anything down there?"
+        }
+      ]
+    },
+    {
+      "npc_id": "npc_012_aldric",
+      "name": "King Aldric",
+      "location": "VC_002_ThroneRoom",
+      "tier": 2,
+      "appears_after": ["NPC_King_Aldric_cured"],
+      "appearance": "A gaunt man in a nightshirt, with the crown of Valorheim in his lap, sits on the lowest step of the dais rather than the throne, as if he has not yet decided whether it is still his.",
+      "greeting": "You will be the ones I owe my wits to. Sit, if you like. There is nobody left in this room to tell you not to.",
+      "keywords": {
+        "queen": "My wife went down into the plaza the night it opened, with a length of chain and nobody to carry her train. I have been married to her for twenty years. I do not think I have met her.",
+        "sundering": "The plaza split along a line older than the city. The surveyors say the palace was built along it on purpose. I should like very much to know whose purpose.",
+        "patrol": "The Third Patrol went down the rift after her the same night, eight good men. The post they were keeping came down into the dark after them. Nobody has come back up."
+      },
+      "barks": [
+        {
+          "requires": ["boss_defeated_shadow_vessel"],
+          "line": "You came back up. I had stopped expecting anyone to."
+        },
+        {
+          "requires": ["aldric_given_the_roll"],
+          "line": "Eight good men. Thank you for bringing them home."
+        },
+        {
+          "requires": ["met_aldric"],
+          "line": "Anything from below?"
         }
       ]
     }

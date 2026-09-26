@@ -476,6 +476,23 @@ def _aldus_errands(back):
             sets=['aldus_blessed_the_drowned'],
             requires=['thorne_knew_the_stone'],
             unless=['aldus_blessed_the_drowned']),
+        opt('take_back_name', 'Ask him to take back the name on the rubbing',
+            'Aldus reads the name, and reads it again, and sits down on the '
+            'altar step with the paper on his knee. «A child.» He is quiet a '
+            'long moment. «There is a rite. Nobody has needed it in my '
+            'lifetime: you ask the grave to give back a name it was promised '
+            'before it was owed.» He takes a candle from the altar and holds '
+            'the corner of the rubbing in the flame until the name is ash, '
+            'saying something under his breath the whole time. «There. She is '
+            'nobody\'s but her own again.» He brushes the ash off his knee. '
+            '«Ashkyr keep her. Ashkyr keep all of us, down there.»',
+            go=back,
+            say='The Queen carved this child\'s name on a road under the '
+                'capital, with the names of those meant to go first. Master '
+                'Hale says you can take it back.',
+            sets=['aldus_took_back_the_name'],
+            requires=['hale_read_the_rubbing'],
+            unless=['aldus_took_back_the_name']),
     ]
 aldus = conversation('npc_003_aldus', [
     entry('aldus_after', requires=['boss_defeated_hollow_avatar']),
@@ -1291,6 +1308,23 @@ hale = conversation('npc_008_hale', [
               sets=['hale_given_the_daybook'],
               requires=['item_acquired_readers_daybook'],
               unless=['hale_given_the_daybook']),
+          opt('show_rubbing', 'Show him the rubbing from the causeway',
+              'Hale takes the paper to the window to read it, as if the lamp '
+              'at the desk might be lying. Behind him his daughter turns a '
+              'page. «That is the Queen\'s hand,» he says at last. «I have '
+              'copied enough of her letters to know it.» He folds the rubbing '
+              'very small. «That road is where the Quiet put the names of '
+              'those it meant to stop first. It isn\'t a threat. It\'s a '
+              'list.» He looks at Wenna, and then at you. «Brother Aldus, in '
+              'Millhaven. Ashkyr keeps the grave, and what the grave has been '
+              'promised it can be asked to give back. Take it to him. '
+              'Please.»',
+              go='hale_bye',
+              say='We found this carved on a causeway under the city. It was '
+                  'cut this week.',
+              sets=['hale_read_the_rubbing'],
+              requires=['item_acquired_causeway_rubbing'],
+              unless=['hale_read_the_rubbing']),
           opt('leave', 'Leave them be',
               'Somewhere in the stacks, Hale is humming.',
               go='hale_bye')),
@@ -1649,6 +1683,117 @@ brask = conversation('npc_011_brask', [
 ])
 
 
+# --- King Aldric ----------------------------------------------------------------
+
+K = 'King Aldric'
+
+
+def _aldric_queen(**gate):
+    return opt(
+        'ask_queen', 'Ask where the Queen has gone',
+        '«Down.» He points at the floor, and he does not mean this one. «The '
+        'night the plaza opened she went into it with a length of chain from '
+        'Thornhaven over her arm and nobody to carry her train. The guards say '
+        'she was smiling.» He sets the crown down on the step beside him. «I '
+        'have been married to her for twenty years. I should like, before the '
+        'end, to find out who she is. Go down after her. Whatever she means to '
+        'do down there, she means to do it to all of us.»',
+        go='aldric_ask', say='Where is the Queen?',
+        sets=['met_aldric', 'aldric_sent_you_down'], **gate)
+
+
+def _aldric_patrol(**gate):
+    return opt(
+        'ask_patrol', 'Ask about the guard post that went down',
+        '«The Third Patrol.» He says it the way a man says a debt. «They went '
+        'down the rift after her the same night, eight of them, with a roll to '
+        'tick them off by. The post they were keeping went down into the dark '
+        'after them, lamp and all.» He looks at the floor again. «Nobody has '
+        'come back up. I should like their names read out, if there is anybody '
+        'left to answer them.»',
+        go='aldric_ask', say='A whole guard post went into the rift. What '
+                             'happened to the men in it?',
+        sets=['met_aldric', 'aldric_asked_after_the_patrol'], **gate)
+
+
+aldric_roll = opt(
+    'give_roll', 'Give him the Third Patrol\'s watch-roll',
+    'The King unrolls it on his knee and reads it aloud, every name, the way '
+    'a sergeant reads a muster. Nobody answers. When he gets to the end he '
+    'rolls it up again and holds it in both hands. «Their families will have '
+    'this, and a pension, and the truth. That is three things more than the '
+    'Queen would have given them.» He does not look up. «Thank you.»',
+    go='aldric_bye',
+    say='This was in the guard post, under the floor. We are sorry.',
+    sets=['aldric_given_the_roll'],
+    requires=['item_acquired_patrol_roll'],
+    unless=['aldric_given_the_roll'])
+
+aldric = conversation('npc_012_aldric', [
+    entry('aldric_after', requires=['boss_defeated_shadow_vessel']),
+    entry('aldric_again', requires=['met_aldric']),
+    entry('aldric_open'),
+], [
+    scene('aldric_open', K,
+          'The King does not get up. He turns the crown over in his lap as if '
+          'somebody had handed it to him in the street. «Sit, if you like. '
+          'The chairs in here were all hers, and I find I do not care.» He '
+          'looks at you properly for the first time. «You broke Vex. The '
+          'physicians say that is why I can think again. I owe you my wits, '
+          'and I am about to ask you to spend them.»',
+          _aldric_queen(),
+          _aldric_patrol(),
+          opt('leave', 'Leave him to his crown',
+              '«Come back when you are ready,» he says. «I am not going '
+              'anywhere. I have only just arrived.»',
+              go='aldric_bye', sets=['met_aldric'])),
+
+    scene('aldric_ask', K, '«What else?» says the King.',
+          _aldric_queen(unless=['aldric_sent_you_down']),
+          _aldric_patrol(unless=['aldric_asked_after_the_patrol']),
+          aldric_roll,
+          opt('leave', 'Leave', 'He nods, and goes back to looking at the '
+              'crown.', go='aldric_bye')),
+
+    scene('aldric_again', K,
+          'The King looks up from the crown in his lap. «Well?»',
+          opt('talk', 'Talk', '«Go on.»', go='aldric_ask',
+              say='A word, Your Majesty.'),
+          opt('leave', 'Leave', 'He goes back to the crown.',
+              go='aldric_bye')),
+
+    scene('aldric_after', K,
+          'The King is on the throne for the first time since you have known '
+          'him, with the crown on his head, looking as though it pinches. He '
+          'comes down the steps to meet you. «It is quiet down there, I am '
+          'told. Properly quiet.» He waits. «And my wife?»',
+          opt('tell', 'Tell him how it ended',
+              'He listens to all of it without a word, and at the end he nods '
+              'once, as if you had confirmed something he had read in a '
+              'report. «Nearly something,» he says. «Yes. That was always '
+              'the trouble with her.» He takes the crown off and holds it out '
+              'to look at. «Valorheim is built on a kingdom that chose to '
+              'stop. I think I should like this one to choose otherwise, and '
+              'I think it will be hard work. Thank you for giving it the '
+              'chance.»',
+              go='aldric_bye',
+              say='She chained herself to the thing to wear it. She nearly '
+                  'did.',
+              sets=['aldric_told_the_end'],
+              unless=['aldric_told_the_end']),
+          aldric_roll,
+          opt('leave', 'Leave him to his kingdom',
+              '«Come back,» he says. «Often. I shall need people who have been '
+              'underneath it.»',
+              go='aldric_bye')),
+
+    scene('aldric_bye', K,
+          'The throne room doors close behind you, and for once nobody is '
+          'listening at them.',
+          ending=True),
+])
+
+
 # Side quests follow from what already happens in the story, so these flags
 # are derived rather than written by hand at every outcome that earns them:
 # whatever uncovers a lie, and whatever settles the liar, says so.
@@ -1676,7 +1821,7 @@ def derive(value):
 
 document = {'conversations': [
     thorne, marta, aldus, harrow, wendel, liora, hale, malachai, jory,
-    sal, brask,
+    sal, brask, aldric,
 ]}
 derive(document)
 h.save('conversations.json', quoted(document))

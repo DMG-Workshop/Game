@@ -21,7 +21,7 @@
       "arc_id": "tier_2_kingdom_threat",
       "name": "Blood and Thrones",
       "reward": { "gp": 3000, "xp": "major" },
-      "levels": [11, 20],
+      "levels": [11, 13],
       "start_trigger": "enter_VC_001",
       "objectives": [
         { "id": 1, "task": "Navigate Court Politics", "condition": "dialogue_complete_queen_liora" },
@@ -32,9 +32,34 @@
       "world_state_changes_on_completion": [
         "NPC_King_Aldric_cured",
         "Faction_Covenant_shattered",
-        "Trigger_Sundering_Earthquake_Event",
-        "End_of_Level_20_Campaign"
+        "Trigger_Sundering_Earthquake_Event"
       ]
+    },
+    {
+      "arc_id": "tier_3_quiet_kingdom",
+      "name": "The Quiet Kingdom",
+      "reward": { "gp": 12000, "xp": "major" },
+      "levels": [14, 20],
+      "start_trigger": "Trigger_Sundering_Earthquake_Event",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Ask the King where the Queen has gone",
+          "condition": "aldric_sent_you_down"
+        },
+        {
+          "id": 2,
+          "task": "Break the litany in the Temple of Unmaking",
+          "condition": "cleared_unmaking_temple"
+        },
+        {
+          "id": 3,
+          "task": "Learn what the Quiet Kingdom sealed away",
+          "condition": "item_acquired_quiet_charter"
+        },
+        { "id": 4, "task": "Stop the Vessel waking", "condition": "boss_defeated_shadow_vessel" }
+      ],
+      "world_state_changes_on_completion": ["Seals_Restored", "End_of_Level_20_Campaign"]
     },
     {
       "arc_id": "side_liar_at_the_sparrow",
@@ -199,6 +224,44 @@
           "id": 2,
           "task": "Find out from Sal Mercy who is paying",
           "condition": "sal_named_the_broker"
+        }
+      ]
+    },
+    {
+      "arc_id": "side_kings_last_patrol",
+      "name": "The King's Last Patrol",
+      "kind": "side",
+      "zone": "z_09_the_sundering",
+      "reward": { "gp": 2500, "xp": "moderate" },
+      "levels": [14, 20],
+      "start_trigger": "aldric_asked_after_the_patrol",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find the patrol that went down after the quake",
+          "condition": "found_the_last_patrol"
+        },
+        {
+          "id": 2,
+          "task": "Bring their watch-roll to the King",
+          "condition": "aldric_given_the_roll"
+        }
+      ]
+    },
+    {
+      "arc_id": "side_the_fifth_name",
+      "name": "The Fifth Name",
+      "kind": "side",
+      "zone": "z_10_quiet_court",
+      "reward": { "gp": 5000, "xp": "moderate" },
+      "levels": [14, 20],
+      "start_trigger": "item_acquired_causeway_rubbing",
+      "objectives": [
+        { "id": 1, "task": "Show the rubbing to Master Hale", "condition": "hale_read_the_rubbing" },
+        {
+          "id": 2,
+          "task": "Ask Brother Aldus to take the name back",
+          "condition": "aldus_took_back_the_name"
         }
       ]
     }

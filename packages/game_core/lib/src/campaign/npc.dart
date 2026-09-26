@@ -53,6 +53,8 @@ class Npc {
     this.keywords = const {},
     this.route,
     this.barks = const [],
+    this.appearsAfter = const [],
+    this.leavesAfter = const [],
   });
 
   final String id;
@@ -60,6 +62,18 @@ class Npc {
 
   /// Room id this NPC stands in.
   final String location;
+
+  /// Flags that must all be set before this NPC is anywhere to be found:
+  /// somebody the story has not brought in yet.
+  final List<String> appearsAfter;
+
+  /// Flags any one of which takes this NPC out of the world: somebody the
+  /// story has moved on.
+  final List<String> leavesAfter;
+
+  /// Whether this NPC is about, the way things stand.
+  bool isPresent(Set<String> flags) =>
+      appearsAfter.every(flags.contains) && !leavesAfter.any(flags.contains);
 
   /// Shown as part of the room, before anyone speaks.
   final String appearance;

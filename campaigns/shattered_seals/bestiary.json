@@ -401,6 +401,408 @@
       }
     },
     {
+      "creature_id": "c_crimson_zealot",
+      "name": "Crimson Zealot",
+      "level": 14,
+      "description": "The last of the Covenant's faithful, who followed the Queen down when the rest ran. They have cut the crimson out of their coats and bound it round their wrists instead, tight enough to hurt.",
+      "ac": 35,
+      "hp": 255,
+      "perception": 25,
+      "fortitude": 25,
+      "reflex": 25,
+      "will": 28,
+      "speed": 25,
+      "traits": ["human", "covenant"],
+      "attacks": [
+        {
+          "name": "serrated glaive",
+          "bonus": 29,
+          "damage": "3d10+18",
+          "damage_type": "S",
+          "reach": "near"
+        },
+        {
+          "name": "crimson word",
+          "bonus": 27,
+          "damage": "3d8+15",
+          "damage_type": "negative",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Fights to the end. There is nothing left above for it to go back to."
+      ],
+      "voice": {
+        "taunts": [
+          "For the Queen, and for what comes after her!",
+          "You should have stayed up in the light."
+        ],
+        "hurt": ["The Queen will remember this."],
+        "dying": ["Tell her... I held the stair..."]
+      }
+    },
+    {
+      "creature_id": "c_unmade",
+      "name": "The Unmade",
+      "level": 14,
+      "description": "Somebody of the Quiet Kingdom who chose, with the rest, to stop, and did not quite manage it. There is less of them than there should be, and the edges are soft, like a word rubbed out.",
+      "ac": 33,
+      "hp": 319,
+      "perception": 25,
+      "fortitude": 28,
+      "reflex": 22,
+      "will": 25,
+      "speed": 25,
+      "traits": ["undead", "mindless", "entropy"],
+      "attacks": [
+        {
+          "name": "unravelling touch",
+          "bonus": 29,
+          "damage": "3d10+18",
+          "damage_type": "negative",
+          "reach": "engaged"
+        }
+      ],
+      "specials": [
+        "Wherever it touches, cloth frays and iron rusts."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The Unmade lays a hand on you, and your sleeve comes unravelled where it touched."
+        ],
+        "hurt": [
+          "The wound closes the wrong way, and there is a little less of it."
+        ],
+        "dying": ["It stops, all at once, and is not there."]
+      }
+    },
+    {
+      "creature_id": "c_entropy_hierophant",
+      "name": "Hierophant of the Unmaking",
+      "level": 18,
+      "description": "The priest who led the Quiet Kingdom in its last prayer, kept on its feet by the unfinished end of it. Its vestments have faded to no colour at all. Its voice has not.",
+      "ac": 41,
+      "hp": 335,
+      "perception": 30,
+      "fortitude": 30,
+      "reflex": 27,
+      "will": 33,
+      "speed": 25,
+      "traits": ["undead", "entropy"],
+      "attacks": [
+        {
+          "name": "rod of undoing",
+          "bonus": 35,
+          "damage": "3d12+20",
+          "damage_type": "B",
+          "reach": "engaged"
+        },
+        {
+          "name": "litany of ending",
+          "bonus": 33,
+          "damage": "3d10+17",
+          "damage_type": "negative",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Every line of the litany it finishes takes something from the room: a colour, a sound, a name."
+      ],
+      "voice": {
+        "taunts": [
+          "And the lamp was put out, and it was good.",
+          "Every line brings us closer to the last."
+        ],
+        "hurt": ["I have lost my place. No matter."],
+        "dying": ["At... last... the... end..."]
+      }
+    },
+    {
+      "creature_id": "c_rift_maw",
+      "name": "Rift-Maw",
+      "level": 17,
+      "description": "Something that lived in the rock under the capital and never needed to come up, until the rock split. It is mostly mouth, and the mouth is mostly stone.",
+      "ac": 37,
+      "hp": 394,
+      "perception": 29,
+      "fortitude": 32,
+      "reflex": 26,
+      "will": 29,
+      "speed": 25,
+      "traits": ["beast", "earth"],
+      "attacks": [
+        {
+          "name": "grinding jaws",
+          "bonus": 33,
+          "damage": "3d12+19",
+          "damage_type": "P",
+          "reach": "engaged"
+        },
+        { "name": "tremor", "bonus": 31, "damage": "3d10+16", "damage_type": "B", "reach": "near" }
+      ],
+      "specials": [
+        "Swallows what it kills whole, armour and all."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The maw heaves up out of the floor and closes on you with a noise like a quarry."
+        ],
+        "hurt": [
+          "Stone flakes off the maw's jaws in sheets."
+        ],
+        "dying": [
+          "The maw sinks into the floor and grinds, slower and slower, to a stop."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_name_eater",
+      "name": "The Name-Eater",
+      "level": 19,
+      "description": "The Quiet Kingdom's last servant, made to take every name off the causeway once its people were gone, so there would be nobody left to remember. It has been at the work a thousand years. It has got used to the taste.",
+      "ac": 43,
+      "hp": 302,
+      "perception": 34,
+      "fortitude": 32,
+      "reflex": 35,
+      "will": 35,
+      "speed": 35,
+      "traits": ["aberration", "entropy"],
+      "attacks": [
+        {
+          "name": "unwriting tongue",
+          "bonus": 36,
+          "damage": "4d10+20",
+          "damage_type": "negative",
+          "reach": "engaged",
+          "on_critical": "For a moment nobody in the party can remember your name."
+        },
+        {
+          "name": "erasure",
+          "bonus": 34,
+          "damage": "4d8+17",
+          "damage_type": "negative",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Speaks only in names it has eaten. It has eaten a great many."
+      ],
+      "voice": {
+        "taunts": ["Thorne. Harrow. Brask. Mercy.", "Yours next. Say it for me."],
+        "hurt": ["Pell. Pell. Pell."],
+        "dying": ["No... names... left..."]
+      }
+    },
+    {
+      "creature_id": "c_quiet_king",
+      "name": "The Last Quiet King",
+      "level": 20,
+      "description": "His crown went up out of here long ago, to be traded from hand to hand in the kingdom above. When his people chose to stop he stayed to see it done, and it was never quite done. He is very tired, and very courteous, and he would like you to stop too.",
+      "ac": 44,
+      "hp": 375,
+      "perception": 33,
+      "fortitude": 36,
+      "reflex": 33,
+      "will": 36,
+      "speed": 25,
+      "traits": ["undead", "entropy"],
+      "attacks": [
+        {
+          "name": "sceptre of quiet",
+          "bonus": 38,
+          "damage": "4d10+22",
+          "damage_type": "B",
+          "reach": "engaged"
+        },
+        {
+          "name": "decree of silence",
+          "bonus": 36,
+          "damage": "4d8+19",
+          "damage_type": "negative",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Asks each of you, before he fights you, whether you would like to stop. He means it kindly."
+      ],
+      "voice": {
+        "taunts": ["Would you like to stop? You may.", "There is no shame in being tired."],
+        "hurt": ["Ah. I had forgotten this."],
+        "dying": [
+          "Thank you. I could not... finish it... myself..."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_quiet_courtier",
+      "name": "Quiet Courtier",
+      "level": 16,
+      "description": "A courtier still in its place at the side of the approach, in robes gone the grey of old paper, with a thin blade it never draws until the King has finished speaking.",
+      "ac": 39,
+      "hp": 251,
+      "perception": 30,
+      "fortitude": 25,
+      "reflex": 30,
+      "will": 28,
+      "speed": 25,
+      "traits": ["undead", "entropy"],
+      "attacks": [
+        {
+          "name": "etiquette blade",
+          "bonus": 32,
+          "damage": "3d12+18",
+          "damage_type": "P",
+          "reach": "engaged",
+          "traits": ["agile"]
+        }
+      ],
+      "specials": ["Never raises its voice. Never needs to."],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The courtier's blade finds the gap in your guard without a sound."
+        ],
+        "hurt": [
+          "The courtier inclines its head at the wound, politely."
+        ],
+        "dying": [
+          "The courtier folds down into its robes and is still."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_last_seal_breaker",
+      "name": "Last Seal-Breaker",
+      "level": 19,
+      "description": "One of the Covenant's masons, who spent a life learning where a seal will crack, and has come down to the last of them with a chisel and a mallet and the patience of a stone-cutter.",
+      "ac": 42,
+      "hp": 355,
+      "perception": 32,
+      "fortitude": 32,
+      "reflex": 32,
+      "will": 35,
+      "speed": 25,
+      "traits": ["human", "covenant"],
+      "attacks": [
+        {
+          "name": "breaking chisel",
+          "bonus": 36,
+          "damage": "4d10+20",
+          "damage_type": "P",
+          "reach": "engaged"
+        },
+        {
+          "name": "shatter-word",
+          "bonus": 34,
+          "damage": "4d8+17",
+          "damage_type": "force",
+          "reach": "near"
+        }
+      ],
+      "specials": [
+        "Stops working the seal only long enough to kill you, and goes straight back to it after."
+      ],
+      "voice": {
+        "taunts": [
+          "Every seal cracks. You only have to know where.",
+          "You are standing in my light."
+        ],
+        "hurt": ["That is my chisel hand!"],
+        "dying": ["It was... cracking... I heard it..."]
+      }
+    },
+    {
+      "creature_id": "c_shadow_vessel",
+      "name": "The Shadow Vessel",
+      "level": 22,
+      "description": "What the Quiet Kingdom made to end itself, and then, at the last, chose not to use. It is not awake. It is dreaming, and what it dreams of is everything being still.",
+      "ac": 45,
+      "hp": 538,
+      "perception": 36,
+      "fortitude": 39,
+      "reflex": 36,
+      "will": 39,
+      "speed": 40,
+      "traits": ["shadow", "entropy", "unique"],
+      "attacks": [
+        {
+          "name": "unmaking grasp",
+          "bonus": 41,
+          "damage": "4d10+26",
+          "damage_type": "negative",
+          "reach": "near"
+        },
+        {
+          "name": "the long dark",
+          "bonus": 39,
+          "damage": "4d8+22",
+          "damage_type": "negative",
+          "reach": "far",
+          "on_critical": "The light goes out of the world for a moment, and does not come back all the way."
+        }
+      ],
+      "specials": [
+        "It fights like something dreaming, and every wound it takes wakes it a little more."
+      ],
+      "voice": {
+        "speaks": false,
+        "taunts": [
+          "The Vessel reaches out in its sleep, and where it touches, the world goes thin."
+        ],
+        "hurt": [
+          "The Vessel stirs at the wound, and the dark in the Cradle deepens."
+        ],
+        "dying": [
+          "The Vessel sighs, a long sigh like the tide going out, and is still."
+        ]
+      }
+    },
+    {
+      "creature_id": "c_liora_vessel_bound",
+      "name": "Liora, Vessel-Bound",
+      "level": 20,
+      "description": "The Queen of Valorheim, on her knees in the Cradle with the Vessel's chain wound round both wrists. She has not come down here to wake it. She has come down to wear it.",
+      "ac": 44,
+      "hp": 375,
+      "perception": 33,
+      "fortitude": 33,
+      "reflex": 33,
+      "will": 36,
+      "speed": 25,
+      "traits": ["human", "shadow", "unique"],
+      "attacks": [
+        {
+          "name": "the Queen's knife",
+          "bonus": 38,
+          "damage": "4d10+22",
+          "damage_type": "P",
+          "reach": "engaged",
+          "traits": ["agile"]
+        },
+        {
+          "name": "royal command",
+          "bonus": 36,
+          "damage": "4d8+19",
+          "damage_type": "negative",
+          "reach": "far"
+        }
+      ],
+      "specials": ["Where she bleeds, the Vessel does."],
+      "voice": {
+        "taunts": [
+          "Kneel. I am still your Queen, for a little while longer.",
+          "You were always going to lose. I read the ending first."
+        ],
+        "hurt": ["You would cut me? Your Queen?"],
+        "dying": [
+          "Aldric... tell him... I was nearly... something..."
+        ]
+      }
+    },
+    {
       "creature_id": "c_hunt_copper_rat",
       "name": "Copper-Tongue Rat",
       "level": 0,
@@ -1373,6 +1775,370 @@
         ],
         "flee": [
           { "enemy": "Come back with more friends. The door is not going anywhere." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_rift_mouth",
+      "location": "SD_001_Rift",
+      "name": "The Queen's Rearguard",
+      "description": "Two figures rise from behind the fallen paving with glaives already levelled. They were left here to see that nobody followed, and they have been looking forward to somebody trying.",
+      "creatures": ["c_crimson_zealot", "c_crimson_zealot"],
+      "start_zone": "near",
+      "ambush": true,
+      "victory_flags": ["cleared_the_rift"],
+      "coin": "10d20+600",
+      "scene": {
+        "setting": "The crack the earthquake opened down the middle of Valorheim. The Queen went down it with the last of her faithful, and left two of them at the top so that nobody would follow her.",
+        "ambiance": [
+          "Grit sifts down from the plaza whenever somebody up there walks too near the edge.",
+          "The light from above is one blade wide, and the fight keeps drifting out of it.",
+          "Somewhere a long way below, something turns over in its sleep."
+        ],
+        "opening": [
+          { "enemy": "The Queen said somebody would come. She did not say it would be you." },
+          { "pc": "Where has she gone?" },
+          { "enemy": "Down. Where you are not going." }
+        ],
+        "bloodied": [
+          { "pc": "They are faithful, not immortal. Press them!" }
+        ],
+        "first_down": [
+          { "text": "The zealot goes down with the crimson cord still tight round both wrists." },
+          { "pc": "Stand aside, and you can still go up." }
+        ],
+        "victory": [
+          {
+            "text": "The last zealot lies on the fallen paving, looking down the crack, the way the Queen went."
+          },
+          { "pc": "Down, then. She has a start on us, and she will have used it." }
+        ],
+        "defeat": [
+          { "enemy": "Roll them over the edge. Let them go down after all." }
+        ],
+        "flee": [
+          { "pc": "Up! Back up into the light!" },
+          { "enemy": "Run to your King. Tell him his wife sends her love." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_buried_street",
+      "location": "SD_002_BuriedStreet",
+      "name": "Those Who Chose",
+      "description": "Figures come out of the open doorways the way neighbours come out to see who is passing. There is not quite enough of any of them. They come to meet you anyway.",
+      "creatures": ["c_unmade", "c_unmade", "c_unmade"],
+      "start_zone": "near",
+      "ambush": true,
+      "victory_flags": ["cleared_buried_street"],
+      "coin": "10d20+900",
+      "scene": {
+        "setting": "A whole street of the Quiet Kingdom, swept and waiting, and its people still in it, or what is left of them after a thousand years of choosing to stop.",
+        "ambiance": [
+          "A shutter swings open and shut on a breeze that is not blowing.",
+          "The bucket on the well chain turns slowly, first one way and then the other.",
+          "Every door on the street stands open, and every doorway is dark all the way to the back."
+        ],
+        "opening": [
+          {
+            "text": "They come out of the doorways in silence, soft at the edges, like people remembered by somebody who is forgetting them."
+          },
+          { "pc": "They are not trying to hurt us. They are trying to finish." }
+        ],
+        "bloodied": [
+          { "pc": "They come apart when you hit them, like wet paper. Keep on!" }
+        ],
+        "first_down": [
+          {
+            "text": "The first of them simply stops, and is a little less there, and then not there at all."
+          },
+          { "pc": "Rest. You have been at it long enough." }
+        ],
+        "victory": [
+          {
+            "text": "The street is empty again, swept and ready, with every door open for visitors who are not coming."
+          },
+          { "pc": "A whole city chose this. A whole city." }
+        ],
+        "defeat": [
+          {
+            "text": "The last thing you see is a doorway, open and swept, with room inside for one more."
+          }
+        ],
+        "flee": [
+          { "pc": "Back up to the rift! Now!" },
+          { "text": "They do not follow. They go back into their houses and sit down to wait." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_unmaking_temple",
+      "location": "SD_003_UnmakingTemple",
+      "name": "The Litany of Ending",
+      "description": "In the bottom of the bowl a figure in colourless vestments is reading aloud, and one of the Unmade kneels in front of it, listening. The reading stops when you come in. The figure turns the page and begins on you.",
+      "creatures": ["c_entropy_hierophant", "c_unmade"],
+      "start_zone": "near",
+      "ambush": true,
+      "victory_flags": ["cleared_unmaking_temple"],
+      "coin": "12d20+1500",
+      "scene": {
+        "setting": "The temple where the Quiet Kingdom prayed itself to a stop, and the priest who led the prayer, still reading the last page aloud to anyone who will kneel.",
+        "ambiance": [
+          "The litany goes on under everything, a line at a time, even when the Hierophant is not speaking.",
+          "The colour is going out of your cloaks, a thread at a time.",
+          "The bowl of the floor draws your feet toward the middle, very gently."
+        ],
+        "opening": [
+          { "enemy": "Kneel. There is room. There has always been room." },
+          { "pc": "We are not here to pray." },
+          { "enemy": "Nobody ever is, at first." }
+        ],
+        "bloodied": [
+          { "pc": "It is losing its place in the book! Keep at it!" },
+          { "enemy": "No matter. I know the ending by heart." }
+        ],
+        "first_down": [
+          {
+            "text": "The kneeling figure lies down in the bottom of the bowl, as if that were what it had been waiting for."
+          },
+          { "pc": "That was not rest. That was an ending." }
+        ],
+        "victory": [
+          {
+            "text": "The litany stops in the middle of a line, and for the first time in a thousand years the temple is entirely silent."
+          },
+          { "pc": "The stair goes down. So did she." }
+        ],
+        "defeat": [
+          { "enemy": "There. Now you are kneeling. Was that so hard?" }
+        ],
+        "flee": [
+          { "pc": "Out! Out of the bowl, before it takes us!" },
+          { "enemy": "Go, then. The litany will keep. It always has." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_guard_post",
+      "location": "SD_004_GuardPost",
+      "name": "What the Patrol Found",
+      "description": "The floor of the guard post heaves, and heaves again, and the boards go up in splinters round something that is mostly a mouth. It has been waiting under here since the last lot came in. It is hungry again.",
+      "creatures": ["c_rift_maw"],
+      "start_zone": "near",
+      "requires": ["aldric_asked_after_the_patrol"],
+      "victory_flags": ["found_the_last_patrol"],
+      "coin": "10d20+1200",
+      "scene": {
+        "setting": "The guard post the Third Patrol was keeping, fallen whole into the buried street, and under its floor the thing that ate them.",
+        "ambiance": [
+          "The lamp on its hook swings when the floor heaves, throwing the shadows about.",
+          "Somebody's helmet rolls out from under a bench, empty.",
+          "Under the boards, stone grinds on stone like a millwheel."
+        ],
+        "opening": [
+          {
+            "text": "The maw comes up through the floor in a burst of splinters, jaws of stone grinding open."
+          },
+          { "pc": "Eight men. It had eight men, and it is still hungry." }
+        ],
+        "bloodied": [
+          { "pc": "It is cracking! Keep it up out of its hole!" }
+        ],
+        "victory": [
+          {
+            "text": "The maw settles into the broken floor and does not move again. Among the stones in its gullet there is a great deal of palace armour."
+          },
+          { "pc": "We will take them home. What there is of them." }
+        ],
+        "defeat": [
+          { "text": "The floor closes over you like water, and the grinding starts again." }
+        ],
+        "flee": [
+          { "pc": "Out of the post! Into the street!" },
+          { "text": "The maw sinks back under the boards to wait, as it waited for the last lot." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_causeway_of_names",
+      "location": "QK_001_CausewayOfNames",
+      "name": "The Name-Eater",
+      "description": "Out on the causeway something long and pale is bent over the stones, and the scraping sound is its tongue. It lifts its head. It says a name you do not know, and then one you do.",
+      "creatures": ["c_name_eater"],
+      "start_zone": "far",
+      "ambush": true,
+      "victory_flags": ["cleared_causeway"],
+      "coin": "12d20+2500",
+      "scene": {
+        "setting": "The causeway where the Quiet Kingdom carved the names of everyone it meant to stop, and the servant it left to eat them, still at the work.",
+        "ambiance": [
+          "The scraping of its tongue on the stones never quite stops, even while it fights.",
+          "Names you step over are gone when you look back for them.",
+          "The dark on either side has no bottom, and nothing comes up out of it: not a sound, not a draught."
+        ],
+        "opening": [
+          { "enemy": "Oswin. Pell. Tessaly. Wenna." },
+          { "pc": "Those are names from the valley. How do you have those?" },
+          { "enemy": "Somebody carved them. I eat what is carved." }
+        ],
+        "bloodied": [
+          { "enemy": "Aldric. Liora. Marta. Elara." },
+          { "pc": "Stop it! Stop saying them!" }
+        ],
+        "victory": [
+          {
+            "text": "The Name-Eater slides off the edge of the causeway into the dark, and takes nothing with it but itself."
+          },
+          { "pc": "Look. The newest name. Somebody cut it this week." }
+        ],
+        "defeat": [
+          { "enemy": "I will eat yours slowly. You will not miss it." }
+        ],
+        "flee": [
+          { "pc": "Back! Back up the stair!" },
+          { "enemy": "Go. I have your names now. I have all the time there is." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_quiet_court",
+      "location": "QK_002_QuietCourt",
+      "name": "The Quiet Court in Session",
+      "description": "The King on the dais lifts his head for the first time in a thousand years. \"Visitors,\" he says, and down the long approach two of his courtiers turn to face you, drawing thin blades with no hurry at all.",
+      "creatures": ["c_quiet_king", "c_quiet_courtier", "c_quiet_courtier"],
+      "start_zone": "near",
+      "ambush": true,
+      "victory_flags": ["cleared_quiet_court"],
+      "coin": "16d20+4500",
+      "scene": {
+        "setting": "The throne room Valorheim's was copied from, the court still in its places, and the last King of the Quiet waking to find he has company.",
+        "ambiance": [
+          "The courtiers along the approach turn their heads together to follow the fight, like a field of wheat in a wind.",
+          "There is no echo in here. Every sound you make simply stops.",
+          "The King speaks softly, and you hear every word of it anyway."
+        ],
+        "opening": [
+          {
+            "enemy": "You have come a long way down. Would you like to stop? You may. It is allowed here."
+          },
+          { "pc": "We would like the Queen of Valorheim. Where is she?" },
+          {
+            "enemy": "Below, with the thing we could not bring ourselves to use. I am sorry. I shall have to insist."
+          }
+        ],
+        "bloodied": [
+          { "enemy": "Ah. It has been so long since anything hurt." },
+          { "pc": "He is slowing! Keep at him!" }
+        ],
+        "first_down": [
+          {
+            "text": "A courtier folds down into its robes at the side of the approach, as neatly as a letter."
+          },
+          { "pc": "One down. Mind the King." }
+        ],
+        "victory": [
+          {
+            "text": "The last King of the Quiet sits down on the step of his dais, very carefully, lays his sceptre across his knees, and stops."
+          },
+          { "pc": "There is something on the arm of the throne. A tablet." }
+        ],
+        "defeat": [
+          { "enemy": "There. Stopping is not so hard. You will see." }
+        ],
+        "flee": [
+          { "pc": "Back to the causeway! Go!" },
+          { "enemy": "Go if you must. We shall be here. We are always here." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_well_of_seals",
+      "location": "QK_003_WellOfSeals",
+      "name": "The Last Seal-Breakers",
+      "description": "Two masons in Covenant aprons are working the lowest whole seal with chisels, in rhythm, like men setting a millstone. They put down the mallets when they see you. They pick up something heavier.",
+      "creatures": ["c_last_seal_breaker", "c_last_seal_breaker"],
+      "start_zone": "near",
+      "ambush": true,
+      "victory_flags": ["cleared_well_of_seals"],
+      "coin": "16d20+6000",
+      "scene": {
+        "setting": "The shaft of seals the Quiet Kingdom set over its Vessel, and the last of the Covenant's masons, a few blows from breaking the lowest.",
+        "ambiance": [
+          "Chips of red stone rattle down the shaft from the broken seals above.",
+          "The lowest seal hums under every blow, like a bell with a cloth over it.",
+          "Far below, something breathes out, slow as a tide."
+        ],
+        "opening": [
+          { "enemy": "Three more blows. Three. Could you not have come in an hour?" },
+          { "pc": "Put the chisel down, mason." },
+          { "enemy": "I have waited all my life for this seal. I am not putting anything down." }
+        ],
+        "bloodied": [
+          { "pc": "They are masons, not soldiers. Keep them off that seal!" }
+        ],
+        "first_down": [
+          {
+            "text": "A mallet rings on the floor of the well and rolls in a circle before it lies still."
+          },
+          { "pc": "One left, and he is not finishing that seal." }
+        ],
+        "victory": [
+          {
+            "text": "The last chisel rings on the floor of the well. The lowest seal is cracked across, and holding."
+          },
+          { "pc": "Holding. Just. Whatever is under it, she is down there with it." }
+        ],
+        "defeat": [
+          { "enemy": "Lie there. You will want to watch this." }
+        ],
+        "flee": [
+          { "pc": "Up the well! Up!" },
+          { "enemy": "Run. It will find you wherever you run to, soon enough." }
+        ]
+      }
+    },
+    {
+      "encounter_id": "e_vessels_cradle",
+      "location": "QK_004_Cradle",
+      "name": "The Vessel Wakes",
+      "description": "The Queen stands, the chain running from her wrists to the thing in the Cradle, and the thing in the Cradle moves the way a sleeper moves when somebody says its name. \"You are just in time,\" says Liora.",
+      "creatures": ["c_shadow_vessel", "c_liora_vessel_bound"],
+      "start_zone": "near",
+      "ambush": true,
+      "victory_flags": ["boss_defeated_shadow_vessel"],
+      "coin": "20d20+10000",
+      "scene": {
+        "setting": "The bottom of everything: the Shadow Vessel dreaming in its cradle, and the Queen of Valorheim chained to it at the wrists, a breath away from climbing in.",
+        "ambiance": [
+          "The Vessel breathes, and every lamp you brought gutters on the out-breath.",
+          "The chain between them tightens and slackens, tightens and slackens, like a pulse.",
+          "The dark in the Cradle is thicker than dark should be, and it is getting thicker."
+        ],
+        "opening": [
+          { "enemy": "Aldric sent you. Of course he did. He never could do anything himself." },
+          { "pc": "It is over, Liora. The Covenant is finished. Vex is dead." },
+          { "enemy": "Vex was a door. I am the one walking through it." }
+        ],
+        "bloodied": [
+          { "enemy": "Careful! Whatever you do to me, you do to it!" },
+          { "pc": "Then we will be very thorough." }
+        ],
+        "first_down": [
+          { "text": "One of them falls, and the chain between them goes slack." },
+          { "pc": "The chain! Break the chain while it is slack!" }
+        ],
+        "victory": [
+          {
+            "text": "The Vessel settles back into its cradle, and the chain parts link by link, like a rope of sand. The breathing slows, and slows, and stops being breathing."
+          },
+          { "pc": "It is asleep. Properly asleep. Nobody is climbing into anything today." }
+        ],
+        "defeat": [
+          { "enemy": "Hush now. It will all be quiet soon. I promise." }
+        ],
+        "flee": [
+          { "pc": "Up! Everybody up the well!" },
+          { "enemy": "Run to Aldric. Tell him I shall be home soon, and wearing something new." }
         ]
       }
     }

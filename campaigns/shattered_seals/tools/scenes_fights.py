@@ -429,6 +429,314 @@ FIGHTS = {
             E('Come back with more friends. The door is not going anywhere.'),
         ],
     },
+    'e_rift_mouth': {
+        'setting': (
+            'The crack the earthquake opened down the middle of Valorheim. '
+            'The Queen went down it with the last of her faithful, and left '
+            'two of them at the top so that nobody would follow her.'),
+        'ambiance': [
+            'Grit sifts down from the plaza whenever somebody up there walks '
+            'too near the edge.',
+            'The light from above is one blade wide, and the fight keeps '
+            'drifting out of it.',
+            'Somewhere a long way below, something turns over in its sleep.',
+        ],
+        'opening': [
+            E('The Queen said somebody would come. She did not say it would '
+              'be you.'),
+            P('Where has she gone?'),
+            E('Down. Where you are not going.'),
+        ],
+        'bloodied': [
+            P('They are faithful, not immortal. Press them!'),
+        ],
+        'first_down': [
+            T('The zealot goes down with the crimson cord still tight round '
+              'both wrists.'),
+            P('Stand aside, and you can still go up.'),
+        ],
+        'victory': [
+            T('The last zealot lies on the fallen paving, looking down the '
+              'crack, the way the Queen went.'),
+            P('Down, then. She has a start on us, and she will have used it.'),
+        ],
+        'defeat': [
+            E('Roll them over the edge. Let them go down after all.'),
+        ],
+        'flee': [
+            P('Up! Back up into the light!'),
+            E('Run to your King. Tell him his wife sends her love.'),
+        ],
+    },
+    'e_buried_street': {
+        'setting': (
+            'A whole street of the Quiet Kingdom, swept and waiting, and its '
+            'people still in it, or what is left of them after a thousand '
+            'years of choosing to stop.'),
+        'ambiance': [
+            'A shutter swings open and shut on a breeze that is not blowing.',
+            'The bucket on the well chain turns slowly, first one way and then '
+            'the other.',
+            'Every door on the street stands open, and every doorway is dark '
+            'all the way to the back.',
+        ],
+        'opening': [
+            T('They come out of the doorways in silence, soft at the edges, '
+              'like people remembered by somebody who is forgetting them.'),
+            P('They are not trying to hurt us. They are trying to finish.'),
+        ],
+        'bloodied': [
+            P('They come apart when you hit them, like wet paper. Keep on!'),
+        ],
+        'first_down': [
+            T('The first of them simply stops, and is a little less there, '
+              'and then not there at all.'),
+            P('Rest. You have been at it long enough.'),
+        ],
+        'victory': [
+            T('The street is empty again, swept and ready, with every door '
+              'open for visitors who are not coming.'),
+            P('A whole city chose this. A whole city.'),
+        ],
+        'defeat': [
+            T('The last thing you see is a doorway, open and swept, with room '
+              'inside for one more.'),
+        ],
+        'flee': [
+            P('Back up to the rift! Now!'),
+            T('They do not follow. They go back into their houses and sit down '
+              'to wait.'),
+        ],
+    },
+    'e_unmaking_temple': {
+        'setting': (
+            'The temple where the Quiet Kingdom prayed itself to a stop, and '
+            'the priest who led the prayer, still reading the last page aloud '
+            'to anyone who will kneel.'),
+        'ambiance': [
+            'The litany goes on under everything, a line at a time, even when '
+            'the Hierophant is not speaking.',
+            'The colour is going out of your cloaks, a thread at a time.',
+            'The bowl of the floor draws your feet toward the middle, very '
+            'gently.',
+        ],
+        'opening': [
+            E('Kneel. There is room. There has always been room.'),
+            P('We are not here to pray.'),
+            E('Nobody ever is, at first.'),
+        ],
+        'bloodied': [
+            P('It is losing its place in the book! Keep at it!'),
+            E('No matter. I know the ending by heart.'),
+        ],
+        'first_down': [
+            T('The kneeling figure lies down in the bottom of the bowl, as if '
+              'that were what it had been waiting for.'),
+            P('That was not rest. That was an ending.'),
+        ],
+        'victory': [
+            T('The litany stops in the middle of a line, and for the first '
+              'time in a thousand years the temple is entirely silent.'),
+            P('The stair goes down. So did she.'),
+        ],
+        'defeat': [
+            E('There. Now you are kneeling. Was that so hard?'),
+        ],
+        'flee': [
+            P('Out! Out of the bowl, before it takes us!'),
+            E('Go, then. The litany will keep. It always has.'),
+        ],
+    },
+    'e_guard_post': {
+        'setting': (
+            'The guard post the Third Patrol was keeping, fallen whole into '
+            'the buried street, and under its floor the thing that ate them.'),
+        'ambiance': [
+            'The lamp on its hook swings when the floor heaves, throwing the '
+            'shadows about.',
+            'Somebody\'s helmet rolls out from under a bench, empty.',
+            'Under the boards, stone grinds on stone like a millwheel.',
+        ],
+        'opening': [
+            T('The maw comes up through the floor in a burst of splinters, '
+              'jaws of stone grinding open.'),
+            P('Eight men. It had eight men, and it is still hungry.'),
+        ],
+        'bloodied': [
+            P('It is cracking! Keep it up out of its hole!'),
+        ],
+        'victory': [
+            T('The maw settles into the broken floor and does not move again. '
+              'Among the stones in its gullet there is a great deal of palace '
+              'armour.'),
+            P('We will take them home. What there is of them.'),
+        ],
+        'defeat': [
+            T('The floor closes over you like water, and the grinding starts '
+              'again.'),
+        ],
+        'flee': [
+            P('Out of the post! Into the street!'),
+            T('The maw sinks back under the boards to wait, as it waited for '
+              'the last lot.'),
+        ],
+    },
+    'e_causeway_of_names': {
+        'setting': (
+            'The causeway where the Quiet Kingdom carved the names of everyone '
+            'it meant to stop, and the servant it left to eat them, still at '
+            'the work.'),
+        'ambiance': [
+            'The scraping of its tongue on the stones never quite stops, even '
+            'while it fights.',
+            'Names you step over are gone when you look back for them.',
+            'The dark on either side has no bottom, and nothing comes up out '
+            'of it: not a sound, not a draught.',
+        ],
+        'opening': [
+            E('Oswin. Pell. Tessaly. Wenna.'),
+            P('Those are names from the valley. How do you have those?'),
+            E('Somebody carved them. I eat what is carved.'),
+        ],
+        'bloodied': [
+            E('Aldric. Liora. Marta. Elara.'),
+            P('Stop it! Stop saying them!'),
+        ],
+        'victory': [
+            T('The Name-Eater slides off the edge of the causeway into the '
+              'dark, and takes nothing with it but itself.'),
+            P('Look. The newest name. Somebody cut it this week.'),
+        ],
+        'defeat': [
+            E('I will eat yours slowly. You will not miss it.'),
+        ],
+        'flee': [
+            P('Back! Back up the stair!'),
+            E('Go. I have your names now. I have all the time there is.'),
+        ],
+    },
+    'e_quiet_court': {
+        'setting': (
+            'The throne room Valorheim\'s was copied from, the court still in '
+            'its places, and the last King of the Quiet waking to find he has '
+            'company.'),
+        'ambiance': [
+            'The courtiers along the approach turn their heads together to '
+            'follow the fight, like a field of wheat in a wind.',
+            'There is no echo in here. Every sound you make simply stops.',
+            'The King speaks softly, and you hear every word of it anyway.',
+        ],
+        'opening': [
+            E('You have come a long way down. Would you like to stop? You may. '
+              'It is allowed here.'),
+            P('We would like the Queen of Valorheim. Where is she?'),
+            E('Below, with the thing we could not bring ourselves to use. I '
+              'am sorry. I shall have to insist.'),
+        ],
+        'bloodied': [
+            E('Ah. It has been so long since anything hurt.'),
+            P('He is slowing! Keep at him!'),
+        ],
+        'first_down': [
+            T('A courtier folds down into its robes at the side of the '
+              'approach, as neatly as a letter.'),
+            P('One down. Mind the King.'),
+        ],
+        'victory': [
+            T('The last King of the Quiet sits down on the step of his dais, '
+              'very carefully, lays his sceptre across his knees, and stops.'),
+            P('There is something on the arm of the throne. A tablet.'),
+        ],
+        'defeat': [
+            E('There. Stopping is not so hard. You will see.'),
+        ],
+        'flee': [
+            P('Back to the causeway! Go!'),
+            E('Go if you must. We shall be here. We are always here.'),
+        ],
+    },
+    'e_well_of_seals': {
+        'setting': (
+            'The shaft of seals the Quiet Kingdom set over its Vessel, and the '
+            'last of the Covenant\'s masons, a few blows from breaking the '
+            'lowest.'),
+        'ambiance': [
+            'Chips of red stone rattle down the shaft from the broken seals '
+            'above.',
+            'The lowest seal hums under every blow, like a bell with a cloth '
+            'over it.',
+            'Far below, something breathes out, slow as a tide.',
+        ],
+        'opening': [
+            E('Three more blows. Three. Could you not have come in an hour?'),
+            P('Put the chisel down, mason.'),
+            E('I have waited all my life for this seal. I am not putting '
+              'anything down.'),
+        ],
+        'bloodied': [
+            P('They are masons, not soldiers. Keep them off that seal!'),
+        ],
+        'first_down': [
+            T('A mallet rings on the floor of the well and rolls in a circle '
+              'before it lies still.'),
+            P('One left, and he is not finishing that seal.'),
+        ],
+        'victory': [
+            T('The last chisel rings on the floor of the well. The lowest '
+              'seal is cracked across, and holding.'),
+            P('Holding. Just. Whatever is under it, she is down there with it.'),
+        ],
+        'defeat': [
+            E('Lie there. You will want to watch this.'),
+        ],
+        'flee': [
+            P('Up the well! Up!'),
+            E('Run. It will find you wherever you run to, soon enough.'),
+        ],
+    },
+    'e_vessels_cradle': {
+        'setting': (
+            'The bottom of everything: the Shadow Vessel dreaming in its '
+            'cradle, and the Queen of Valorheim chained to it at the wrists, '
+            'a breath away from climbing in.'),
+        'ambiance': [
+            'The Vessel breathes, and every lamp you brought gutters on the '
+            'out-breath.',
+            'The chain between them tightens and slackens, tightens and '
+            'slackens, like a pulse.',
+            'The dark in the Cradle is thicker than dark should be, and it is '
+            'getting thicker.',
+        ],
+        'opening': [
+            E('Aldric sent you. Of course he did. He never could do anything '
+              'himself.'),
+            P('It is over, Liora. The Covenant is finished. Vex is dead.'),
+            E('Vex was a door. I am the one walking through it.'),
+        ],
+        'bloodied': [
+            E('Careful! Whatever you do to me, you do to it!'),
+            P('Then we will be very thorough.'),
+        ],
+        'first_down': [
+            T('One of them falls, and the chain between them goes slack.'),
+            P('The chain! Break the chain while it is slack!'),
+        ],
+        'victory': [
+            T('The Vessel settles back into its cradle, and the chain parts '
+              'link by link, like a rope of sand. The breathing slows, and '
+              'slows, and stops being breathing.'),
+            P('It is asleep. Properly asleep. Nobody is climbing into anything '
+              'today.'),
+        ],
+        'defeat': [
+            E('Hush now. It will all be quiet soon. I promise.'),
+        ],
+        'flee': [
+            P('Up! Everybody up the well!'),
+            E('Run to Aldric. Tell him I shall be home soon, and wearing '
+              'something new.'),
+        ],
+    },
 }
 
 
@@ -543,4 +851,54 @@ VOICES = {
         ['Tribute. At last.', 'Kneel, and I may leave you your teeth.'],
         ['You scratched me. Nobody has scratched me in four hundred years.'],
         ['Valorheim... owes me... still...']),
+    'c_crimson_zealot': says(
+        ['For the Queen, and for what comes after her!',
+         'You should have stayed up in the light.'],
+        ['The Queen will remember this.'],
+        ['Tell her... I held the stair...']),
+    'c_unmade': mute(
+        ['The Unmade lays a hand on you, and your sleeve comes unravelled '
+         'where it touched.'],
+        ['The wound closes the wrong way, and there is a little less of it.'],
+        ['It stops, all at once, and is not there.']),
+    'c_entropy_hierophant': says(
+        ['And the lamp was put out, and it was good.',
+         'Every line brings us closer to the last.'],
+        ['I have lost my place. No matter.'],
+        ['At... last... the... end...']),
+    'c_rift_maw': mute(
+        ['The maw heaves up out of the floor and closes on you with a noise '
+         'like a quarry.'],
+        ['Stone flakes off the maw\'s jaws in sheets.'],
+        ['The maw sinks into the floor and grinds, slower and slower, to a '
+         'stop.']),
+    'c_name_eater': says(
+        ['Thorne. Harrow. Brask. Mercy.', 'Yours next. Say it for me.'],
+        ['Pell. Pell. Pell.'],
+        ['No... names... left...']),
+    'c_quiet_king': says(
+        ['Would you like to stop? You may.',
+         'There is no shame in being tired.'],
+        ['Ah. I had forgotten this.'],
+        ['Thank you. I could not... finish it... myself...']),
+    'c_quiet_courtier': mute(
+        ['The courtier\'s blade finds the gap in your guard without a sound.'],
+        ['The courtier inclines its head at the wound, politely.'],
+        ['The courtier folds down into its robes and is still.']),
+    'c_last_seal_breaker': says(
+        ['Every seal cracks. You only have to know where.',
+         'You are standing in my light.'],
+        ['That is my chisel hand!'],
+        ['It was... cracking... I heard it...']),
+    'c_shadow_vessel': mute(
+        ['The Vessel reaches out in its sleep, and where it touches, the world '
+         'goes thin.'],
+        ['The Vessel stirs at the wound, and the dark in the Cradle deepens.'],
+        ['The Vessel sighs, a long sigh like the tide going out, and is '
+         'still.']),
+    'c_liora_vessel_bound': says(
+        ['Kneel. I am still your Queen, for a little while longer.',
+         'You were always going to lose. I read the ending first.'],
+        ['You would cut me? Your Queen?'],
+        ['Aldric... tell him... I was nearly... something...']),
 }
