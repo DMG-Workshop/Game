@@ -100,16 +100,39 @@ class ItemPlacements {
       ];
 
   /// Finds an item in [roomId] by id, name, or any word of its name.
+  ///
+  /// A query matches whole words of the name, in order, however it is
+  /// punctuated: "tokens" and "name tokens" both find "A String of
+  /// Name-Tokens", and "reader", "readers" and "reader's day book" all find
+  /// "A Reader's Day-Book". Hyphens used to keep a word whole, so a player
+  /// typing the obvious noun was told the thing in front of them was not
+  /// there.
   WorldItem? findInRoom(String roomId, String query) {
     final needle = query.trim().toLowerCase();
     if (needle.isEmpty) return null;
+    final asked = _forms(needle);
     for (final item in inRoom(roomId)) {
       if (item.id.toLowerCase() == needle) return item;
-      if (item.name.toLowerCase() == needle) return item;
-      final words = item.name.toLowerCase().split(RegExp(r"[\s’']+"));
-      if (words.contains(needle)) return item;
+      final names = _forms(item.name);
+      for (final name in names) {
+        if (asked.any((q) => q.isNotEmpty && ' $name '.contains(' $q '))) {
+          return item;
+        }
+      }
     }
     return null;
+  }
+
+  /// Ways of writing [text] with the punctuation taken out: the apostrophe
+  /// dropped, the possessive dropped, and the apostrophe as a break.
+  static Set<String> _forms(String text) {
+    final lower = text.toLowerCase();
+    String squash(String s) => s.replaceAll(RegExp(r'[^a-z0-9]+'), ' ').trim();
+    return {
+      squash(lower.replaceAll(RegExp(r"['’]"), '')),
+      squash(lower.replaceAll(RegExp(r"['’]s\b"), '')),
+      squash(lower.replaceAll(RegExp(r"['’]"), ' ')),
+    };
   }
 
   /// Items placed in a room that does not exist.

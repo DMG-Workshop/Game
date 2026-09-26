@@ -110,11 +110,35 @@ class Campaign {
           npcs: npcs,
           roomIds: locations.rooms.keys.toSet(),
         ),
+        sideQuestGaps: _sideQuestGaps(),
         huntProblems: hunts.problems(
           bestiary,
           levels: [for (var l = 1; l <= world.metadata.levelCap; l++) l],
         ),
       );
+
+  /// Parts of the map with no side quest set in them, and side quests set
+  /// somewhere the map does not have.
+  ///
+  /// Every region should have something to do besides the main road, or the
+  /// map has places that are only ever walked through.
+  List<String> _sideQuestGaps() {
+    final zones = {
+      for (final town in locations.towns)
+        for (final zone in town.zones) zone.id,
+    };
+    final covered = {
+      for (final arc in arcs.all)
+        if (arc.isSide && arc.zone != null) arc.zone!,
+    };
+    return [
+      for (final zone in zones.difference(covered).toList()..sort())
+        'No side quest in $zone',
+      for (final arc in arcs.all)
+        if (arc.zone != null && !zones.contains(arc.zone))
+          '${arc.name} is set in "${arc.zone}", which is not on the map',
+    ];
+  }
 
   /// Arc conditions nothing in the campaign could ever set.
   ///
@@ -203,6 +227,7 @@ class CampaignReport {
     this.unpaidEncounters = const [],
     this.unrewardedArcs = const [],
     this.huntProblems = const [],
+    this.sideQuestGaps = const [],
   });
 
   /// Rooms a zone or an exit names but nobody has written.
@@ -255,6 +280,9 @@ class CampaignReport {
   /// Hunters that cannot be sent, and levels nothing can be sent at.
   final List<String> huntProblems;
 
+  /// Regions with nothing to do off the main road.
+  final List<String> sideQuestGaps;
+
   bool get isClean =>
       unwrittenRooms.isEmpty &&
       danglingExits.isEmpty &&
@@ -271,7 +299,8 @@ class CampaignReport {
       shopProblems.isEmpty &&
       unpaidEncounters.isEmpty &&
       unrewardedArcs.isEmpty &&
-      huntProblems.isEmpty;
+      huntProblems.isEmpty &&
+      sideQuestGaps.isEmpty;
 
   /// Problems that would strand a player right now, as opposed to content
   /// that is merely unfinished.
@@ -336,6 +365,7 @@ class CampaignReport {
     section('Quests that pay no coin or no XP',
         unrewardedArcs.map((a) => '${a.name} (${a.id})'));
     section('The hunt', huntProblems);
+    section('Side quests', sideQuestGaps);
     section(
       'Conversations for somebody who does not exist',
       orphanedConversations.map((c) => c.npcId),

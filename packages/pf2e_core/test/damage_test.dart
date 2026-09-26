@@ -110,8 +110,7 @@ void main() {
       }
     });
 
-    test('takes exactly the dice roll() takes, so a seed replays the same',
-        () {
+    test('takes exactly the dice roll() takes, so a seed replays the same', () {
       final a = DiceRoller(11);
       final b = DiceRoller(11);
       DamageExpression.parse('4d8+1').roll(a);
@@ -147,8 +146,9 @@ void main() {
         '1d4-1 (3-1) = 2',
       );
       expect(
-        DamageRoll(expression: DamageExpression.parse('2d6'), dice: const [1, 6])
-            .toString(),
+        DamageRoll(
+            expression: DamageExpression.parse('2d6'),
+            dice: const [1, 6]).toString(),
         '2d6 (1+6) = 7',
       );
       expect(

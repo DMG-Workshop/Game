@@ -756,10 +756,13 @@ void _renderLedger(WorldSession session) {
     stdout.writeln('The party has found nothing yet.');
     return;
   }
+  final things = switch (ledger.itemCount) {
+    0 => 'nothing else',
+    1 => 'one thing worth ${formatCoin(ledger.itemCopper)}',
+    final n => '$n things worth ${formatCoin(ledger.itemCopper)}',
+  };
   stdout.writeln('\nFound so far: ${formatCoin(ledger.totalCopper)} — '
-      '${formatCoin(ledger.coinCopper)} in coin, and ${ledger.itemCount} '
-      '${ledger.itemCount == 1 ? 'thing' : 'things'} worth '
-      '${formatCoin(ledger.itemCopper)}.\n');
+      '${formatCoin(ledger.coinCopper)} in coin, and $things.\n');
   for (final entry in ledger.entries) {
     final what = entry.kind == LootKind.coin
         ? 'coin'
@@ -1220,7 +1223,7 @@ void _renderCombatants(EncounterSession fight) {
   for (final c in fight.combatants) {
     final bar = c.isDown ? 'down' : '${c.hp}/${c.maxHp}';
     final where = fight.zones[c.zoneIndex];
-    stdout.writeln('  ${c.isEnemy ? ' ' : '*'} ${c.id.padRight(22)} '
+    stdout.writeln('  ${c.isEnemy ? ' ' : '*'} ${c.id.padRight(28)} '
         '${bar.padLeft(8)}  $where');
   }
 }

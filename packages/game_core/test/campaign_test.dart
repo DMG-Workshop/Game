@@ -117,7 +117,7 @@ void main() {
 
   group('npcs', () {
     test('reads the cast and places them', () {
-      expect(campaign.npcs.length, 10);
+      expect(campaign.npcs.length, 11);
       expect(campaign.npcs.byId('npc_001_thorne')!.name,
           'Captain Thorne Ironhelm');
       expect(
@@ -479,7 +479,7 @@ void main() {
     test('reads both tiers', () {
       // Two tiers of main story, and the side quests alongside them.
       expect(campaign.arcs.all.where((a) => !a.isSide), hasLength(2));
-      expect(campaign.arcs.all.where((a) => a.isSide), hasLength(3));
+      expect(campaign.arcs.all.where((a) => a.isSide), hasLength(10));
       final tier1 = campaign.arcs.byId('tier_1_local_threat')!;
       expect(tier1.name, 'Shadows Over Millhaven');
       expect(tier1.minLevel, 1);

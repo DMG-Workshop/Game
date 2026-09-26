@@ -52,6 +52,62 @@
       "requires": ["cleared_false_seal"],
       "acquire_flags": ["deception_revealed_under_archive", "hale_lie_uncovered"],
       "on_take": "It is addressed to the keepers of the vault, and it is short.\n\n'Keep them below as long as they are willing to stay. Hale has done well; see that the girl is kept comfortable, and remind him of her if he wavers. — L.'\n\nThe seal on the wall is painted plaster. Close enough to read by, you can see the brush strokes. Above you, the stair you came down is full of small sounds, and all of them are coming this way."
+    },
+    {
+      "item_id": "i_name_tokens",
+      "name": "A String of Name-Tokens",
+      "location": "WW_002_Deep",
+      "in_room": "Where the thralls fell, a length of twine lies in the leaf litter, threaded with small carved tokens.",
+      "description": "Eleven tokens of whittled ash on garden twine, each carved with a name in a careful hand: Tessaly. Orrin. Beck. Hal. The kind a family hangs over its door for luck.",
+      "takeable": true,
+      "hidden_until": ["cleared_whisperwood_thralls"],
+      "acquire_flags": ["item_acquired_name_tokens"],
+      "on_take": "You wind the twine round your hand. Somebody in the valley made these, one for each of them, and somebody else went round and took them all off the doors."
+    },
+    {
+      "item_id": "i_drowning_stone",
+      "name": "A Drowning-Stone",
+      "location": "MR_002_ReedBeds",
+      "in_room": "One of the stones the drowned came up with has come loose from its rope and lies in the shallows, squared off and far too regular to be anything the mere made.",
+      "description": "A cut block of grey stone the size of a loaf, with an iron ring leaded into the top and a mark chiselled into one face: a tower over three lines of water.",
+      "takeable": true,
+      "hidden_until": ["cleared_reed_beds"],
+      "acquire_flags": ["item_acquired_drowning_stone"],
+      "on_take": "It is heavier than it looks. The mark is old, and somebody has cleaned the moss out of it recently, as if to be sure it could still be read."
+    },
+    {
+      "item_id": "i_shift_tallies",
+      "name": "The Shift's Tallies",
+      "location": "BM_002_DeepMine",
+      "in_room": "The miners' brass tally-tokens lie where they fell, still on their strings.",
+      "description": "Nine brass tokens stamped with numbers, one for each man who went down on the last shift. The foreman hands them out at the top of the shaft and takes them back at the end, and that is how he knows who is still below.",
+      "takeable": true,
+      "hidden_until": ["freed_the_lost_shift"],
+      "acquire_flags": ["item_acquired_shift_tallies"],
+      "on_take": "Nine. You count them twice. It seems important."
+    },
+    {
+      "item_id": "i_gatehouse_door",
+      "name": "The Gatehouse Door",
+      "location": "TH_001_Gates",
+      "in_room": "The gatehouse beside the gates has a door of iron-bound oak, and no handle on the outside.",
+      "description": "Heavy, locked, and newer than the gatehouse. Somebody behind it is being very quiet on purpose.",
+      "takeable": false,
+      "destroyable": true,
+      "requires": ["thornhaven_watch_broken"],
+      "destroy_flags": ["freed_the_families"],
+      "on_destroy": "It takes a long time, and nobody inside makes a sound until it gives. Then there are eleven of them in the doorway, blinking: servants' children, a clerk's wife, a boy in a choir tunic, and a girl of about eleven with ink on her fingers, who asks before anything else whether you have come from the library."
+    },
+    {
+      "item_id": "i_readers_daybook",
+      "name": "A Reader's Day-Book",
+      "location": "UA_002_OssuaryStair",
+      "in_room": "One of the Readers had a day-book in its coat, the pages gone soft with damp.",
+      "description": "An archivist's day-book, kept in a small upright hand until about a year ago, when the entries stop. The last one reads: \"Sent below to catalogue the sealed stacks. Hale says a fortnight.\"",
+      "takeable": true,
+      "hidden_until": ["cleared_ossuary_stair"],
+      "acquire_flags": ["item_acquired_readers_daybook"],
+      "on_take": "The name inside the cover is Pell Aubery, Under-Archivist. There are four more names on the flyleaf, crossed through one at a time in a different ink."
     }
   ]
 }

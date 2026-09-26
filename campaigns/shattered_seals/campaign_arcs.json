@@ -40,6 +40,7 @@
       "arc_id": "side_liar_at_the_sparrow",
       "name": "The Liar at the Sparrow",
       "kind": "side",
+      "zone": "z_01_proper",
       "reward": { "gp": 20, "xp": "moderate" },
       "levels": [1, 10],
       "start_trigger": "wendel_lie_uncovered",
@@ -51,6 +52,7 @@
       "arc_id": "side_undertakers_ledger",
       "name": "The Undertaker's Ledger",
       "kind": "side",
+      "zone": "z_01_proper",
       "reward": { "gp": 10, "xp": "minor" },
       "levels": [1, 10],
       "start_trigger": "item_acquired_harrow_ledger",
@@ -71,6 +73,7 @@
       "arc_id": "side_archivists_secret",
       "name": "The Archivist's Secret",
       "kind": "side",
+      "zone": "z_04_palace_district",
       "reward": { "gp": 500, "xp": "moderate" },
       "levels": [11, 20],
       "start_trigger": "hale_lie_uncovered",
@@ -80,6 +83,122 @@
           "id": 2,
           "task": "Settle things at Thornhaven",
           "condition": "boss_defeated_malachai_vex"
+        }
+      ]
+    },
+    {
+      "arc_id": "side_names_for_the_hollow",
+      "name": "Names for the Hollow",
+      "kind": "side",
+      "zone": "z_02_whisperwood",
+      "reward": { "gp": 15, "xp": "moderate" },
+      "levels": [1, 10],
+      "start_trigger": "item_acquired_name_tokens",
+      "objectives": [
+        { "id": 1, "task": "Take the names to Brother Aldus", "condition": "aldus_took_the_names" }
+      ]
+    },
+    {
+      "arc_id": "side_scarecrow_walks",
+      "name": "The Scarecrow Walks",
+      "kind": "side",
+      "zone": "z_03_ravencrest",
+      "reward": { "gp": 15, "xp": "moderate" },
+      "levels": [1, 10],
+      "start_trigger": "marta_told_of_the_scarecrow",
+      "objectives": [
+        { "id": 1, "task": "Find what walked off the pole", "condition": "scarecrow_burned" },
+        { "id": 2, "task": "Tell the Whitmores it is done", "condition": "marta_scarecrow_settled" }
+      ]
+    },
+    {
+      "arc_id": "side_stones_on_the_rope",
+      "name": "Stones on the Rope",
+      "kind": "side",
+      "zone": "z_07_mere_road",
+      "reward": { "gp": 25, "xp": "moderate" },
+      "levels": [1, 10],
+      "start_trigger": "item_acquired_drowning_stone",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Show the stone to someone who would know the mark",
+          "condition": "thorne_knew_the_stone"
+        },
+        {
+          "id": 2,
+          "task": "Ask Brother Aldus to say the words for the drowned",
+          "condition": "aldus_blessed_the_drowned"
+        }
+      ]
+    },
+    {
+      "arc_id": "side_lost_shift",
+      "name": "The Lost Shift",
+      "kind": "side",
+      "zone": "z_05_bloodstone_mines",
+      "reward": { "gp": 600, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "brask_asked_after_the_shift",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find the last shift in the deep workings",
+          "condition": "freed_the_lost_shift"
+        },
+        {
+          "id": 2,
+          "task": "Bring their tallies up to Foreman Brask",
+          "condition": "brask_given_the_tallies"
+        }
+      ]
+    },
+    {
+      "arc_id": "side_families_in_the_gatehouse",
+      "name": "The Families in the Gatehouse",
+      "kind": "side",
+      "zone": "z_06_thornhaven",
+      "reward": { "gp": 900, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "enter_TH_001",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Break the watch on the gatehouse",
+          "condition": "thornhaven_watch_broken"
+        },
+        { "id": 2, "task": "Open the gatehouse", "condition": "freed_the_families" }
+      ]
+    },
+    {
+      "arc_id": "side_readers_names",
+      "name": "The Readers' Names",
+      "kind": "side",
+      "zone": "z_08_under_archive",
+      "reward": { "gp": 500, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "item_acquired_readers_daybook",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Give the day-book to Master Hale",
+          "condition": "hale_given_the_daybook"
+        }
+      ]
+    },
+    {
+      "arc_id": "side_price_on_your_heads",
+      "name": "A Price on Your Heads",
+      "kind": "side",
+      "reward": { "gp": 150, "xp": "major" },
+      "levels": [1, 20],
+      "start_trigger": "hunted_first",
+      "objectives": [
+        { "id": 1, "task": "Survive three hunts", "condition": "hunt_survived_3" },
+        {
+          "id": 2,
+          "task": "Find out from Sal Mercy who is paying",
+          "condition": "sal_named_the_broker"
         }
       ]
     }

@@ -230,6 +230,78 @@
       ]
     },
     {
+      "creature_id": "c_ravencrest_scarecrow",
+      "name": "The Ravencrest Scarecrow",
+      "level": 2,
+      "description": "Marta's scarecrow, down off its pole and three fields from where it was put: a turnip head gone soft, a coat that was her father's, and a child's ribbon round one wrist. It stands with its arms out, as though it were still keeping birds off something.",
+      "ac": 17,
+      "hp": 30,
+      "perception": 8,
+      "fortitude": 11,
+      "reflex": 5,
+      "will": 8,
+      "speed": 20,
+      "traits": ["construct", "shadow"],
+      "attacks": [
+        {
+          "name": "straw-stuffed grip",
+          "bonus": 11,
+          "damage": "1d10+4",
+          "damage_type": "B",
+          "reach": "engaged"
+        }
+      ],
+      "specials": [
+        "Burns. It has stood in the rain for years, and it burns anyway."
+      ]
+    },
+    {
+      "creature_id": "c_red_veined_miner",
+      "name": "Red-Veined Miner",
+      "level": 12,
+      "description": "Nine went down on the last shift. What is left of them is still down here, still working, with the red grain of the stone grown up through their arms like ivy up a wall. They do not stop swinging when you speak to them.",
+      "ac": 30,
+      "hp": 269,
+      "perception": 22,
+      "fortitude": 25,
+      "reflex": 19,
+      "will": 22,
+      "speed": 20,
+      "traits": ["human", "bloodstone"],
+      "attacks": [
+        {
+          "name": "miner's pick",
+          "bonus": 26,
+          "damage": "3d10+14",
+          "damage_type": "P",
+          "reach": "engaged"
+        }
+      ],
+      "specials": [
+        "Keeps the rhythm of a working shift, and strikes on the beat."
+      ]
+    },
+    {
+      "creature_id": "c_thornhaven_warden",
+      "name": "Thornhaven Gate-Warden",
+      "level": 13,
+      "description": "Malachai's household guard, in red-lacquered plate with the Vex crest filed off, and a halberd each. They are guarding the gatehouse from the outside, and its door from the inside, which tells you what it is for.",
+      "ac": 33,
+      "hp": 235,
+      "perception": 23,
+      "fortitude": 26,
+      "reflex": 23,
+      "will": 20,
+      "speed": 25,
+      "traits": ["human", "covenant"],
+      "attacks": [
+        { "name": "halberd", "bonus": 27, "damage": "3d10+16", "damage_type": "S", "reach": "near" }
+      ],
+      "specials": [
+        "Holds the gatehouse door rather than give chase."
+      ]
+    },
+    {
       "creature_id": "c_hunt_copper_rat",
       "name": "Copper-Tongue Rat",
       "level": 0,
@@ -698,6 +770,38 @@
       "ambush": true,
       "victory_flags": ["cleared_false_seal"],
       "coin": "8d20+250"
+    },
+    {
+      "encounter_id": "e_oak_grove_scarecrow",
+      "location": "RF_002_OakGrove",
+      "name": "Still Keeping Watch",
+      "description": "In the middle of the oak ring, where no field has ever been, a scarecrow stands with its arms out. It was not here before. Its head turns to follow you.",
+      "creatures": ["c_ravencrest_scarecrow"],
+      "start_zone": "near",
+      "requires": ["marta_told_of_the_scarecrow"],
+      "victory_flags": ["scarecrow_burned"],
+      "coin": "2d6+4"
+    },
+    {
+      "encounter_id": "e_lost_shift",
+      "location": "BM_002_DeepMine",
+      "name": "The Last Shift",
+      "description": "Down past the last lamp, picks are ringing in a steady rhythm, the way they would at the start of a shift. Two figures are working the red face with their backs to you. The tally-tokens on their belts catch the light.",
+      "creatures": ["c_red_veined_miner", "c_red_veined_miner"],
+      "start_zone": "near",
+      "requires": ["brask_asked_after_the_shift"],
+      "victory_flags": ["freed_the_lost_shift"],
+      "coin": "6d20+300"
+    },
+    {
+      "encounter_id": "e_thornhaven_watch",
+      "location": "TH_001_Gates",
+      "name": "The Gatehouse Watch",
+      "description": "Two gate-wardens stand in front of the gatehouse door, not the gate. Behind the door, very quietly, someone is crying, and someone else is telling them to hush.",
+      "creatures": ["c_thornhaven_warden", "c_thornhaven_warden"],
+      "start_zone": "near",
+      "victory_flags": ["thornhaven_watch_broken"],
+      "coin": "8d20+400"
     }
   ]
 }

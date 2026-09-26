@@ -134,6 +134,19 @@
         "every": 8,
         "away_chance": 30
       }
+    },
+    {
+      "npc_id": "npc_011_brask",
+      "name": "Foreman Ruel Brask",
+      "location": "BM_001_Entrance",
+      "tier": 2,
+      "appearance": "A heavyset man in a foreman's leather apron sits on an upturned ore cart by the tally board, turning a brass token over and over in his fingers.",
+      "greeting": "If you're from the Crown, the answer's still no. If you're not, mind the shaft.",
+      "keywords": {
+        "shift": "Nine went down on the last shift. None came up. I have their tokens out, and nobody to give them back to me.",
+        "tally": "A token going down, the token back coming up. That board has been wrong for a month.",
+        "deep workings": "Crown's men put a guard on the bottom. Then the guard stopped coming up and all."
+      }
     }
   ]
 }

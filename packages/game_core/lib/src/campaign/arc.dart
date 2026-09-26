@@ -39,6 +39,7 @@ class CampaignArc {
     this.worldStateChanges = const [],
     this.isSide = false,
     this.reward,
+    this.zone,
   });
 
   final String id;
@@ -60,6 +61,10 @@ class CampaignArc {
 
   /// What finishing it pays, once.
   final Payout? reward;
+
+  /// The part of the map it is set in, or null for one that follows the
+  /// party wherever they go.
+  final String? zone;
 
   /// Set the moment this arc is finished, which is what its reward is paid on.
   String get completionFlag => 'completed_$id';

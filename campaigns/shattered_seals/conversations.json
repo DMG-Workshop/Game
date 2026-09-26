@@ -108,6 +108,20 @@
               }
             },
             {
+              "id": "show_stone",
+              "label": "Show him the drowning-stone",
+              "say": "This came up out of the mere, tied to somebody's ankle.",
+              "outcome": {
+                "text": "\"That's one of ours.\" He turns it to the light, and his thumb finds the mark without looking for it: a tower over three lines of water. \"The Watch's mark. They're drowning-stones, from when Millhaven did its hanging in the mere, a hundred years back. There's a cellar full of them under this hall, and nobody's opened it since my grandfather.\" He goes to look at the cellar door. He looks at the lock for a long time, and comes back without saying anything, and then says: \"Somebody's been in.\"",
+                "goTo": "thorne_case",
+                "setFlags": ["thorne_knew_the_stone"]
+              },
+              "requires": {
+                "flags": ["item_acquired_drowning_stone"],
+                "notFlags": ["thorne_knew_the_stone"]
+              }
+            },
+            {
               "id": "ask_who",
               "label": "Ask who else might know something",
               "say": "Who else should we talk to?",
@@ -253,6 +267,20 @@
               }
             },
             {
+              "id": "show_stone",
+              "label": "Show him the drowning-stone",
+              "say": "This came up out of the mere, tied to somebody's ankle.",
+              "outcome": {
+                "text": "\"That's one of ours.\" He turns it to the light, and his thumb finds the mark without looking for it: a tower over three lines of water. \"The Watch's mark. They're drowning-stones, from when Millhaven did its hanging in the mere, a hundred years back. There's a cellar full of them under this hall, and nobody's opened it since my grandfather.\" He goes to look at the cellar door. He looks at the lock for a long time, and comes back without saying anything, and then says: \"Somebody's been in.\"",
+                "goTo": "thorne_after",
+                "setFlags": ["thorne_knew_the_stone"]
+              },
+              "requires": {
+                "flags": ["item_acquired_drowning_stone"],
+                "notFlags": ["thorne_knew_the_stone"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "say": "Look after them, Captain.",
@@ -360,6 +388,33 @@
               },
               "requires": {
                 "notFlags": ["marta_asked_strangers"]
+              }
+            },
+            {
+              "id": "ask_scarecrow",
+              "label": "Ask about the empty pole in the field",
+              "say": "Your scarecrow is gone off its pole.",
+              "outcome": {
+                "text": "\"Is it?\" She looks past you at the field, and her face goes very still. \"It went the night she did. I thought somebody'd had it for the coat. It was my father's coat.\" A long pause. \"Elara tied her ribbon on its wrist. So it would keep the crows off her.\"",
+                "goTo": "marta_ask",
+                "setFlags": ["marta_told_of_the_scarecrow"]
+              },
+              "requires": {
+                "notFlags": ["marta_told_of_the_scarecrow"]
+              }
+            },
+            {
+              "id": "scarecrow_done",
+              "label": "Tell her about the scarecrow",
+              "say": "It was standing in the oak ring. It's ash now.",
+              "outcome": {
+                "text": "Marta nods for a long time. \"Good,\" she says. \"Good.\" And then, because she is who she is: \"Did you save the coat?\" You did not. She laughs, which surprises both of you.",
+                "goTo": "marta_ask",
+                "setFlags": ["marta_scarecrow_settled"]
+              },
+              "requires": {
+                "flags": ["scarecrow_burned"],
+                "notFlags": ["marta_scarecrow_settled"]
               }
             },
             {
@@ -477,6 +532,33 @@
               },
               "requires": {
                 "notFlags": ["elara_spoke_of_us"]
+              }
+            },
+            {
+              "id": "elara_scarecrow",
+              "label": "Ask Elara what she keeps looking at",
+              "say": "What are you watching, Elara?",
+              "outcome": {
+                "text": "\"The scarecrow.\" She points up at the oak ring on the rise. \"It's up there now. It waves at me.\" She does not sound frightened, which is worse. \"It's still got my ribbon.\"",
+                "goTo": "marta_home",
+                "setFlags": ["marta_told_of_the_scarecrow"]
+              },
+              "requires": {
+                "notFlags": ["marta_told_of_the_scarecrow"]
+              }
+            },
+            {
+              "id": "scarecrow_done",
+              "label": "Tell Elara about the scarecrow",
+              "say": "The scarecrow's gone, Elara. We burned it.",
+              "outcome": {
+                "text": "Elara thinks about this seriously. \"Did it mind?\" You tell her you don't think so. \"Good. It was only trying to keep the crows off.\" She goes back to swinging her feet.",
+                "goTo": "marta_home",
+                "setFlags": ["marta_scarecrow_settled"]
+              },
+              "requires": {
+                "flags": ["scarecrow_burned"],
+                "notFlags": ["marta_scarecrow_settled"]
               }
             },
             {
@@ -617,6 +699,34 @@
               }
             },
             {
+              "id": "give_names",
+              "label": "Give him the name-tokens",
+              "say": "These were on the thralls in the wood. Door-tokens. Their names.",
+              "outcome": {
+                "text": "He takes the twine in both hands and reads every token, moving his lips. \"Tessaly. Orrin. Beck. Hal.\" He stops at the fifth. \"I buried four of these. The rest I've been waiting for.\" He hangs them on the altar rail one at a time. \"They'll have their names said, at least. Which is more than whoever took these off their doors meant for them.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["aldus_took_the_names"]
+              },
+              "requires": {
+                "flags": ["item_acquired_name_tokens"],
+                "notFlags": ["aldus_took_the_names"]
+              }
+            },
+            {
+              "id": "bless_drowned",
+              "label": "Ask him to say the words for the drowned",
+              "say": "The drowned in the mere. The Captain says the Watch put them there. Will you say the words for them?",
+              "outcome": {
+                "text": "\"For hanged men?\" Aldus is quiet. \"Nobody said them at the time, I expect. That was rather the point of the mere.\" He takes his book down from the shelf, and his coat from the peg. \"Tonight. Somebody should walk out on that causeway and say them, and it had better be somebody who isn't frightened of what comes up.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["aldus_blessed_the_drowned"]
+              },
+              "requires": {
+                "flags": ["thorne_knew_the_stone"],
+                "notFlags": ["aldus_blessed_the_drowned"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "say": "Keep a lamp lit, Brother.",
@@ -661,6 +771,34 @@
               },
               "requires": {
                 "notFlags": ["aldus_warned_of_teacher"]
+              }
+            },
+            {
+              "id": "give_names",
+              "label": "Give him the name-tokens",
+              "say": "These were on the thralls in the wood. Door-tokens. Their names.",
+              "outcome": {
+                "text": "He takes the twine in both hands and reads every token, moving his lips. \"Tessaly. Orrin. Beck. Hal.\" He stops at the fifth. \"I buried four of these. The rest I've been waiting for.\" He hangs them on the altar rail one at a time. \"They'll have their names said, at least. Which is more than whoever took these off their doors meant for them.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["aldus_took_the_names"]
+              },
+              "requires": {
+                "flags": ["item_acquired_name_tokens"],
+                "notFlags": ["aldus_took_the_names"]
+              }
+            },
+            {
+              "id": "bless_drowned",
+              "label": "Ask him to say the words for the drowned",
+              "say": "The drowned in the mere. The Captain says the Watch put them there. Will you say the words for them?",
+              "outcome": {
+                "text": "\"For hanged men?\" Aldus is quiet. \"Nobody said them at the time, I expect. That was rather the point of the mere.\" He takes his book down from the shelf, and his coat from the peg. \"Tonight. Somebody should walk out on that causeway and say them, and it had better be somebody who isn't frightened of what comes up.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["aldus_blessed_the_drowned"]
+              },
+              "requires": {
+                "flags": ["thorne_knew_the_stone"],
+                "notFlags": ["aldus_blessed_the_drowned"]
               }
             },
             {
@@ -1546,6 +1684,20 @@
               }
             },
             {
+              "id": "give_daybook",
+              "label": "Give him the Reader's day-book",
+              "say": "This was on one of the things on your stair. We think it was his.",
+              "outcome": {
+                "text": "\"Pell,\" he says. He opens it at the flyleaf and reads the names crossed out there, one after another, in an ink he must have bought himself. \"I told their families the provinces. I was told to say the provinces.\" He closes it very gently. \"I'll write to them. Properly, this time. Every one.\"",
+                "goTo": "hale_daybook_bye",
+                "setFlags": ["hale_given_the_daybook"]
+              },
+              "requires": {
+                "flags": ["item_acquired_readers_daybook"],
+                "notFlags": ["hale_given_the_daybook"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "outcome": { "text": "\"Quietly, please,\" he says, to nobody.", "goTo": "hale_bye" }
@@ -1668,6 +1820,20 @@
               }
             },
             {
+              "id": "give_daybook",
+              "label": "Give him the Reader's day-book",
+              "say": "This was on one of the things on your stair. We think it was his.",
+              "outcome": {
+                "text": "\"Pell,\" he says. He opens it at the flyleaf and reads the names crossed out there, one after another, in an ink he must have bought himself. \"I told their families the provinces. I was told to say the provinces.\" He closes it very gently. \"I'll write to them. Properly, this time. Every one.\"",
+                "goTo": "hale_daybook_bye",
+                "setFlags": ["hale_given_the_daybook"]
+              },
+              "requires": {
+                "flags": ["item_acquired_readers_daybook"],
+                "notFlags": ["hale_given_the_daybook"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave him",
               "outcome": { "text": "He does not look up as you go.", "goTo": "hale_bye" }
@@ -1722,6 +1888,20 @@
               }
             },
             {
+              "id": "give_daybook",
+              "label": "Give him the Reader's day-book",
+              "say": "This was on one of the things on your stair. We think it was his.",
+              "outcome": {
+                "text": "\"Pell,\" he says. He opens it at the flyleaf and reads the names crossed out there, one after another, in an ink he must have bought himself. \"I told their families the provinces. I was told to say the provinces.\" He closes it very gently. \"I'll write to them. Properly, this time. Every one.\"",
+                "goTo": "hale_daybook_bye",
+                "setFlags": ["hale_given_the_daybook"]
+              },
+              "requires": {
+                "flags": ["item_acquired_readers_daybook"],
+                "notFlags": ["hale_given_the_daybook"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave him",
               "outcome": { "text": "He does not look up as you go.", "goTo": "hale_bye" }
@@ -1729,16 +1909,62 @@
           ]
         },
         {
+          "id": "hale_daybook_bye",
+          "title": "Master Archivist Oswin Hale",
+          "body": "When you look back from the door, Hale has a fresh sheet in front of him and has not yet written a word.",
+          "isEnding": true
+        },
+        {
           "id": "hale_ashamed",
           "title": "Master Archivist Oswin Hale",
           "body": "Hale won't look up from the catalogue. \"Find her,\" he says, to the page. \"Please.\"",
-          "isEnding": true
+          "options": [
+            {
+              "id": "give_daybook",
+              "label": "Give him the Reader's day-book",
+              "say": "This was on one of the things on your stair. We think it was his.",
+              "outcome": {
+                "text": "\"Pell,\" he says. He opens it at the flyleaf and reads the names crossed out there, one after another, in an ink he must have bought himself. \"I told their families the provinces. I was told to say the provinces.\" He closes it very gently. \"I'll write to them. Properly, this time. Every one.\"",
+                "goTo": "hale_daybook_bye",
+                "setFlags": ["hale_given_the_daybook"]
+              },
+              "requires": {
+                "flags": ["item_acquired_readers_daybook"],
+                "notFlags": ["hale_given_the_daybook"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Go and find her",
+              "outcome": { "text": "He does not watch you go.", "goTo": "hale_bye" }
+            }
+          ]
         },
         {
           "id": "hale_home",
           "title": "Master Archivist Oswin Hale",
           "body": "Hale is not at the catalogue desk. A girl of about eleven is sitting in his chair with her feet not touching the floor, reading, and when you come in she says, without looking up, \"Quietly, please.\"",
-          "isEnding": true
+          "options": [
+            {
+              "id": "give_daybook",
+              "label": "Give Hale the Reader's day-book",
+              "say": "This was on one of the things on your stair. We think it was his.",
+              "outcome": {
+                "text": "\"Father,\" the girl calls, still without looking up, and Hale comes out of the stacks wiping his hands. He sees the binding and stops. \"Pell,\" he says. He reads the names crossed out on the flyleaf, one after another. \"I told their families the provinces.\" His daughter turns a page. \"I'll write to them. Properly, this time.\"",
+                "goTo": "hale_daybook_bye",
+                "setFlags": ["hale_given_the_daybook"]
+              },
+              "requires": {
+                "flags": ["item_acquired_readers_daybook"],
+                "notFlags": ["hale_given_the_daybook"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave them be",
+              "outcome": { "text": "Somewhere in the stacks, Hale is humming.", "goTo": "hale_bye" }
+            }
+          ]
         },
         {
           "id": "hale_bye",
@@ -2161,6 +2387,20 @@
               }
             },
             {
+              "id": "ask_bounty",
+              "label": "Ask who is sending things after you",
+              "say": "Something keeps finding us on the road. Something that knows what we carry.",
+              "outcome": {
+                "text": "\"Oh, you're on the board.\" She says it the way you would tell somebody their collar was turned up. \"Counting-house on Tithe Street in the capital. The Covenant keeps a book of what everybody's worth, and when a name in it gets heavy enough, they post it with a figure next to it. Every cutpurse and worse from here to the mines reads that board.\" She looks at your packs. \"Spend it, give it away, or get used to company.\"",
+                "goTo": "sal_talk",
+                "setFlags": ["sal_named_the_broker"]
+              },
+              "requires": {
+                "flags": ["hunted_first"],
+                "notFlags": ["sal_named_the_broker"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "say": "Safe roads.",
@@ -2190,6 +2430,146 @@
           "id": "sal_bye",
           "title": "Sal Mercy",
           "body": "The mule's bell clanks as she shifts her weight.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_011_brask",
+      "entries": [
+        {
+          "scene": "brask_home",
+          "requires": ["brask_given_the_tallies"]
+        },
+        {
+          "scene": "brask_tallies",
+          "requires": ["item_acquired_shift_tallies"]
+        },
+        {
+          "scene": "brask_again",
+          "requires": ["met_brask"]
+        },
+        { "scene": "brask_open" }
+      ],
+      "scenes": [
+        {
+          "id": "brask_open",
+          "title": "Foreman Ruel Brask",
+          "body": "The foreman looks up from the brass token he is turning over. \"If you're from the Crown, the answer's still no. If you're not, mind the shaft. It's further down than it looks.\"",
+          "options": [
+            {
+              "id": "ask_board",
+              "label": "Ask about the tally board",
+              "say": "Your tally board doesn't add up.",
+              "outcome": {
+                "text": "\"Nine went down on the last shift.\" He does not look at the board. He does not need to. \"A token each at the top of the shaft, and the token back at the end, and that's how I know who's still below. I've had nine tokens out for a month.\" He turns the one in his fingers. \"This one's mine. I was sick that day.\"",
+                "goTo": "brask_talk",
+                "setFlags": ["met_brask", "brask_asked_after_the_shift"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Mind the shaft",
+              "outcome": {
+                "text": "\"Most don't,\" he says.",
+                "goTo": "brask_bye",
+                "setFlags": ["met_brask"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "brask_talk",
+          "title": "Foreman Ruel Brask",
+          "body": "Brask waits, turning the token.",
+          "options": [
+            {
+              "id": "ask_board",
+              "label": "Ask about the shift",
+              "say": "Tell us about the shift.",
+              "outcome": {
+                "text": "\"Nine men. A token each. None of them back.\"",
+                "goTo": "brask_talk",
+                "setFlags": ["brask_asked_after_the_shift"]
+              },
+              "requires": {
+                "notFlags": ["brask_asked_after_the_shift"]
+              }
+            },
+            {
+              "id": "ask_down",
+              "label": "Ask what is down there",
+              "say": "What's down in the deep workings?",
+              "outcome": {
+                "text": "\"Picks. I can hear them, nights, when the winch is still. Same rhythm as a working shift.\" He finally puts the token away. \"Crown's men put a guard on the deep workings, on account of something at the bottom they wanted kept. Then the guard stopped coming up and all.\"",
+                "goTo": "brask_talk",
+                "setFlags": ["brask_heard_the_picks"]
+              },
+              "requires": {
+                "notFlags": ["brask_heard_the_picks"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "say": "We'll look.",
+              "outcome": {
+                "text": "\"If you go down,\" he says, \"bring me their tokens. I'll not wipe that board till I have them.\"",
+                "goTo": "brask_bye"
+              }
+            }
+          ]
+        },
+        {
+          "id": "brask_again",
+          "title": "Foreman Ruel Brask",
+          "body": "Brask is on the ore cart by the board.",
+          "options": [
+            {
+              "id": "talk",
+              "label": "Talk to him",
+              "say": "A word, Foreman.",
+              "outcome": { "text": "\"Well?\"", "goTo": "brask_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "He goes back to the token.", "goTo": "brask_bye" }
+            }
+          ]
+        },
+        {
+          "id": "brask_tallies",
+          "title": "Foreman Ruel Brask",
+          "body": "Brask sees the tokens in your hand, and stands up off the cart.",
+          "options": [
+            {
+              "id": "give",
+              "label": "Give him the tallies",
+              "say": "They were still working when we found them. They aren't now.",
+              "outcome": {
+                "text": "He counts them. He counts them again, the way you did. Then he goes to the board with a rag and wipes the chalk off it, line by line, and hangs the nine tokens on their nine hooks. \"Paid off,\" he says, to the board. \"Shift's done.\"",
+                "goTo": "brask_bye",
+                "setFlags": ["brask_given_the_tallies"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Not yet",
+              "outcome": { "text": "He sits back down, slowly.", "goTo": "brask_bye" }
+            }
+          ]
+        },
+        {
+          "id": "brask_home",
+          "title": "Foreman Ruel Brask",
+          "body": "The tally board is clean, and every hook on it is full. Brask nods to you and goes on with his work.",
+          "isEnding": true
+        },
+        {
+          "id": "brask_bye",
+          "title": "Foreman Ruel Brask",
+          "body": "The winch creaks in the wind above the shaft.",
           "isEnding": true
         }
       ]

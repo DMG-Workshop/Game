@@ -10,28 +10,28 @@
     },
     {
       "name": "Noticed",
-      "from_percent": 100,
+      "from_percent": 125,
       "threat": "low",
       "chance": 4,
       "description": "People have started to look at your packs before they look at your faces."
     },
     {
       "name": "Marked",
-      "from_percent": 150,
+      "from_percent": 200,
       "threat": "moderate",
       "chance": 7,
       "description": "Your names are being said in places you have not been, with a sum after them."
     },
     {
       "name": "Hunted",
-      "from_percent": 250,
+      "from_percent": 300,
       "threat": "severe",
       "chance": 10,
       "description": "Things that should not be able to count are following what you are worth."
     },
     {
       "name": "Infamous",
-      "from_percent": 400,
+      "from_percent": 500,
       "threat": "extreme",
       "chance": 14,
       "description": "Everything in Valorheim with teeth and a taste for gold knows where you are."

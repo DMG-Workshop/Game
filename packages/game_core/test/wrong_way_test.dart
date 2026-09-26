@@ -175,7 +175,12 @@ void main() {
         ],
         ..._campaign.economy.rewardFlags,
       };
-      expect(referenced.difference(_producible(_campaign)), isEmpty);
+      // Being hunted sets flags of its own, counted rather than listed.
+      expect(
+          referenced
+              .difference(_producible(_campaign))
+              .where((f) => !_campaign.hunts.producesFlag(f)),
+          isEmpty);
     });
 
     test("the court's audience can complete its objective", () {

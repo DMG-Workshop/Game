@@ -674,6 +674,7 @@ class CampaignLoader {
         ],
         worldStateChanges: _strings(raw['world_state_changes_on_completion']),
         isSide: _optional(raw['kind'])?.toLowerCase() == 'side',
+        zone: _optional(raw['zone']),
         reward: raw['reward'] is Map
             ? _readPayout((raw['reward'] as Map).cast<String, Object?>(),
                 'the reward for "$id"')

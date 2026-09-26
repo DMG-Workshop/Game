@@ -273,17 +273,20 @@ void main() {
     test('climbs with wealth', () {
       final hunts = _campaign.hunts;
       expect(hunts.tierFor(0).name, 'Unremarked');
-      expect(hunts.tierFor(99).name, 'Unremarked');
-      expect(hunts.tierFor(100).name, 'Noticed');
-      expect(hunts.tierFor(150).name, 'Marked');
-      expect(hunts.tierFor(250).name, 'Hunted');
+      // A party at what it is expected to be worth has not been noticed:
+      // a level 1 character arrives with exactly that much.
+      expect(hunts.tierFor(100).name, 'Unremarked');
+      expect(hunts.tierFor(124).name, 'Unremarked');
+      expect(hunts.tierFor(125).name, 'Noticed');
+      expect(hunts.tierFor(200).name, 'Marked');
+      expect(hunts.tierFor(300).name, 'Hunted');
       expect(hunts.tierFor(5000).name, 'Infamous');
     });
 
     test('richer brings a higher-level hunter', () {
-      // Korash is level 6 and alone, so he is expected to be worth 450 gp.
+      // Korash is level 6 and alone, so is expected to be worth 450 gp.
       final levels = [
-        for (final gold in [100, 500, 700, 1200, 1900])
+        for (final gold in [450, 600, 900, 1400, 2300])
           _worth(gold).notoriety.hunterLevel,
       ];
       expect(levels, [null, 3, 4, 5, 6]);
@@ -292,13 +295,13 @@ void main() {
     test('and so does a higher party level, at the same wealth', () {
       final low = Notoriety(
         wealth: const Wealth(coin: 0, gear: 0, expected: 1),
-        tier: _campaign.hunts.tierFor(200),
+        tier: _campaign.hunts.tierFor(250),
         partyLevel: 3,
         partySize: 4,
       );
       final high = Notoriety(
         wealth: const Wealth(coin: 0, gear: 0, expected: 1),
-        tier: _campaign.hunts.tierFor(200),
+        tier: _campaign.hunts.tierFor(250),
         partyLevel: 15,
         partySize: 4,
       );
@@ -366,7 +369,7 @@ void main() {
 
   group('being hunted', () {
     test('a party worth no more than expected is never found', () {
-      final world = _worth(400);
+      final world = _worth(450);
       expect(_walkUntilHunted(world, limit: 500), isNull);
       expect(world.pursuer, isNull);
     });
@@ -413,7 +416,7 @@ void main() {
     test('beating a hunter pays like a fight, and counts', () {
       for (var seed = 1; seed < 40; seed++) {
         // Noticed: a low threat, so Korash should have the better of it.
-        final world = _worth(480, seed: seed);
+        final world = _worth(600, seed: seed);
         if (_walkUntilHunted(world) == null) continue;
         final fight = _fightOut(world.beginEncounter());
         if (fight.outcome != EncounterOutcome.victory) continue;
