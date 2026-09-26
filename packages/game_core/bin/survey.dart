@@ -46,6 +46,7 @@ void main(List<String> args) {
       itemsJson: read('world_items.json'),
       conversationsJson: read('conversations.json'),
       economyJson: read('economy.json'),
+      huntJson: read('hunt.json'),
     );
   } on CampaignFormatException catch (e) {
     stderr.writeln('Could not read the campaign: ${e.message}');
@@ -66,6 +67,7 @@ void main(List<String> args) {
         '${campaign.arcs.length} arcs, '
         '${campaign.bestiary.creatures.length} creatures, '
         '${campaign.bestiary.encounters.length} fights, '
+        '${campaign.hunts.hunters.length} hunters, '
         '${campaign.items.length} objects')
     ..writeln('=' * 68)
     ..writeln()

@@ -20,6 +20,7 @@ Campaign loadShatteredSeals() => const CampaignLoader().load(
       itemsJson: _read('world_items.json'),
       conversationsJson: _read('conversations.json'),
       economyJson: _read('economy.json'),
+      huntJson: _read('hunt.json'),
     );
 
 void main() {

@@ -83,6 +83,7 @@ Future<void> main(List<String> args) async {
       itemsJson: read('world_items.json'),
       conversationsJson: read('conversations.json'),
       economyJson: read('economy.json'),
+      huntJson: read('hunt.json'),
     );
     for (final path in characterPaths) {
       final file = File(path);
@@ -122,6 +123,9 @@ Future<void> main(List<String> args) async {
         .where((f) => f.isNotEmpty)
         .toSet(),
   );
+  // Extra gold to start with, for trying out what being rich brings.
+  final gold = int.tryParse(options['gold'] ?? '') ?? 0;
+  if (gold > 0) session.inventory.earn(gold * 100);
 
   stdout
     ..writeln('=' * 70)
@@ -169,6 +173,7 @@ Future<void> main(List<String> args) async {
     final xpBefore = {
       for (final a in session.actors) a.id: session.experience.xpOf(a.id),
     };
+    final tierBefore = session.notoriety.tier;
     final keepGoing = _handle(session, line, nextCommand);
     final gained = session.inventory.coin - coinBefore;
     if (gained > 0 && !line.toLowerCase().startsWith('sell')) {
@@ -176,6 +181,7 @@ Future<void> main(List<String> args) async {
           '${formatCoin(session.inventory.coin)}]');
     }
     _announceExperience(session, xpBefore);
+    _announceNotoriety(session, tierBefore);
     if (!keepGoing) break;
   }
 
@@ -301,7 +307,25 @@ bool _handle(WorldSession session, String line,
     case 'purse':
     case 'coin':
     case 'money':
-      stdout.writeln('The party has ${formatCoin(session.inventory.coin)}.');
+      stdout.writeln('The party has ${formatCoin(session.inventory.coin)}, '
+          'and is worth ${formatCoin(session.wealth.total)} in all.');
+      return true;
+
+    case 'wealth':
+    case 'worth':
+    case 'notoriety':
+      _renderWealth(session);
+      return true;
+
+    case 'ledger':
+    case 'found':
+      _renderLedger(session);
+      return true;
+
+    case 'xp':
+    case 'experience':
+    case 'level':
+      _renderExperience(session);
       return true;
 
     case 'sheet':
@@ -354,6 +378,16 @@ bool _go(WorldSession session, String direction,
   final ambush = result.ambush;
   if (ambush != null) {
     return _fight(session, nextCommand, encounterId: ambush.id);
+  }
+
+  // Nor is something that has followed the party's money this far.
+  final hunt = result.hunt;
+  final roll = result.huntRoll;
+  if (hunt != null) {
+    stdout.writeln('\n  [The hunt: d100(${roll?.die}) against '
+        '${roll?.chance}% — something has your scent]');
+    stdout.writeln('\n${_wrap(hunt.description)}');
+    return _fight(session, nextCommand, encounterId: hunt.id);
   }
   return true;
 }
@@ -586,9 +620,7 @@ void _renderSheet(WorldSession session, String who) {
     stdout.writeln('  HP ${actor.stats.maxHp}  '
         'Perception ${actor.stats.perception.formatted}  '
         'Class DC ${actor.stats.classDc}');
-    final xp = session.experience.xpOf(actor.id);
-    stdout.writeln('  XP $xp/$xpToLevel'
-        '${xp >= xpToLevel ? '  — ready to level up in Pathbuilder' : ''}');
+    stdout.writeln('  ${_xpLine(session.experience.progressOf(actor.id))}');
   } on InvalidMoveException catch (e) {
     stdout.writeln(e.message);
   }
@@ -660,6 +692,95 @@ bool _unequip(WorldSession session, String rest) {
 
 String _signed(int value) => value >= 0 ? '+$value' : '$value';
 
+/// What the party is worth, against what is expected of it, and what that
+/// brings down on them.
+void _renderWealth(WorldSession session) {
+  final worth = session.wealth;
+  final pack = session.inventory;
+  final standing = session.notoriety;
+  stdout
+    ..writeln('\nThe party is worth ${formatCoin(worth.total)}.')
+    ..writeln('  ${'Coin'.padRight(26)} ${formatCoin(worth.coin).padLeft(14)}')
+    ..writeln('  ${'Gear, at what it costs'.padRight(26)} '
+        '${formatCoin(worth.gear).padLeft(14)}');
+  var onPeople = 0;
+  for (final actor in session.actors) {
+    final value = pack.valueOn(actor.id);
+    onPeople += value;
+    if (value == 0) continue;
+    final loadout = pack.loadoutFor(actor.id);
+    final names = [loadout.weapon?.name, loadout.armor?.name].nonNulls;
+    stdout.writeln('    ${actor.name.padRight(24)} '
+        '${formatCoin(value).padLeft(14)}  (${names.join(', ')})');
+  }
+  if (worth.gear - onPeople > 0) {
+    stdout.writeln('    ${'In the pack'.padRight(24)} '
+        '${formatCoin(worth.gear - onPeople).padLeft(14)}');
+  }
+  final size = session.actors.length;
+  stdout
+    ..writeln('\n${_wrap('A party of $size level ${standing.partyLevel} '
+        '${size == 1 ? 'character' : 'characters'} is expected to be worth '
+        '${formatCoin(worth.expected)}. You are at '
+        '${worth.percentOfExpected}% of that.', indent: '  ')}')
+    ..writeln('\nNotoriety: ${standing.tier.name}')
+    ..writeln(_wrap(standing.tier.description, indent: '  '));
+
+  final level = standing.hunterLevel;
+  final threat = standing.tier.threat;
+  if (standing.tier.isHunted && level != null && threat != null) {
+    stdout.writeln(_wrap(
+        'Each step there is a ${standing.tier.chance}% chance something '
+        'finds you. It would come at level $level, which is a threat of '
+        '"${threat.name}" for ${size == 1 ? 'one character' : '$size'}.',
+        indent: '  '));
+  }
+  if (session.huntsSurvived > 0) {
+    stdout.writeln('  Hunters beaten: ${session.huntsSurvived}');
+  }
+  stdout.writeln('');
+  for (final tier in session.campaign.hunts.tiers) {
+    final here = tier.name == standing.tier.name ? '>' : ' ';
+    final brings = tier.isHunted
+        ? '${tier.threat!.name} threat, ${tier.chance}% a step'
+        : 'nothing comes';
+    stdout.writeln('  $here ${tier.name.padRight(12)} '
+        '${'from ${tier.fromPercent}%'.padRight(10)} $brings');
+  }
+}
+
+/// Everything the party has come away with, and where from.
+void _renderLedger(WorldSession session) {
+  final ledger = session.ledger;
+  if (ledger.isEmpty) {
+    stdout.writeln('The party has found nothing yet.');
+    return;
+  }
+  stdout.writeln('\nFound so far: ${formatCoin(ledger.totalCopper)} — '
+      '${formatCoin(ledger.coinCopper)} in coin, and ${ledger.itemCount} '
+      '${ledger.itemCount == 1 ? 'thing' : 'things'} worth '
+      '${formatCoin(ledger.itemCopper)}.\n');
+  for (final entry in ledger.entries) {
+    final what = entry.kind == LootKind.coin
+        ? 'coin'
+        : session.campaign.gear.byId(entry.itemId ?? '')?.name ??
+            entry.itemId ??
+            'something';
+    stdout.writeln('  ${entry.source.padRight(30)} '
+        '${what.padRight(28)} ${formatCoin(entry.copper).padLeft(12)}');
+  }
+}
+
+/// Says so when the party's wealth moves them up, or down, the ladder.
+void _announceNotoriety(WorldSession session, NotorietyTier before) {
+  final now = session.notoriety.tier;
+  if (now.name == before.name) return;
+  final rising = now.fromPercent > before.fromPercent;
+  stdout.writeln('\n  *** ${rising ? 'Word spreads' : 'Word dies down'}: you '
+      'are ${now.name}. ***');
+  stdout.writeln(_wrap(now.description, indent: '  '));
+}
+
 void _announceArcs(WorldSession session) {
   final settled = session.settleArcs();
   for (final arc in settled.completed) {
@@ -678,6 +799,49 @@ String _rewardNote(CampaignArc arc) {
     if (reward.copper > 0) formatCoin(reward.copper),
     if (reward.xp > 0) '${reward.xp} XP',
   ].join(', ')})';
+}
+
+/// One line on where a character stands between level 1 and level 20.
+String _xpLine(XpProgress p) {
+  if (p.isMax) {
+    return 'Level $maxLevel — the top of the track, '
+        '${groupThousands(p.total)} XP in all';
+  }
+  final ready = p.earnedLevel > p.level
+      ? ' — level ${p.earnedLevel} earned; level up in Pathbuilder'
+      : '';
+  return 'XP ${groupThousands(p.xp)}/${groupThousands(xpToLevel)} toward '
+      'level ${p.level + 1} · ${groupThousands(p.total)} of '
+      '${groupThousands(XpProgress.fullTrack)} to level $maxLevel$ready';
+}
+
+/// Every character's place on the track from level 1 to level 20.
+void _renderExperience(WorldSession session) {
+  stdout.writeln('\nExperience: ${groupThousands(xpToLevel)} XP a level, '
+      '${groupThousands(XpProgress.fullTrack)} from level 1 to level '
+      '$maxLevel.');
+  final numbers = [for (var l = 1; l <= maxLevel; l++) '$l'.padLeft(3)];
+  for (final actor in session.actors) {
+    final p = session.experience.progressOf(actor.id);
+    // Filled to the sheet's level; a + for levels earned but not yet taken
+    // in Pathbuilder; a dot for the road still ahead.
+    final marks = [
+      for (var l = 1; l <= maxLevel; l++)
+        (l <= p.level
+                ? '■'
+                : l <= p.earnedLevel
+                    ? '+'
+                    : '·')
+            .padLeft(3),
+    ];
+    stdout
+      ..writeln('\n  ${actor.name} — level ${p.level}')
+      ..writeln('  ${numbers.join()}')
+      ..writeln('  ${marks.join()}')
+      ..writeln(_wrap(_xpLine(p), indent: '    '));
+  }
+  stdout.writeln('\n  (■ reached, + earned and waiting on Pathbuilder, '
+      '· still to come)');
 }
 
 /// Says what XP the last thing earned, and says so loudly for anyone it has
@@ -816,11 +980,15 @@ const _commands = '''
   talk <name>                                     talk to someone properly
   ask <name> about <topic>                        raise a single topic
   quests                                          arc progress
+  xp                                              everyone's XP, level 1 to 20
   inventory (i)                                   what the party is carrying
   list                                            what a shop here is selling
   buy <item> / sell <item>                        trade (you get half back)
   value <item>                                    what a shop would pay
   purse                                           the party's coin
+  wealth                                          what you're worth, and who
+                                                  that brings after you
+  ledger                                          everything found, and where
   sheet [who]                                     AC, Strike, HP as equipped
   equip [who] <item>                              wield or wear something
   unequip [who] weapon|armour                     put it away again
@@ -837,6 +1005,7 @@ usage: walk [options]
   --room=ID          Start somewhere other than the first room
   --hour=N           Start at a given hour (default 8)
   --flags=a,b        Start with these flags already set
+  --gold=N           Start with N more gold, to see who comes for it
   --commands=a,b,c   Play a scripted sequence instead of reading stdin
   --help             Show this message
 
@@ -884,7 +1053,17 @@ bool _fight(
   stdout
     ..writeln('\n${'=' * 70}')
     ..writeln(fight.encounter.name.toUpperCase())
-    ..writeln('=' * 70);
+    ..writeln('=' * 70)
+    ..writeln('\nInitiative (d20 + Perception):');
+  for (final roll in fight.initiativeRolls) {
+    stdout.writeln('  ${roll.combatant.isEnemy ? ' ' : '*'} '
+        '${roll.combatant.name.padRight(26)} '
+        'd20(${roll.die}) ${_signed(roll.modifier)} = ${roll.total}');
+  }
+  if (fight.openingStrikes.isNotEmpty) {
+    stdout.writeln('\nBefore anyone in the party can move:');
+    _narrate(fight.openingStrikes);
+  }
   _renderCombatants(fight);
 
   while (!fight.isOver) {
@@ -961,6 +1140,7 @@ bool _fight(
     case EncounterOutcome.victory:
       stdout.writeln('The fight is over. You are still standing.');
       final flags = session.concludeEncounter(fight);
+      _renderSpoils(fight);
       if (fight.loot.isNotEmpty) {
         stdout.writeln('\nAmong what is left:');
         for (final item in fight.loot) {
@@ -975,8 +1155,16 @@ bool _fight(
       _announceArcs(session);
     case EncounterOutcome.defeat:
       stdout.writeln('The party goes down. Valorheim does not stop for it.');
+      final before = session.inventory.coin;
+      session.concludeEncounter(fight);
+      final taken = before - session.inventory.coin;
+      if (taken > 0) {
+        stdout.writeln('\n  ${fight.enemies.first.name} goes through your '
+            'packs while you lie there, and takes ${formatCoin(taken)}.');
+      }
     case EncounterOutcome.fled:
       stdout.writeln('You break off and go.');
+      session.concludeEncounter(fight);
   }
   return true;
 }
@@ -987,16 +1175,44 @@ void _narrate(List<StrikeResult> log) {
   }
 }
 
+/// A strike with its dice: the attack roll against AC, and on a hit the
+/// damage dice as they fell.
 String _strikeLine(StrikeResult r) {
   final check = r.outcome;
-  final penalty = r.penalty == 0 ? '' : ' (MAP ${r.penalty})';
-  final roll = 'd20(${check.dieRoll}) ${check.modifier >= 0 ? '+' : ''}'
-      '${check.modifier} = ${check.total} vs AC ${check.dc}$penalty';
-  if (!r.isHit) return '${r.attacker.name} misses ${r.target.name} — $roll';
-  final crit = r.isCritical ? ' critically' : '';
+  final map = r.penalty == 0 ? '' : ', MAP ${r.penalty}';
+  final natural = check.wasShiftedByNatural ? ', natural ${check.dieRoll}' : '';
+  final verdict = switch (check.degree) {
+    DegreeOfSuccess.criticalSuccess => 'CRITICAL HIT',
+    DegreeOfSuccess.success => 'hit',
+    _ => 'miss',
+  };
+  final head = '${r.attacker.name} strikes ${r.target.name}: '
+      'd20(${check.dieRoll}) ${_signed(check.modifier)} = ${check.total} '
+      'vs AC ${check.dc}$map$natural — $verdict';
+  final damage = r.damageRoll;
+  if (damage == null) return head;
   final dropped = r.targetDropped ? ' ${r.target.name} goes down.' : '';
-  return '${r.attacker.name}$crit hits ${r.target.name} for ${r.damage} — '
-      '$roll.$dropped';
+  return '$head\n    damage $damage.$dropped';
+}
+
+/// The rolls that settle what a won fight was worth.
+void _renderSpoils(EncounterSession fight) {
+  if (fight.coinRoll case final coin?) {
+    stdout.writeln('\n  Coin on the fallen: $coin gp');
+  }
+  if (fight.lootRolls.isNotEmpty) {
+    stdout.writeln('  Searching them (d100, found at or under the chance):');
+    for (final roll in fight.lootRolls) {
+      stdout.writeln('    $roll');
+    }
+  }
+  if (fight.xpAwards.isNotEmpty) {
+    stdout.writeln('  XP, by level against the party\'s '
+        '${fight.xpAwards.first.partyLevel}:');
+    for (final award in fight.xpAwards) {
+      stdout.writeln('    $award');
+    }
+  }
 }
 
 void _renderCombatants(EncounterSession fight) {

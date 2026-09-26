@@ -66,23 +66,29 @@ class DamageExpression {
   ///
   /// Pathfinder floors damage at 0 rather than letting a large penalty heal
   /// the target.
-  int roll(DiceRoller roller) {
-    var total = flatBonus;
-    if (diceCount > 0 && dieSize > 0) {
-      total += roller.rollSum(diceCount, dieSize);
-    }
-    return total < 0 ? 0 : total;
-  }
+  int roll(DiceRoller roller) => rollDetailed(roller).total;
 
   /// Rolls with the dice doubled, as a critical hit does.
   ///
   /// Pathfinder doubles the whole result rather than rolling twice the dice,
   /// so this rolls once and doubles — the distribution differs, and the rules
   /// are explicit about which one applies.
-  int rollCritical(DiceRoller roller) {
-    final normal = roll(roller);
-    return normal * 2;
-  }
+  int rollCritical(DiceRoller roller) =>
+      rollDetailed(roller, critical: true).total;
+
+  /// Rolls the expression and keeps every die, so a player can see the roll
+  /// and not just its sum.
+  ///
+  /// [roll] and [rollCritical] are this with the dice thrown away, which is
+  /// what guarantees all three take the same dice from the same seed.
+  DamageRoll rollDetailed(DiceRoller roller, {bool critical = false}) =>
+      DamageRoll(
+        expression: this,
+        dice: diceCount > 0 && dieSize > 0
+            ? roller.rollDice(diceCount, dieSize)
+            : const [],
+        critical: critical,
+      );
 
   @override
   String toString() {
@@ -101,4 +107,43 @@ class DamageExpression {
 
   @override
   int get hashCode => Object.hash(diceCount, dieSize, flatBonus);
+}
+
+/// One roll of a [DamageExpression], with every die it threw.
+class DamageRoll {
+  const DamageRoll({
+    required this.expression,
+    required this.dice,
+    this.critical = false,
+  });
+
+  final DamageExpression expression;
+
+  /// Each die's face, in the order rolled.
+  final List<int> dice;
+
+  /// True when the result is doubled, as on a critical hit.
+  final bool critical;
+
+  /// Dice plus the flat bonus, floored at zero, before any doubling.
+  int get base {
+    final sum = dice.fold(0, (a, b) => a + b) + expression.flatBonus;
+    return sum < 0 ? 0 : sum;
+  }
+
+  int get total => critical ? base * 2 : base;
+
+  /// The roll as a player reads it: `2d10+4 (7+3+4) = 14`, or with a
+  /// critical, `2d10+4 (7+3+4) = 14, doubled to 28`.
+  @override
+  String toString() {
+    final doubled = critical ? ', doubled to $total' : '';
+    if (dice.isEmpty) return '$base$doubled';
+    final flat = expression.flatBonus;
+    final working = [
+      ...dice.map((d) => '$d'),
+      if (flat != 0) '$flat',
+    ].join('+').replaceAll('+-', '-');
+    return '$expression ($working) = $base$doubled';
+  }
 }

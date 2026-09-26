@@ -392,6 +392,110 @@ void main() {
     });
   });
 
+  group('every roll is kept for the player to see', () {
+    test('initiative: one d20 each, plus Perception, in the order they act',
+        () {
+      final f = fight(encounter: _adjacent, seed: 4);
+      expect(f.initiativeRolls.map((r) => r.combatant), f.combatants);
+      for (final roll in f.initiativeRolls) {
+        expect(roll.die, inInclusiveRange(1, 20));
+        expect(roll.modifier, roll.combatant.perception);
+        expect(roll.total, roll.combatant.initiative);
+      }
+    });
+
+    test('strikes made before the party moves are kept, not thrown away', () {
+      // Faster than anyone and three swings in reach: all three land before
+      // the party's first turn. They used to happen and never be told.
+      const quick = Creature(
+        id: 'c_quick',
+        name: 'Quick Thing',
+        level: 1,
+        armorClass: 5,
+        maxHp: 1,
+        perception: 40,
+        attacks: [CreatureAttack(name: 'jab', attackBonus: 0, damage: '1')],
+      );
+      final f = fight(
+        encounter: const Encounter(
+          id: 'e_quick',
+          location: 'anywhere',
+          name: 'Quick',
+          creatureIds: ['c_quick'],
+          startZone: 'engaged',
+        ),
+        creatures: const [quick],
+      );
+      expect(f.initiativeRolls.first.combatant.name, 'Quick Thing');
+      expect(f.openingStrikes, hasLength(3));
+      expect(f.openingStrikes.map((s) => s.penalty), [0, -5, -10]);
+      expect(f.isPartyTurn, isTrue);
+    });
+
+    test('a party that goes first has nothing in the opening', () {
+      final f = fight(encounter: _adjacent);
+      expect(f.initiativeRolls.first.combatant.isEnemy, isFalse);
+      expect(f.openingStrikes, isEmpty);
+    });
+
+    test('every hit carries its damage dice, and they add up to the damage',
+        () {
+      for (var seed = 0; seed < 20; seed++) {
+        final f =
+            fight(encounter: _standoff, creatures: const [_wall], seed: seed);
+        final log = [
+          f.strike(f.targetsInReach().first.id),
+          ...f.endTurn(),
+        ];
+        for (final strike in log) {
+          if (strike.isHit) {
+            expect(strike.damageRoll, isNotNull);
+            expect(strike.damageRoll!.total, strike.damage);
+            expect(strike.damageRoll!.critical, strike.isCritical);
+          } else {
+            expect(strike.damageRoll, isNull);
+            expect(strike.damage, 0);
+          }
+        }
+      }
+    });
+
+    test('the coin is rolled on dice the player can see', () {
+      final f = _playOut(fight(
+        encounter: const Encounter(
+          id: 'e_paid',
+          location: 'anywhere',
+          name: 'Paid',
+          creatureIds: ['c_straw'],
+          startZone: 'engaged',
+          coin: '3d6+2',
+        ),
+      ));
+      expect(f.outcome, EncounterOutcome.victory);
+      expect(f.coinRoll!.dice, hasLength(3));
+      expect(f.coinEarned, f.coinRoll!.total * 100);
+    });
+
+    test('every d100 against a drop table is kept, found or not', () {
+      final f = _playOut(fight(encounter: _adjacent, gear: _lootTable()));
+      expect(f.lootRolls.map((r) => r.item.id),
+          unorderedEquals(['i_certain', 'i_longshot']));
+      for (final roll in f.lootRolls) {
+        expect(roll.die, inInclusiveRange(1, 100));
+        expect(f.loot.contains(roll.item), roll.dropped);
+      }
+    });
+
+    test('the XP is itemised by creature, and adds up', () {
+      final f = _playOut(fight(encounter: _adjacent));
+      expect(f.xpAwards, hasLength(f.enemies.length));
+      expect(f.xpAwards.fold(0, (sum, a) => sum + a.xp), f.xpEarned);
+      // A level -1 dummy against a level 6 is seven below: worth nothing.
+      expect(f.xpAwards.single.difference, -7);
+      expect(f.xpAwards.single.xp, 0);
+    });
+  });
+
   group('the real bosses', () {
     late Campaign campaign;
     setUpAll(() => campaign = loadShatteredSeals());

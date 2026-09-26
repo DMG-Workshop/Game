@@ -1,0 +1,102 @@
+{
+  "rest_steps": 6,
+  "rob_percent": 20,
+  "notoriety": [
+    {
+      "name": "Unremarked",
+      "from_percent": 0,
+      "chance": 0,
+      "description": "Nobody has looked twice at what you carry."
+    },
+    {
+      "name": "Noticed",
+      "from_percent": 100,
+      "threat": "low",
+      "chance": 4,
+      "description": "People have started to look at your packs before they look at your faces."
+    },
+    {
+      "name": "Marked",
+      "from_percent": 150,
+      "threat": "moderate",
+      "chance": 7,
+      "description": "Your names are being said in places you have not been, with a sum after them."
+    },
+    {
+      "name": "Hunted",
+      "from_percent": 250,
+      "threat": "severe",
+      "chance": 10,
+      "description": "Things that should not be able to count are following what you are worth."
+    },
+    {
+      "name": "Infamous",
+      "from_percent": 400,
+      "threat": "extreme",
+      "chance": 14,
+      "description": "Everything in Valorheim with teeth and a taste for gold knows where you are."
+    }
+  ],
+  "hunters": [
+    {
+      "creature": "c_hunt_copper_rat",
+      "coin": "1d6",
+      "arrival": "Something small has been keeping to the ditch beside you for a while. It stops when you stop. Its nose is working at your belt."
+    },
+    {
+      "creature": "c_hunt_hedge_footpad",
+      "coin": "2d6",
+      "arrival": "A figure steps out of the hedge ahead of you with the particular bad confidence of someone who has rehearsed this. \"Purses. On the ground. Nobody needs to be brave.\""
+    },
+    {
+      "creature": "c_hunt_tithe_taker",
+      "coin": "3d6+10",
+      "arrival": "A young man in a good coat is waiting where the path narrows, reading from a folded page. He reads your names. Then a number. \"The Covenant will take its share,\" he says, \"and you will not be needing the rest.\""
+    },
+    {
+      "creature": "c_hunt_gilt_harpy",
+      "coin": "4d10+30",
+      "arrival": "A shadow goes over you twice. The third time it comes down, with a shriek like a gate hinge and its eyes fixed not on your face but on your hands."
+    },
+    {
+      "creature": "c_hunt_hoard_wight",
+      "coin": "4d20+60",
+      "arrival": "You smell him first: grave earth and brass polish. Then he is there in the road, a thin man in a burial coat with the pockets turned out, holding out a hand. \"Mine,\" he says."
+    },
+    {
+      "creature": "c_hunt_ash_ogre",
+      "coin": "6d20+140",
+      "arrival": "The ground shakes before you see it. It comes round the bend with the sack over one shoulder, looks at your packs, and grins with every one of its teeth."
+    },
+    {
+      "creature": "c_hunt_cinder_drake",
+      "coin": "8d20+320",
+      "arrival": "Heat on the back of your neck, and a smell like a forge left burning overnight. The drake drops out of the smoke ahead of you and settles, patient, between you and the road."
+    },
+    {
+      "creature": "c_hunt_red_vein_stalker",
+      "coin": "10d20+800",
+      "arrival": "A red light comes through the dark like an ember in a grate, steady, getting closer. The ground rings under it. It does not hurry. It never has to."
+    },
+    {
+      "creature": "c_hunt_crimson_inquisitor",
+      "coin": "10d20+1900",
+      "arrival": "She is sitting on a milestone with a book open on her knee. She closes it when she sees you, takes off her spectacles, and folds them away. \"You are worth a great deal,\" she says. \"That is going to change.\""
+    },
+    {
+      "creature": "c_hunt_tithe_knight",
+      "coin": "20d20+4600",
+      "arrival": "Hooves on the road behind you, slow and exact. A knight in black plate draws up and unrolls a writ that has gone brown with age. \"Monies owed,\" it says, in a voice like a vault door."
+    },
+    {
+      "creature": "c_hunt_vessel_hound",
+      "coin": "20d20+13800",
+      "arrival": "The light goes out of the coins in your purse all at once, as though someone had breathed on them. Then the shadow at your heel stands up on four legs."
+    },
+    {
+      "creature": "c_hunt_hoardmother",
+      "coin": "40d20+40000",
+      "arrival": "The sky goes dark from one edge to the other, and it is not cloud. The Hoardmother comes down in front of you like a building falling, and her first word is your names."
+    }
+  ]
+}

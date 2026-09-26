@@ -228,6 +228,366 @@
       "specials": [
         "Its claws numb; whatever they open finds its hands slow to answer."
       ]
+    },
+    {
+      "creature_id": "c_hunt_copper_rat",
+      "name": "Copper-Tongue Rat",
+      "level": 0,
+      "description": "A rat the size of a terrier with a green stain round its muzzle, the colour a penny goes. They follow coin. Nobody in Millhaven can tell you how they know where it is.",
+      "ac": 16,
+      "hp": 13,
+      "perception": 8,
+      "fortitude": 6,
+      "reflex": 9,
+      "will": 3,
+      "speed": 30,
+      "traits": ["animal", "hunter"],
+      "attacks": [
+        { "name": "jaws", "bonus": 8, "damage": "1d6+2", "damage_type": "P", "reach": "engaged" }
+      ],
+      "specials": [
+        "Goes for the purse, not the throat, until something stands in the way."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_hedge_footpad",
+      "name": "Hedge Footpad",
+      "level": 2,
+      "description": "Somebody who was in the Sparrow when you paid for your drinks, and a sister-in-law's hatchet, and a scarf over the face that fools nobody.",
+      "ac": 18,
+      "hp": 26,
+      "perception": 10,
+      "fortitude": 5,
+      "reflex": 11,
+      "will": 8,
+      "speed": 25,
+      "traits": ["human", "hunter"],
+      "attacks": [
+        {
+          "name": "hatchet",
+          "bonus": 11,
+          "damage": "1d10+4",
+          "damage_type": "S",
+          "reach": "engaged",
+          "traits": ["agile"]
+        },
+        {
+          "name": "thrown stone",
+          "bonus": 9,
+          "damage": "1d8+4",
+          "damage_type": "B",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Runs the moment it is clear the money is not coming quietly."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_tithe_taker",
+      "name": "Covenant Tithe-Taker",
+      "level": 4,
+      "description": "The Covenant keeps an account of what everybody has. This one carries the page with your names on it, and a knife for crossing a name out.",
+      "ac": 20,
+      "hp": 60,
+      "perception": 11,
+      "fortitude": 11,
+      "reflex": 11,
+      "will": 14,
+      "speed": 25,
+      "traits": ["human", "covenant", "hunter"],
+      "attacks": [
+        {
+          "name": "tally knife",
+          "bonus": 14,
+          "damage": "2d8+5",
+          "damage_type": "S",
+          "reach": "engaged",
+          "traits": ["agile"]
+        },
+        { "name": "red cord", "bonus": 12, "damage": "2d6+5", "damage_type": "B", "reach": "near" }
+      ],
+      "specials": [
+        "Reads out the sum you are worth before it starts, and gets it right to the copper."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_gilt_harpy",
+      "name": "Gilt Harpy",
+      "level": 6,
+      "description": "Feathers the colour of old brass, and a woman's face that has never had to smile at anyone. She lines her nest with rings, and with the fingers that were in them.",
+      "ac": 24,
+      "hp": 81,
+      "perception": 16,
+      "fortitude": 14,
+      "reflex": 17,
+      "will": 11,
+      "speed": 40,
+      "traits": ["beast", "hunter"],
+      "attacks": [
+        { "name": "talons", "bonus": 17, "damage": "2d8+9", "damage_type": "S", "reach": "engaged" },
+        {
+          "name": "diving rake",
+          "bonus": 15,
+          "damage": "2d6+8",
+          "damage_type": "P",
+          "reach": "near",
+          "traits": ["agile"]
+        }
+      ],
+      "specials": [
+        "Sings when she is winning. Stop the song and she stops being sure of herself."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_hoard_wight",
+      "name": "Hoard-Wight",
+      "level": 8,
+      "description": "He was buried with his money on the understanding that it would stay with him. It did not. He has been walking the valley ever since, following gold he hopes is his.",
+      "ac": 26,
+      "hp": 135,
+      "perception": 16,
+      "fortitude": 19,
+      "reflex": 13,
+      "will": 16,
+      "speed": 25,
+      "traits": ["undead", "hunter"],
+      "attacks": [
+        {
+          "name": "grave-cold grip",
+          "bonus": 20,
+          "damage": "2d10+11",
+          "damage_type": "negative",
+          "reach": "engaged",
+          "on_critical": "A coin in your purse goes black and will not come clean."
+        },
+        {
+          "name": "miser's curse",
+          "bonus": 18,
+          "damage": "2d8+9",
+          "damage_type": "negative",
+          "reach": "near"
+        }
+      ],
+      "specials": [
+        "Stops to count any coin that is thrown down, and counts slowly."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_ash_ogre",
+      "name": "Ash Ogre",
+      "level": 10,
+      "description": "Nine feet of ogre gone grey from the fall of ash off the mines, carrying a club that was a pit prop and a sack that is already half full of other people's valuables.",
+      "ac": 27,
+      "hp": 219,
+      "perception": 19,
+      "fortitude": 22,
+      "reflex": 16,
+      "will": 19,
+      "speed": 25,
+      "traits": ["giant", "hunter"],
+      "attacks": [
+        {
+          "name": "pit-prop club",
+          "bonus": 23,
+          "damage": "2d12+13",
+          "damage_type": "B",
+          "reach": "near"
+        }
+      ],
+      "specials": [
+        "Wants the sack filled more than it wants you dead, and will take a bribe that is big enough."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_cinder_drake",
+      "name": "Cinder Drake",
+      "level": 12,
+      "description": "A drake can smell gold the way a hound smells meat, and this one has smelled yours from the other side of the valley. Its scales shed sparks when it breathes.",
+      "ac": 30,
+      "hp": 269,
+      "perception": 22,
+      "fortitude": 25,
+      "reflex": 22,
+      "will": 22,
+      "speed": 40,
+      "traits": ["dragon", "fire", "hunter"],
+      "attacks": [
+        { "name": "jaws", "bonus": 26, "damage": "3d10+14", "damage_type": "P", "reach": "engaged" },
+        {
+          "name": "cinder spit",
+          "bonus": 24,
+          "damage": "3d8+12",
+          "damage_type": "fire",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Will not leave while it can smell the gold; will not stay once the gold is out of reach."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_red_vein_stalker",
+      "name": "Red-Vein Stalker",
+      "level": 14,
+      "description": "Bloodstone ore given legs and a single instruction by somebody in the Covenant. The instruction was your names. The red grain in it pulses when it is near what it wants.",
+      "ac": 35,
+      "hp": 255,
+      "perception": 25,
+      "fortitude": 28,
+      "reflex": 22,
+      "will": 25,
+      "speed": 25,
+      "traits": ["construct", "bloodstone", "hunter"],
+      "attacks": [
+        {
+          "name": "ore fist",
+          "bonus": 29,
+          "damage": "3d10+18",
+          "damage_type": "B",
+          "reach": "engaged"
+        },
+        {
+          "name": "shard volley",
+          "bonus": 27,
+          "damage": "3d8+15",
+          "damage_type": "P",
+          "reach": "far"
+        }
+      ],
+      "specials": [
+        "Does not tire, does not sleep, and does not stop walking toward you until it is broken."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_crimson_inquisitor",
+      "name": "Crimson Inquisitor",
+      "level": 16,
+      "description": "A woman in a red coat and a clerk's spectacles who has read your names in a ledger with a very large sum written next to them, and who does not like sums that stay large.",
+      "ac": 38,
+      "hp": 295,
+      "perception": 28,
+      "fortitude": 28,
+      "reflex": 28,
+      "will": 30,
+      "speed": 25,
+      "traits": ["human", "covenant", "hunter"],
+      "attacks": [
+        {
+          "name": "ledger-blade",
+          "bonus": 32,
+          "damage": "3d12+18",
+          "damage_type": "S",
+          "reach": "engaged"
+        },
+        {
+          "name": "word of the Vessel",
+          "bonus": 30,
+          "damage": "3d10+15",
+          "damage_type": "negative",
+          "reach": "far",
+          "on_critical": "For a moment you cannot remember what you were carrying."
+        }
+      ],
+      "specials": [
+        "Will talk, if you ask what she wants. What she wants is everything."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_tithe_knight",
+      "name": "The Tithe-Knight",
+      "level": 18,
+      "description": "An armoured revenant who collected the Crown's taxes three hundred years ago, and who has never been told to stop. Its writ is still nailed to its breastplate.",
+      "ac": 39,
+      "hp": 419,
+      "perception": 30,
+      "fortitude": 33,
+      "reflex": 27,
+      "will": 33,
+      "speed": 25,
+      "traits": ["undead", "hunter"],
+      "attacks": [
+        {
+          "name": "tax-collector's mace",
+          "bonus": 35,
+          "damage": "3d12+20",
+          "damage_type": "B",
+          "reach": "engaged"
+        },
+        {
+          "name": "summons",
+          "bonus": 33,
+          "damage": "3d10+17",
+          "damage_type": "negative",
+          "reach": "near"
+        }
+      ],
+      "specials": [
+        "Accepts payment in full. Nobody has ever had enough."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_vessel_hound",
+      "name": "Hound of the Vessel",
+      "level": 20,
+      "description": "Something the Shadow Vessel has let off its leash. It has the outline of a hound and the manners of a debt collector, and everywhere it has walked the gold has gone dull.",
+      "ac": 45,
+      "hp": 319,
+      "perception": 35,
+      "fortitude": 33,
+      "reflex": 36,
+      "will": 33,
+      "speed": 50,
+      "traits": ["shadow", "fiend", "hunter"],
+      "attacks": [
+        {
+          "name": "unmaking bite",
+          "bonus": 38,
+          "damage": "4d10+22",
+          "damage_type": "negative",
+          "reach": "engaged"
+        },
+        {
+          "name": "shadow lunge",
+          "bonus": 36,
+          "damage": "4d8+19",
+          "damage_type": "negative",
+          "reach": "near",
+          "traits": ["agile"]
+        }
+      ],
+      "specials": [
+        "Tarnishes gold it touches. What it takes, it takes for the Vessel, not for itself."
+      ]
+    },
+    {
+      "creature_id": "c_hunt_hoardmother",
+      "name": "The Hoardmother",
+      "level": 23,
+      "description": "Old enough to remember when Valorheim paid her tribute, and offended that it stopped. She has heard what you are worth. She considers it hers.",
+      "ac": 46,
+      "hp": 575,
+      "perception": 37,
+      "fortitude": 40,
+      "reflex": 37,
+      "will": 40,
+      "speed": 60,
+      "traits": ["dragon", "hunter"],
+      "attacks": [
+        { "name": "jaws", "bonus": 42, "damage": "4d12+24", "damage_type": "P", "reach": "engaged" },
+        { "name": "tail", "bonus": 40, "damage": "4d10+20", "damage_type": "B", "reach": "near" },
+        {
+          "name": "breath of the hoard",
+          "bonus": 40,
+          "damage": "4d10+20",
+          "damage_type": "fire",
+          "reach": "far",
+          "on_critical": "Whatever gold you carried is a puddle."
+        }
+      ],
+      "specials": [
+        "Talks before she fights, and means every word of it."
+      ]
     }
   ],
   "encounters": [

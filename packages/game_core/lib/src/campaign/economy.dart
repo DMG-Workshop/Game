@@ -100,20 +100,23 @@ class Payout {
 /// A flag can only be set once, so a reward keyed to one cannot be claimed
 /// twice however many ways there are of setting it.
 class Reward {
-  const Reward({required this.flag, required this.payout});
+  const Reward({required this.flag, required this.payout, this.from});
 
   final String flag;
   final Payout payout;
+
+  /// Who pays it, for the party's ledger.
+  final String? from;
 }
 
 /// The campaign's shops and the coin it pays out.
 class Economy {
   Economy({List<Shop> shops = const [], List<Reward> rewards = const []})
       : _shops = List.of(shops),
-        _rewards = {for (final r in rewards) r.flag: r.payout};
+        _rewards = {for (final r in rewards) r.flag: r};
 
   final List<Shop> _shops;
-  final Map<String, Payout> _rewards;
+  final Map<String, Reward> _rewards;
 
   List<Shop> get shops => List.unmodifiable(_shops);
 
@@ -134,7 +137,10 @@ class Economy {
   }
 
   /// What setting [flag] pays, if anything.
-  Payout? rewardFor(String flag) => _rewards[flag];
+  Payout? rewardFor(String flag) => _rewards[flag]?.payout;
+
+  /// Who pays for setting [flag], if anybody is named.
+  String? payerFor(String flag) => _rewards[flag]?.from;
 
   Set<String> get rewardFlags => _rewards.keys.toSet();
 

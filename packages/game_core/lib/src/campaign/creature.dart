@@ -1,3 +1,5 @@
+import 'package:pf2e_core/pf2e_core.dart';
+
 /// One way a creature can hurt someone.
 class CreatureAttack {
   const CreatureAttack({
@@ -78,6 +80,84 @@ class Creature {
   CreatureAttack? get bestAttack {
     if (attacks.isEmpty) return null;
     return attacks.reduce((a, b) => b.attackBonus > a.attackBonus ? b : a);
+  }
+
+  /// This creature with Pathfinder's elite adjustments: +2 to AC, attacks,
+  /// saves and Perception, +2 damage, more Hit Points by level, and a level
+  /// higher (two, from level 0 or below).
+  Creature elite() => _adjusted(
+        by: 2,
+        level: level + (level <= 0 ? 2 : 1),
+        hp: maxHp +
+            switch (level) {
+              <= 1 => 10,
+              <= 4 => 15,
+              <= 19 => 20,
+              _ => 30,
+            },
+        prefix: 'Elite',
+      );
+
+  /// This creature with Pathfinder's weak adjustments: the elite ones in
+  /// reverse, and a level lower (two, from level 1).
+  Creature weak() => _adjusted(
+        by: -2,
+        level: level - (level == 1 ? 2 : 1),
+        hp: maxHp -
+            switch (level) {
+              <= 2 => 10,
+              <= 5 => 15,
+              <= 20 => 20,
+              _ => 30,
+            },
+        prefix: 'Weak',
+      );
+
+  Creature _adjusted({
+    required int by,
+    required int level,
+    required int hp,
+    required String prefix,
+  }) =>
+      Creature(
+        id: id,
+        name: '$prefix $name',
+        level: level,
+        description: description,
+        armorClass: armorClass + by,
+        maxHp: hp < 1 ? 1 : hp,
+        perception: perception + by,
+        fortitude: fortitude + by,
+        reflex: reflex + by,
+        will: will + by,
+        traits: traits,
+        speed: speed,
+        specials: specials,
+        isBoss: isBoss,
+        attacks: [
+          for (final a in attacks)
+            CreatureAttack(
+              name: a.name,
+              attackBonus: a.attackBonus + by,
+              damage: _shift(a.damage, by),
+              damageType: a.damageType,
+              traits: a.traits,
+              reach: a.reach,
+              onCritical: a.onCritical,
+            ),
+        ],
+      );
+
+  /// `2d8+6` moved by [by]: `2d8+8`. Left alone if it will not parse, which
+  /// the loader has already refused.
+  static String _shift(String damage, int by) {
+    final parsed = DamageExpression.tryParse(damage);
+    if (parsed == null) return damage;
+    return DamageExpression(
+      diceCount: parsed.diceCount,
+      dieSize: parsed.dieSize,
+      flatBonus: parsed.flatBonus + by,
+    ).toString();
   }
 
   /// The save bonus for [key], or null when it is not a save.

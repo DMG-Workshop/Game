@@ -85,6 +85,72 @@ class Combatant {
   String toString() => '$name ($hp/$maxHp)';
 }
 
+/// One combatant's initiative: a d20 plus their Perception.
+class InitiativeRoll {
+  const InitiativeRoll({
+    required this.combatant,
+    required this.die,
+    required this.modifier,
+  });
+
+  final Combatant combatant;
+  final int die;
+  final int modifier;
+
+  int get total => die + modifier;
+
+  @override
+  String toString() {
+    final sign = modifier >= 0 ? '+' : '';
+    return '${combatant.name}: d20($die) $sign$modifier = $total';
+  }
+}
+
+/// One d100 against a creature's drop table.
+class LootRoll {
+  const LootRoll({
+    required this.creature,
+    required this.item,
+    required this.die,
+    required this.chance,
+  });
+
+  final Creature creature;
+  final GearItem item;
+
+  /// The d100's face; the item drops on [chance] or under.
+  final int die;
+  final int chance;
+
+  bool get dropped => die <= chance;
+
+  @override
+  String toString() => '${item.name} from ${creature.name}: d100($die) '
+      'against $chance% — ${dropped ? 'found' : 'not there'}';
+}
+
+/// What one defeated creature was worth.
+class XpAward {
+  const XpAward({
+    required this.creature,
+    required this.partyLevel,
+    required this.xp,
+  });
+
+  final Creature creature;
+  final int partyLevel;
+  final int xp;
+
+  int get difference => creature.level - partyLevel;
+
+  @override
+  String toString() {
+    final sign = difference >= 0 ? '+' : '';
+    return '${creature.name} (level ${creature.level}, $sign$difference): '
+        '$xp XP';
+  }
+}
+
 /// The record of one strike.
 class StrikeResult {
   const StrikeResult({
@@ -93,6 +159,7 @@ class StrikeResult {
     required this.outcome,
     required this.damage,
     required this.penalty,
+    this.damageRoll,
     this.targetDropped = false,
   });
 
@@ -102,6 +169,9 @@ class StrikeResult {
 
   /// Damage dealt; zero on a miss.
   final int damage;
+
+  /// The damage dice as they fell, or null on a miss.
+  final DamageRoll? damageRoll;
 
   /// The multiple attack penalty that applied.
   final int penalty;
@@ -132,6 +202,7 @@ class EncounterSession {
     required DiceRoller roller,
     GearTable? gear,
     Map<String, Loadout> loadouts = const {},
+    List<Creature>? foes,
   })  : _roller = roller,
         _gear = gear,
         _loadouts = loadouts,
@@ -146,12 +217,7 @@ class EncounterSession {
 
     final startIndex = encounter.zones.indexOf(encounter.startZone);
     var n = 0;
-    for (final id in encounter.creatureIds) {
-      final creature = bestiary.creatureById(id);
-      if (creature == null) {
-        throw ArgumentError('Encounter "${encounter.id}" names unknown '
-            'creature "$id".');
-      }
+    for (final creature in foes ?? _lookUp(encounter, bestiary)) {
       _combatants.add(_combatantForCreature(
         creature,
         suffix: ++n,
@@ -161,6 +227,13 @@ class EncounterSession {
 
     _rollInitiative();
   }
+
+  static List<Creature> _lookUp(Encounter encounter, Bestiary bestiary) => [
+        for (final id in encounter.creatureIds)
+          bestiary.creatureById(id) ??
+              (throw ArgumentError('Encounter "${encounter.id}" names unknown '
+                  'creature "$id".')),
+      ];
 
   final Encounter encounter;
   final DiceRoller _roller;
@@ -181,6 +254,11 @@ class EncounterSession {
   List<GearItem> _loot = const [];
   int _coinEarned = 0;
   int _xpEarned = 0;
+  final List<InitiativeRoll> _initiative = [];
+  final List<StrikeResult> _opening = [];
+  DamageRoll? _coinRoll;
+  final List<LootRoll> _lootRolls = [];
+  final List<XpAward> _xpAwards = [];
 
   /// Pathfinder gives three actions a turn, which is what makes a third
   /// attack a real choice rather than a free one.
@@ -226,6 +304,22 @@ class EncounterSession {
   /// and everyone in the party earns the total. Worked out here because the
   /// fight is the one place that knows both who fought and what they fought.
   int get xpEarned => _xpEarned;
+
+  /// Everyone's initiative roll, in the order they act.
+  List<InitiativeRoll> get initiativeRolls => List.unmodifiable(_initiative);
+
+  /// Strikes made before anyone in the party had a turn: enemies that beat
+  /// the whole party's initiative act first, and the party should see it.
+  List<StrikeResult> get openingStrikes => List.unmodifiable(_opening);
+
+  /// The dice the coin was rolled on, once the fight is won.
+  DamageRoll? get coinRoll => _coinRoll;
+
+  /// Every d100 rolled against a drop table, found or not.
+  List<LootRoll> get lootRolls => List.unmodifiable(_lootRolls);
+
+  /// What each defeated creature was worth, adding up to [xpEarned].
+  List<XpAward> get xpAwards => List.unmodifiable(_xpAwards);
 
   /// The loot as flags, so recovering something is recorded the same way as
   /// everything else the party has done.
@@ -374,12 +468,13 @@ class EncounterSession {
     );
     attacker.attacksThisTurn++;
 
-    var damage = 0;
-    if (outcome.degree == DegreeOfSuccess.criticalSuccess) {
-      damage = attacker.damage.rollCritical(_roller);
-    } else if (outcome.degree == DegreeOfSuccess.success) {
-      damage = attacker.damage.roll(_roller);
-    }
+    final damageRoll = outcome.degree.isSuccess
+        ? attacker.damage.rollDetailed(
+            _roller,
+            critical: outcome.degree == DegreeOfSuccess.criticalSuccess,
+          )
+        : null;
+    final damage = damageRoll?.total ?? 0;
 
     final wasStanding = !target.isDown;
     if (damage > 0) target.takeDamage(damage);
@@ -389,6 +484,7 @@ class EncounterSession {
       target: target,
       outcome: outcome,
       damage: damage,
+      damageRoll: damageRoll,
       penalty: penalty,
       targetDropped: wasStanding && target.isDown,
     );
@@ -449,7 +545,9 @@ class EncounterSession {
   void _rollCoin() {
     final dice = encounter.coin;
     if (dice == null) return;
-    _coinEarned = DamageExpression.parse(dice).roll(_roller) * 100;
+    final roll = DamageExpression.parse(dice).rollDetailed(_roller);
+    _coinRoll = roll;
+    _coinEarned = roll.total * 100;
   }
 
   void _countXp() {
@@ -457,11 +555,16 @@ class EncounterSession {
       for (final c in party)
         if (c.actor case final actor?) actor.character.level,
     ]);
-    _xpEarned = enemies.fold(
-        0,
-        (sum, c) =>
-            sum +
-            (c.creature == null ? 0 : creatureXp(c.creature!.level - level)));
+    for (final c in enemies) {
+      final creature = c.creature;
+      if (creature == null) continue;
+      _xpAwards.add(XpAward(
+        creature: creature,
+        partyLevel: level,
+        xp: creatureXp(creature.level - level),
+      ));
+    }
+    _xpEarned = _xpAwards.fold(0, (sum, a) => sum + a.xp);
   }
 
   /// Rolls each defeated creature's drop table.
@@ -475,13 +578,18 @@ class EncounterSession {
 
     final found = <String, GearItem>{};
     for (final enemy in enemies) {
-      final creatureId = enemy.creature?.id;
-      if (creatureId == null) continue;
-      for (final item in gear.droppedBy(creatureId)) {
+      final creature = enemy.creature;
+      if (creature == null) continue;
+      for (final item in gear.droppedBy(creature.id)) {
         if (found.containsKey(item.id)) continue;
-        if (_roller.rollDie(100) <= item.dropFrom(creatureId)!.chance) {
-          found[item.id] = item;
-        }
+        final roll = LootRoll(
+          creature: creature,
+          item: item,
+          die: _roller.rollDie(100),
+          chance: item.dropFrom(creature.id)!.chance,
+        );
+        _lootRolls.add(roll);
+        if (roll.dropped) found[item.id] = item;
       }
     }
 
@@ -489,8 +597,12 @@ class EncounterSession {
   }
 
   void _rollInitiative() {
+    final rolls = <Combatant, InitiativeRoll>{};
     for (final c in _combatants) {
-      c.initiative = _roller.d20() + c.perception;
+      final roll = InitiativeRoll(
+          combatant: c, die: _roller.d20(), modifier: c.perception);
+      rolls[c] = roll;
+      c.initiative = roll.total;
     }
     // Ties go to the party, which is the usual table convention and spares a
     // tie-breaking roll nobody wants to narrate.
@@ -500,13 +612,15 @@ class EncounterSession {
       if (a.isEnemy == b.isEnemy) return a.name.compareTo(b.name);
       return a.isEnemy ? 1 : -1;
     });
+    _initiative.addAll([for (final c in _combatants) rolls[c]!]);
     _turnIndex = 0;
     _actionsLeft = actionsPerTurn;
 
-    // An enemy may act before anyone in the party does.
+    // An enemy may act before anyone in the party does. What it does is kept:
+    // a party that opens the fight already bleeding should know why.
     if (current.isEnemy) {
       while (!isOver && current.isEnemy) {
-        _runEnemyTurn();
+        _opening.addAll(_runEnemyTurn());
         if (isOver) break;
         _advanceTurn();
       }

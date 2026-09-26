@@ -356,6 +356,9 @@ void main() {
       expect(formatCoin(27000), '270 gp');
       expect(formatCoin(1255), '12 gp 5 sp 5 cp');
       expect(formatCoin(50), '5 sp');
+      expect(formatCoin(4000000), '40,000 gp');
+      expect(formatCoin(100000), '1,000 gp');
+      expect(formatCoin(99900), '999 gp');
     });
 
     test('refuses an item the campaign does not have', () {

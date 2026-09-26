@@ -126,6 +126,51 @@ void main() {
     });
   });
 
+  group('the track from level 1 to level 20', () {
+    Experience at(int level, int xp) =>
+        Experience()..reconcile([(id: 'pc', level: level, sheetXp: xp)]);
+
+    test('is a thousand a level, nineteen thousand end to end', () {
+      expect(xpForLevel(1), 0);
+      expect(xpForLevel(2), 1000);
+      expect(xpForLevel(20), 19000);
+      expect(XpProgress.fullTrack, 19000);
+    });
+
+    test('counts every level before the sheet toward the total', () {
+      final p = at(6, 450).progressOf('pc');
+      expect(p.level, 6);
+      expect(p.total, 5450);
+      expect(p.toNext, 550);
+      expect(p.earnedLevel, 6);
+      expect(p.levelsToGo, 14);
+    });
+
+    test('runs ahead of the sheet until it is levelled in Pathbuilder', () {
+      final xp = at(6, 0)..award(['pc'], 2500);
+      final p = xp.progressOf('pc');
+      expect(p.earnedLevel, 8);
+      expect(p.toNext, 0);
+      expect(xp.readyToLevel('pc'), isTrue);
+    });
+
+    test('stops at level 20', () {
+      final top = at(20, 0)..award(['pc'], 5000);
+      expect(top.xpOf('pc'), 0);
+      expect(top.readyToLevel('pc'), isFalse);
+      expect(top.progressOf('pc').isMax, isTrue);
+      expect(top.progressOf('pc').total, 19000);
+
+      final nearly = at(19, 900)..award(['pc'], 500);
+      expect(nearly.xpOf('pc'), 1000, reason: 'enough for 20, and no more');
+      expect(nearly.progressOf('pc').earnedLevel, 20);
+    });
+
+    test('a character new to the party starts at level 1', () {
+      expect(Experience().progressOf('nobody').total, 0);
+    });
+  });
+
   group('every fight pays', () {
     test('coin and XP, to everyone in the party', () {
       final world = _world(

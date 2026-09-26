@@ -307,6 +307,14 @@ class PartyInventory {
 
   bool isCarrying(String itemId) => _counts.containsKey(itemId);
 
+  /// What everything carried would cost, in copper, every copy counted.
+  int get gearValue => _counts.entries
+      .fold(0, (sum, e) => sum + (_gear.byId(e.key)?.price ?? 0) * e.value);
+
+  /// What [actorId] is wearing and wielding is worth, in copper.
+  int valueOn(String actorId) => (_equipped[actorId]?.values ?? const [])
+      .fold(0, (sum, id) => sum + (_gear.byId(id)?.price ?? 0));
+
   /// How many copies of [itemId] the party has, worn or not.
   int countOf(String itemId) => _counts[itemId] ?? 0;
 
@@ -525,8 +533,20 @@ String formatCoin(int copper) {
   final sp = (copper % 100) ~/ 10;
   final cp = copper % 10;
   return [
-    if (gp > 0) '$gp gp',
+    if (gp > 0) '${groupThousands(gp)} gp',
     if (sp > 0) '$sp sp',
     if (cp > 0) '$cp cp',
   ].join(' ');
+}
+
+/// 40000 as 40,000, because a tier 2 purse is otherwise a row of zeroes.
+String groupThousands(int n) {
+  if (n < 0) return '-${groupThousands(-n)}';
+  final digits = '$n';
+  final out = StringBuffer();
+  for (var i = 0; i < digits.length; i++) {
+    if (i > 0 && (digits.length - i) % 3 == 0) out.write(',');
+    out.write(digits[i]);
+  }
+  return out.toString();
 }

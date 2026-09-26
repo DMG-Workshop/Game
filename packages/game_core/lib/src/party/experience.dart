@@ -2,6 +2,55 @@
 /// zero on levelling rather than counting up forever.
 const int xpToLevel = 1000;
 
+/// The top of the track. Pathfinder's levels run from 1 to 20.
+const int maxLevel = 20;
+
+/// XP earned in all, from the start of level 1, by the time a character
+/// reaches [level]: 0 at level 1, 19,000 at level 20.
+int xpForLevel(int level) => (level.clamp(1, maxLevel) - 1) * xpToLevel;
+
+/// Where one character stands on the road from level 1 to level 20.
+class XpProgress {
+  const XpProgress({required this.level, required this.xp});
+
+  /// The level on their sheet.
+  final int level;
+
+  /// XP toward the next level, which may run past a thousand if the sheet
+  /// has not been re-imported since.
+  final int xp;
+
+  bool get isMax => level >= maxLevel;
+
+  /// XP earned in all since the start of level 1.
+  int get total => xpForLevel(level) + xp;
+
+  /// XP from level 1 to level 20.
+  static int get fullTrack => xpForLevel(maxLevel);
+
+  /// The level this much XP has earned, which is ahead of the sheet until
+  /// it is levelled up in Pathbuilder.
+  int get earnedLevel {
+    final earned = level + xp ~/ xpToLevel;
+    return earned > maxLevel ? maxLevel : earned;
+  }
+
+  /// XP still to find before the next level, or 0 once it is earned.
+  int get toNext {
+    if (isMax) return 0;
+    final left = xpToLevel - xp;
+    return left < 0 ? 0 : left;
+  }
+
+  /// Levels between the sheet and the top of the track.
+  int get levelsToGo => maxLevel - earnedLevel;
+
+  @override
+  String toString() => isMax
+      ? 'level $maxLevel, the top of the track'
+      : 'level $level, $xp/$xpToLevel ($total/$fullTrack in all)';
+}
+
 /// XP for defeating a creature [difference] levels above or below the party.
 ///
 /// Pathfinder's own table. Anything five or more levels below the party is
@@ -95,15 +144,28 @@ class Experience {
 
   int xpOf(String actorId) => _xp[actorId] ?? 0;
 
+  /// The level [actorId]'s XP is counting from: the one on their sheet.
+  int levelOf(String actorId) => _level[actorId] ?? 1;
+
+  /// Where [actorId] stands between level 1 and level 20.
+  XpProgress progressOf(String actorId) =>
+      XpProgress(level: levelOf(actorId), xp: xpOf(actorId));
+
   /// Whether [actorId] has enough to level up in Pathbuilder.
-  bool readyToLevel(String actorId) => xpOf(actorId) >= xpToLevel;
+  bool readyToLevel(String actorId) =>
+      levelOf(actorId) < maxLevel && xpOf(actorId) >= xpToLevel;
 
   /// Gives every one of [actorIds] [xp]. Everyone in the party earns the same
   /// XP for the same fight, as Pathfinder has it.
+  ///
+  /// The track ends at level 20: XP stops counting once it would carry a
+  /// character past it, because there is no level 21 to spend it on.
   void award(Iterable<String> actorIds, int xp) {
     if (xp <= 0) return;
     for (final id in actorIds) {
-      _xp[id] = xpOf(id) + xp;
+      final ceiling = (maxLevel - levelOf(id)) * xpToLevel;
+      final total = xpOf(id) + xp;
+      _xp[id] = total > ceiling ? (ceiling < 0 ? 0 : ceiling) : total;
     }
   }
 

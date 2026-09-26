@@ -3,6 +3,7 @@ import 'conversation.dart';
 import 'creature.dart';
 import 'economy.dart';
 import 'gear.dart';
+import 'hunt.dart';
 import 'locations.dart';
 import 'npc.dart';
 import 'world.dart';
@@ -22,10 +23,12 @@ class Campaign {
     ItemPlacements? items,
     Conversations? conversations,
     Economy? economy,
+    HuntTable? hunts,
   })  : bestiary = bestiary ?? Bestiary(),
         items = items ?? ItemPlacements(const []),
         conversations = conversations ?? Conversations(const []),
-        economy = economy ?? Economy();
+        economy = economy ?? Economy(),
+        hunts = hunts ?? HuntTable();
 
   final String id;
   final String title;
@@ -47,10 +50,17 @@ class Campaign {
   /// Where gear is bought and sold, and the coin paid for deeds.
   final Economy economy;
 
+  /// What comes after a party that gets rich.
+  final HuntTable hunts;
+
   /// What setting [flag] pays: a reward the economy lists, or the reward for
   /// the quest [flag] marks as finished.
   Payout? payoutFor(String flag) =>
       economy.rewardFor(flag) ?? arcs.completedBy(flag)?.reward;
+
+  /// Who or what paid for setting [flag], as the party's ledger reads.
+  String payerFor(String flag) =>
+      economy.payerFor(flag) ?? arcs.completedBy(flag)?.name ?? flag;
 
   /// Everything a player could see in a room: its text, exits, and who is
   /// standing there.
@@ -100,6 +110,10 @@ class Campaign {
           npcs: npcs,
           roomIds: locations.rooms.keys.toSet(),
         ),
+        huntProblems: hunts.problems(
+          bestiary,
+          levels: [for (var l = 1; l <= world.metadata.levelCap; l++) l],
+        ),
       );
 
   /// Arc conditions nothing in the campaign could ever set.
@@ -116,7 +130,9 @@ class Campaign {
   /// - `enter_<room>`, set by walking in — matched as a prefix, since the
   ///   triggers abbreviate and `enter_MH_001` means `MH_001_Square`;
   /// - `keyword_<topic>_unlocked`, set by raising a topic somebody answers;
-  /// - `dialogue_complete_<npc>`, set by raising every topic an NPC has.
+  /// - `dialogue_complete_<npc>`, set by raising every topic an NPC has;
+  /// - `hunted_first` and `hunt_survived_<n>`, set by being hunted, when the
+  ///   campaign has anything to hunt the party with.
   ///
   /// Leaving the last three out made this report cry wolf on conditions that
   /// ordinary play already reaches.
@@ -159,7 +175,7 @@ class Campaign {
         .difference(produced)
         .difference(keywordFlags)
         .difference(dialogueFlags)
-        .where((c) => !isMovement(c))
+        .where((c) => !isMovement(c) && !hunts.producesFlag(c))
         .toList()
       ..sort();
   }
@@ -186,6 +202,7 @@ class CampaignReport {
     this.shopProblems = const [],
     this.unpaidEncounters = const [],
     this.unrewardedArcs = const [],
+    this.huntProblems = const [],
   });
 
   /// Rooms a zone or an exit names but nobody has written.
@@ -235,6 +252,9 @@ class CampaignReport {
   /// Quests, main or side, that pay no coin or no XP.
   final List<CampaignArc> unrewardedArcs;
 
+  /// Hunters that cannot be sent, and levels nothing can be sent at.
+  final List<String> huntProblems;
+
   bool get isClean =>
       unwrittenRooms.isEmpty &&
       danglingExits.isEmpty &&
@@ -250,7 +270,8 @@ class CampaignReport {
       orphanedConversations.isEmpty &&
       shopProblems.isEmpty &&
       unpaidEncounters.isEmpty &&
-      unrewardedArcs.isEmpty;
+      unrewardedArcs.isEmpty &&
+      huntProblems.isEmpty;
 
   /// Problems that would strand a player right now, as opposed to content
   /// that is merely unfinished.
@@ -314,6 +335,7 @@ class CampaignReport {
         unpaidEncounters.map((e) => '${e.name} (${e.id})'));
     section('Quests that pay no coin or no XP',
         unrewardedArcs.map((a) => '${a.name} (${a.id})'));
+    section('The hunt', huntProblems);
     section(
       'Conversations for somebody who does not exist',
       orphanedConversations.map((c) => c.npcId),

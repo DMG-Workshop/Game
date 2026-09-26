@@ -11,6 +11,7 @@ import 'conversation.dart';
 import 'creature.dart';
 import 'economy.dart';
 import 'gear.dart';
+import 'hunt.dart';
 import 'locations.dart';
 import 'npc.dart';
 import 'world.dart';
@@ -46,6 +47,7 @@ class CampaignLoader {
     String? itemsJson,
     String? conversationsJson,
     String? economyJson,
+    String? huntJson,
   }) =>
       Campaign(
         id: id,
@@ -61,6 +63,7 @@ class CampaignLoader {
             ? null
             : readConversations(conversationsJson),
         economy: economyJson == null ? null : readEconomy(economyJson),
+        hunts: huntJson == null ? null : readHunts(huntJson),
       );
 
   // --- world ---------------------------------------------------------------
@@ -342,7 +345,7 @@ class CampaignLoader {
         rearmOn: _strings(raw['rearm_on']),
         rearmDescription: _optional(raw['rearm_description']),
         ambush: raw['ambush'] == true,
-        coin: _readCoinDice(raw['coin'], id),
+        coin: _readCoinDice(raw['coin'], 'Fight "$id"'),
       ));
     }
 
@@ -351,13 +354,13 @@ class CampaignLoader {
 
   /// Reads a fight's coin as dice in gold, checked now rather than when the
   /// party is standing over the bodies.
-  String? _readCoinDice(Object? raw, String encounterId) {
+  String? _readCoinDice(Object? raw, String what) {
     final dice = _optional(raw);
     if (dice == null) return null;
     final parsed = DamageExpression.tryParse(dice);
     if (parsed == null || parsed.minimum < 0) {
       throw CampaignFormatException(
-          'Fight "$encounterId" pays "$dice", which is not dice of gold.');
+          '$what pays "$dice", which is not dice of gold.');
     }
     return dice;
   }
@@ -467,7 +470,11 @@ class CampaignLoader {
       if (payout.isEmpty) {
         throw CampaignFormatException('The reward for "$flag" pays nothing.');
       }
-      rewards.add(Reward(flag: flag, payout: payout));
+      rewards.add(Reward(
+        flag: flag,
+        payout: payout,
+        from: _optional(raw['from']),
+      ));
     }
     return Economy(shops: shops, rewards: rewards);
   }
@@ -506,6 +513,70 @@ class CampaignLoader {
           'not an amount of gold.');
     }
     return (gp * 100).round();
+  }
+
+  // --- the hunt ------------------------------------------------------------
+
+  /// Reads who comes after a party that has got rich.
+  ///
+  /// Chances and percentages are checked here, and every hunter's coin: a
+  /// hunter that paid nothing would make getting richer a pure loss.
+  HuntTable readHunts(String json) {
+    final root = _object(json, 'hunt');
+    final tiers = <NotorietyTier>[];
+    for (final entry in _list(root['notoriety'])) {
+      if (entry is! Map) continue;
+      final raw = entry.cast<String, Object?>();
+      final name = _string(raw['name'], 'notoriety tier name');
+      final threatName = _optional(raw['threat']);
+      final threat = threatName == null ? null : Threat.tryParse(threatName);
+      if (threatName != null && threat == null) {
+        throw CampaignFormatException('Notoriety "$name" has threat '
+            '"$threatName", which is not one of: '
+            '${Threat.values.map((t) => t.name).join(', ')}.');
+      }
+      final chance = _int(raw['chance']);
+      if (chance < 0 || chance > 100) {
+        throw CampaignFormatException('Notoriety "$name" has a $chance% '
+            'chance, which is not a percentage.');
+      }
+      tiers.add(NotorietyTier(
+        name: name,
+        fromPercent: _int(raw['from_percent']),
+        threat: threat,
+        chance: chance,
+        description: _optional(raw['description']) ?? '',
+      ));
+    }
+
+    final hunters = <Hunter>[];
+    final seen = <String>{};
+    for (final entry in _list(root['hunters'])) {
+      if (entry is! Map) continue;
+      final raw = entry.cast<String, Object?>();
+      final id = _string(raw['creature'], 'hunter creature');
+      if (!seen.add(id)) {
+        throw CampaignFormatException('"$id" is on the hunt twice.');
+      }
+      hunters.add(Hunter(
+        creatureId: id,
+        coin: _readCoinDice(raw['coin'], 'Hunter "$id"') ??
+            (throw CampaignFormatException('Hunter "$id" carries no coin.')),
+        arrival: _optional(raw['arrival']) ?? '',
+      ));
+    }
+
+    final rob = _int(root['rob_percent']);
+    if (rob < 0 || rob > 100) {
+      throw CampaignFormatException(
+          'A hunter takes $rob% of the purse, which is not a percentage.');
+    }
+    return HuntTable(
+      tiers: tiers,
+      hunters: hunters,
+      restSteps: _int(root['rest_steps'], fallback: 6),
+      robPercent: rob,
+    );
   }
 
   // --- conversations -------------------------------------------------------

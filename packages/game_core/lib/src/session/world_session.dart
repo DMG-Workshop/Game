@@ -5,12 +5,14 @@ import '../campaign/campaign.dart';
 import '../campaign/creature.dart';
 import '../campaign/economy.dart';
 import '../campaign/gear.dart';
+import '../campaign/hunt.dart';
 import '../campaign/locations.dart';
 import '../campaign/npc.dart';
 import '../campaign/world.dart';
 import '../campaign/world_item.dart';
 import '../party/equipment.dart';
 import '../party/experience.dart';
+import '../party/wealth.dart';
 import 'encounter_session.dart';
 import 'game_session.dart';
 import 'session_actor.dart';
@@ -76,6 +78,8 @@ class MoveResult {
     this.flagsSet = const [],
     this.changedRegion = false,
     this.ambush,
+    this.hunt,
+    this.huntRoll,
   });
 
   final String from;
@@ -85,6 +89,13 @@ class MoveResult {
   /// A fight that springs on arrival, which a client should start rather
   /// than merely mention.
   final Encounter? ambush;
+
+  /// Something that has tracked the party down and caught them up here. Like
+  /// an ambush, a client should start it rather than mention it.
+  final Encounter? hunt;
+
+  /// The d100 against the chance of being found, when one was rolled.
+  final ({int die, int chance})? huntRoll;
 
   /// Flags entering the new room set, which arcs may be watching.
   final List<String> flagsSet;
@@ -136,11 +147,16 @@ class WorldSession {
     PartyInventory? inventory,
     String? cameFrom,
     Experience? experience,
+    LootLedger? ledger,
   })  : _actors = List.of(actors),
         _experience = experience ?? Experience(),
+        _ledger = ledger ?? LootLedger(),
         // Salted off the world's own starting point, so a seed still fixes
         // everything, but a traveller's wandering never shifts a fight.
         _roadDice = DiceRoller(roller.state ^ 0x9E3779B9),
+        // The hunt has dice of its own for the same reason: being rich must
+        // not change the outcome of a fight the party would have had anyway.
+        _huntDice = DiceRoller(roller.state ^ 0x5851F42D),
         _cameFrom = cameFrom,
         _roller = roller,
         _roomId = roomId ?? _firstRoomOf(campaign),
@@ -188,6 +204,19 @@ class WorldSession {
   int _hour;
   final PartyInventory _inventory;
   final Experience _experience;
+  final LootLedger _ledger;
+
+  /// Dice for whether anything finds the party, and what.
+  DiceRoller _huntDice;
+
+  /// Steps since something last found the party.
+  int _sinceHunt = 0;
+
+  /// Hunters the party has beaten.
+  int _huntsSurvived = 0;
+
+  /// Whatever has found the party and not yet been dealt with.
+  Pursuer? _pursuer;
 
   /// Dice for who is where on the roads, kept apart from the world's dice.
   ///
@@ -235,6 +264,36 @@ class WorldSession {
 
   /// Who has earned how much experience.
   Experience get experience => _experience;
+
+  /// Everything the party has come away with, and from where.
+  LootLedger get ledger => _ledger;
+
+  /// What the party is worth now, against what Pathfinder expects of it.
+  Wealth get wealth => Wealth(
+        coin: _inventory.coin,
+        gear: _inventory.gearValue,
+        expected: expectedWealth(level: _partyLevel, partySize: _actors.length),
+      );
+
+  int get _partyLevel =>
+      partyLevel([for (final a in _actors) a.character.level]);
+
+  /// How far word of the party's wealth has spread, and what it brings.
+  Notoriety get notoriety {
+    final worth = wealth;
+    return Notoriety(
+      wealth: worth,
+      tier: campaign.hunts.tierFor(worth.percentOfExpected),
+      partyLevel: _partyLevel,
+      partySize: _actors.length,
+    );
+  }
+
+  /// Whatever has tracked the party down and is waiting to be fought.
+  Pursuer? get pursuer => _pursuer;
+
+  /// How many hunters the party has beaten.
+  int get huntsSurvived => _huntsSurvived;
 
   Set<String> get flags => Set.unmodifiable(_flags);
 
@@ -321,6 +380,12 @@ class WorldSession {
           'The way $direction leads to "${exit.to}", which does not exist.');
     }
 
+    final hunter = _pursuer;
+    if (hunter != null) {
+      throw InvalidMoveException('${hunter.creature.name} has caught you up. '
+          'Fight it, or flee.');
+    }
+
     // Only the way back is open past an ambush. With no known way in — a
     // session started in the room — every way counts as back.
     final waiting = campaign.bestiary.ambushIn(_roomId, _flags);
@@ -340,14 +405,44 @@ class WorldSession {
       if (_steps % npc.route!.every == 0) _moveOn(npc);
     }
 
+    final ambush = campaign.bestiary.ambushIn(_roomId, _flags);
+    final huntRoll = ambush == null ? _rollHunt() : null;
+    final caught = _pursuer;
+    if (caught != null && _set('hunted_first')) set.add('hunted_first');
+
     return MoveResult(
       from: from,
       to: exit.to,
       direction: exit.direction,
-      flagsSet: set,
+      flagsSet: set..sort(),
       changedRegion: currentRegion?.id != fromRegion,
-      ambush: campaign.bestiary.ambushIn(_roomId, _flags),
+      ambush: ambush,
+      hunt: caught?.encounterIn(_roomId),
+      huntRoll: huntRoll,
     );
+  }
+
+  /// Rolls whether anything finds the party this step, and sends it if so.
+  ///
+  /// Never while a fight is already waiting here, and never within a few
+  /// steps of the last one: a hunt is a threat on the road, not a treadmill.
+  /// Returns the roll, or null when there was nothing to roll for.
+  ({int die, int chance})? _rollHunt() {
+    final hunts = campaign.hunts;
+    if (hunts.isEmpty) return null;
+    _sinceHunt++;
+    if (_sinceHunt <= hunts.restSteps) return null;
+
+    final standing = notoriety;
+    final level = standing.hunterLevel;
+    if (!standing.tier.isHunted || level == null) return null;
+
+    final roll = (die: _huntDice.rollDie(100), chance: standing.tier.chance);
+    if (roll.die > roll.chance) return roll;
+
+    _pursuer = hunts.choose(level, campaign.bestiary, _huntDice);
+    if (_pursuer != null) _sinceHunt = 0;
+    return roll;
   }
 
   /// The room the party came in from, if the session knows it.
@@ -384,7 +479,10 @@ class WorldSession {
   void _payReward(String flag) {
     final payout = campaign.payoutFor(flag);
     if (payout == null) return;
-    if (payout.copper > 0) _inventory.earn(payout.copper);
+    if (payout.copper > 0) {
+      _inventory.earn(payout.copper);
+      _ledger.recordCoin(campaign.payerFor(flag), payout.copper);
+    }
     _experience.award(_actors.map((a) => a.id), payout.xp);
   }
 
@@ -484,11 +582,15 @@ class WorldSession {
     set.forEach(_payReward);
 
     // Somebody handing the party something is recorded the way a drop is,
-    // so a gift and a kill end up in the same pack.
+    // so a gift and a kill end up in the same pack and the same ledger.
+    final npcId = conversation.adventure.id.replaceFirst('conversation_', '');
+    final giver = campaign.npcs.byId(npcId)?.name ?? npcId;
     for (final flag in set) {
       if (!flag.startsWith('loot_')) continue;
-      final id = flag.substring('loot_'.length);
-      if (campaign.gear.byId(id) != null) _inventory.add(id);
+      final item = campaign.gear.byId(flag.substring('loot_'.length));
+      if (item == null) continue;
+      _inventory.add(item.id);
+      _ledger.recordItem(giver, item);
     }
     return set;
   }
@@ -576,9 +678,12 @@ class WorldSession {
 
   // --- fights --------------------------------------------------------------
 
-  /// Fights waiting in this room that have not been resolved.
-  List<Encounter> availableEncounters() =>
-      campaign.bestiary.availableIn(_roomId, _flags);
+  /// Fights waiting in this room that have not been resolved, a hunter that
+  /// has caught the party up first of all.
+  List<Encounter> availableEncounters() => [
+        if (_pursuer case final hunter?) hunter.encounterIn(_roomId),
+        ...campaign.bestiary.availableIn(_roomId, _flags),
+      ];
 
   /// Starts a fight, by id or by the first one waiting here.
   ///
@@ -597,6 +702,7 @@ class WorldSession {
       throw InvalidMoveException('There is no fight called "$encounterId" '
           'waiting here.');
     }
+    final hunter = _pursuer;
     return EncounterSession(
       encounter: encounter,
       bestiary: campaign.bestiary,
@@ -604,8 +710,16 @@ class WorldSession {
       roller: _roller,
       gear: campaign.gear,
       loadouts: _inventory.loadouts(),
+      // A hunter comes at the level it was sent at, which is not the level
+      // the bestiary writes it at.
+      foes: hunter != null && _isHunt(encounter, hunter)
+          ? [hunter.creature]
+          : null,
     );
   }
+
+  bool _isHunt(Encounter encounter, Pursuer hunter) =>
+      encounter.id == hunter.encounterIn(_roomId).id;
 
   /// Records the result of a fight, returning the flags it set.
   ///
@@ -613,6 +727,10 @@ class WorldSession {
   /// itself, so that losing and fleeing are the caller's to narrate. Loot is
   /// recorded here too: a drop the party never went back for is not theirs.
   List<String> concludeEncounter(EncounterSession fight) {
+    final hunter = _pursuer;
+    if (hunter != null && _isHunt(fight.encounter, hunter)) {
+      return _concludeHunt(fight, hunter);
+    }
     final set = <String>[];
     // Which wave was beaten is worked out before anything else changes, so
     // a victory flag that happened to rearm something could not skip a wave.
@@ -622,11 +740,48 @@ class WorldSession {
     for (final flag in [...won, ...fight.victoryFlags, ...fight.lootFlags]) {
       if (_set(flag)) set.add(flag);
     }
+    _collect(fight);
+    return set..sort();
+  }
+
+  /// Takes a won fight's coin, loot and XP, and writes them in the ledger.
+  void _collect(EncounterSession fight) {
+    final source = fight.encounter.name;
     for (final item in fight.loot) {
       _inventory.add(item.id);
+      _ledger.recordItem(source, item);
     }
     _inventory.earn(fight.coinEarned);
+    _ledger.recordCoin(source, fight.coinEarned);
     _experience.award(_actors.map((a) => a.id), fight.xpEarned);
+  }
+
+  /// Settles a fight with a hunter, however it went.
+  ///
+  /// Won, it pays like any fight and counts toward `hunt_survived_<n>`. Lost,
+  /// the hunter takes its share of the purse, which is what it came for. Fled,
+  /// it loses the trail. Either way it is gone, and the next one is a few
+  /// steps off at least.
+  List<String> _concludeHunt(EncounterSession fight, Pursuer hunter) {
+    final set = <String>[];
+    switch (fight.outcome) {
+      case EncounterOutcome.victory:
+        _huntsSurvived++;
+        for (final flag in [
+          'hunt_survived_$_huntsSurvived',
+          ...fight.lootFlags,
+        ]) {
+          if (_set(flag)) set.add(flag);
+        }
+        _collect(fight);
+      case EncounterOutcome.defeat:
+        final taken = _inventory.coin * campaign.hunts.robPercent ~/ 100;
+        if (taken > 0) _inventory.spend(taken);
+      case EncounterOutcome.fled || null:
+        break;
+    }
+    _pursuer = null;
+    _sinceHunt = 0;
     return set..sort();
   }
 
@@ -895,8 +1050,19 @@ class WorldSession {
             for (final e in _onHand.entries) e.key: List<String>.from(e.value),
           },
         },
+        'hunt': {
+          'dice': _huntDice.state,
+          'since': _sinceHunt,
+          'survived': _huntsSurvived,
+          if (_pursuer case final hunter?)
+            'pursuer': {
+              'creature': hunter.hunter.creatureId,
+              if (hunter.adjustment != null) 'adjustment': hunter.adjustment,
+            },
+        },
         'flags': (_flags.toList()..sort()),
         'inventory': _inventory.toJson(),
+        'ledger': _ledger.toJson(),
         'experience': _experience.toJson(),
         'rollerState': _roller.state,
         'weather': Map<String, String>.from(_weatherByRegion),
@@ -939,7 +1105,23 @@ class WorldSession {
       experience: snapshot.containsKey('experience')
           ? Experience.fromJson(snapshot['experience'])
           : null,
+      ledger: LootLedger.fromJson(snapshot['ledger']),
     );
+    final hunt = snapshot['hunt'];
+    if (hunt is Map) {
+      session._huntDice =
+          DiceRoller.fromState((hunt['dice'] as num?)?.toInt() ?? 0);
+      session._sinceHunt = (hunt['since'] as num?)?.toInt() ?? 0;
+      session._huntsSurvived = (hunt['survived'] as num?)?.toInt() ?? 0;
+      final pursuer = hunt['pursuer'];
+      if (pursuer is Map) {
+        session._pursuer = campaign.hunts.restore(
+          pursuer['creature']?.toString() ?? '',
+          pursuer['adjustment']?.toString(),
+          campaign.bestiary,
+        );
+      }
+    }
     final savedPack = snapshot['inventory'];
     // The roads pick up where they were, rather than re-rolled on load.
     final road = snapshot['road'];
