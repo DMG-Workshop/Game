@@ -123,11 +123,11 @@ void main() {
 
   group('npcs', () {
     test('reads the cast and places them', () {
-      expect(campaign.npcs.length, 11);
+      expect(campaign.npcs.length, 12);
       expect(campaign.npcs.byId('npc_001_thorne')!.name,
           'Captain Thorne Ironhelm');
-      expect(
-          campaign.npcs.inRoom('VC_002_ThroneRoom').single.name, 'Queen Liora');
+      expect(campaign.npcs.inRoom('VC_002_ThroneRoom').map((n) => n.name),
+          ['Queen Liora', 'King Aldric']);
       expect(campaign.npcs.inRoom('MH_001_Square').single.name, 'Jory Tallow');
       expect(campaign.npcs.inRoom('WW_002_Deep'), isEmpty);
     });
@@ -485,9 +485,9 @@ void main() {
 
   group('arcs', () {
     test('reads both tiers', () {
-      // Two tiers of main story, and the side quests alongside them.
-      expect(campaign.arcs.all.where((a) => !a.isSide), hasLength(2));
-      expect(campaign.arcs.all.where((a) => a.isSide), hasLength(10));
+      // Three tiers of main story, and the side quests alongside them.
+      expect(campaign.arcs.all.where((a) => !a.isSide), hasLength(3));
+      expect(campaign.arcs.all.where((a) => a.isSide), hasLength(12));
       final tier1 = campaign.arcs.byId('tier_1_local_threat')!;
       expect(tier1.name, 'Shadows Over Millhaven');
       expect(tier1.minLevel, 1);
@@ -534,7 +534,8 @@ void main() {
       expect(view.room.title, 'The Royal Throne Room');
       expect(view.town!.name, 'Valorheim Capital');
       expect(view.region!.id, 'r_002_valorheim_heartlands');
-      expect(view.npcs.single.name, 'Queen Liora');
+      // The campaign places both; the story decides who is there.
+      expect(view.npcs.map((n) => n.name), ['Queen Liora', 'King Aldric']);
     });
 
     test('returns nothing for a room id nobody has written', () {

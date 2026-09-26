@@ -21,7 +21,9 @@
         "z_04_palace_district": ["VC_001_Plaza", "VC_002_ThroneRoom", "VC_003_GrandLibrary"],
         "z_05_bloodstone_mines": ["BM_001_Entrance", "BM_002_DeepMine"],
         "z_06_thornhaven": ["TH_001_Gates", "TH_002_RitualChamber"],
-        "z_08_under_archive": ["UA_001_SealedStacks", "UA_002_OssuaryStair", "UA_003_FalseSeal"]
+        "z_08_under_archive": ["UA_001_SealedStacks", "UA_002_OssuaryStair", "UA_003_FalseSeal"],
+        "z_09_the_sundering": ["SD_001_Rift", "SD_002_BuriedStreet", "SD_003_UnmakingTemple", "SD_004_GuardPost"],
+        "z_10_quiet_court": ["QK_001_CausewayOfNames", "QK_002_QuietCourt", "QK_003_WellOfSeals", "QK_004_Cradle"]
       }
     }
   },
@@ -171,6 +173,12 @@
           "to": "MH_001_Square",
           "requires": ["Unlock_Travel_to_Valorheim"],
           "blocked": "The southwest road is closed to traffic by order of the crown."
+        },
+        "down": {
+          "to": "SD_001_Rift",
+          "requires": ["Trigger_Sundering_Earthquake_Event"],
+          "minutes": 20,
+          "blocked": "The flagstones of the plaza are laid over something older. Stand still long enough and you can feel it through your boots, and you are not the only one in the square standing still to feel it."
         }
       },
       "ambiance": [
@@ -328,6 +336,105 @@
         "The painted seal shows its brush strokes when the light moves.",
         "The kneeling mats are worn in two places, as if by knees.",
         "Small sounds on the stair above, coming closer."
+      ]
+    },
+    {
+      "room_id": "SD_001_Rift",
+      "title": "The Rift",
+      "description": "The plaza fell in along a line as straight as a ruled margin, and the paving went down in slabs that lie now like the steps of a giant's stair. Palace light comes down the crack in a single blade. Below it the stone is older, darker, and cut by somebody who did not measure the way Valorheim measures.",
+      "exits": {
+        "up": { "to": "VC_001_Plaza", "minutes": 20 },
+        "down": "SD_002_BuriedStreet"
+      },
+      "shelter": true,
+      "ambiance": [
+        "Grit sifts down from the plaza whenever somebody up there walks too near the edge.",
+        "Voices from the plaza come down the crack thin and far away, like voices down a well.",
+        "The broken paving shifts under your weight, and settles again."
+      ]
+    },
+    {
+      "room_id": "SD_002_BuriedStreet",
+      "title": "The Buried Street",
+      "description": "A street, whole, under the capital: doorways, shutters, a well with its bucket still on the chain, and overhead, instead of sky, the undersides of Valorheim's cellars. Every house has its door open. Every threshold has been swept. Nobody has lived here for a thousand years, and it is ready for visitors.",
+      "exits": { "up": "SD_001_Rift", "east": "SD_003_UnmakingTemple", "west": "SD_004_GuardPost" },
+      "shelter": true,
+      "ambiance": [
+        "A shutter swings open and shut on a breeze that is not blowing.",
+        "The bucket on the well chain turns slowly, first one way and then the other.",
+        "Every doorway on the street is dark all the way to the back."
+      ]
+    },
+    {
+      "room_id": "SD_003_UnmakingTemple",
+      "title": "The Temple of Unmaking",
+      "description": "A round temple with no altar, only a floor worn into a shallow bowl by a great many people kneeling in one place for a great many years. The walls were carved once. They have been rubbed smooth, all but a single line near the floor that nobody could reach without lying down: WE CHOSE TO STOP. A stair goes down from the middle of the bowl.",
+      "exits": { "west": "SD_002_BuriedStreet", "down": "QK_001_CausewayOfNames" },
+      "shelter": true,
+      "ambiance": [
+        "Your footsteps drift toward the middle of the bowl if you do not watch them.",
+        "The one carved line near the floor catches the light: WE CHOSE TO STOP.",
+        "The air is very still, as if it had been asked to be."
+      ]
+    },
+    {
+      "room_id": "SD_004_GuardPost",
+      "title": "The Fallen Guard Post",
+      "description": "Part of the palace came down into the street with the plaza: a guard post, whole, sitting at an angle among older houses with its lamp still on its hook. The door is off. There are boot marks going in, a great many of them, and none coming out.",
+      "exits": { "east": "SD_002_BuriedStreet" },
+      "shelter": true,
+      "ambiance": [
+        "The lamp on its hook still has oil in it, and nobody to light it.",
+        "The duty board by the door has eight names on it and none crossed out.",
+        "The floor gives a little underfoot, as if something below were leaning on it."
+      ]
+    },
+    {
+      "room_id": "QK_001_CausewayOfNames",
+      "title": "The Causeway of Names",
+      "description": "A causeway across a dark that has no floor you can see, paved in long stones, and every stone carved edge to edge with names in a script older than the kingdom. A great many of them have been scraped out, deep and fresh, as if by a tongue. At the near end the newest names are in plain letters, and the chisel that cut them is still lying beside the last.",
+      "exits": { "up": "SD_003_UnmakingTemple", "north": "QK_002_QuietCourt" },
+      "shelter": true,
+      "ambiance": [
+        "The names under your feet are scraped clean before you can finish reading them.",
+        "Nothing comes up out of the dark on either side: not a sound, not a draught.",
+        "The chisel beside the newest name has not had time to rust."
+      ]
+    },
+    {
+      "room_id": "QK_002_QuietCourt",
+      "title": "The Quiet Court",
+      "description": "A throne room, and Valorheim's was copied from it: the same vault, the same dais, the same long approach meant to make visitors feel small. There is no perfume here, and no decay under it. There is nothing here at all but the court, still in its places, waiting for its king to finish a sentence he began a thousand years ago.",
+      "exits": { "south": "QK_001_CausewayOfNames", "down": "QK_003_WellOfSeals" },
+      "shelter": true,
+      "ambiance": [
+        "There is no echo here. Every sound you make simply stops.",
+        "The courtiers' robes have gone the grey of old paper.",
+        "The approach to the dais is exactly as long as it needs to be to make you feel small."
+      ]
+    },
+    {
+      "room_id": "QK_003_WellOfSeals",
+      "title": "The Well of Seals",
+      "description": "A shaft going down through the rock in a spiral of seals, each one a great disc of red and black the size of a cart wheel, set into the wall like the rungs of a ladder for something very large. Most of them are broken. The Covenant's chisels are still in some of the cracks.",
+      "exits": { "up": "QK_002_QuietCourt", "down": "QK_004_Cradle" },
+      "shelter": true,
+      "ambiance": [
+        "Chips of red stone rattle down the shaft from the broken seals above.",
+        "The lowest seal hums when you touch it, like a bell with a cloth over it.",
+        "Far below, something breathes out, slow as a tide."
+      ]
+    },
+    {
+      "room_id": "QK_004_Cradle",
+      "title": "The Vessel's Cradle",
+      "description": "The bottom of the world, or of this one. A hollow in the rock shaped to hold something the size of a cathedral, and something is lying in it, the colour of the space between lamps. It is breathing slowly. A length of fine chain runs from it, across the floor, to a woman in a Queen's gown who is kneeling with her hands on it, as if she were warming them.",
+      "exits": { "up": "QK_003_WellOfSeals" },
+      "shelter": true,
+      "ambiance": [
+        "The dark in the hollow breathes, and every lamp you brought gutters with it.",
+        "The chain on the floor twitches now and then, like something dreaming.",
+        "It is very quiet. It is the quietest place you have ever been."
       ]
     }
   ]

@@ -199,6 +199,8 @@ class CampaignLoader {
         tier: _int(raw['tier'], fallback: 1),
         appearance: _optional(raw['appearance']) ?? '',
         greeting: _optional(raw['greeting']) ?? '',
+        appearsAfter: _strings(raw['appears_after']),
+        leavesAfter: _strings(raw['leaves_after']),
         keywords: {
           for (final e in _map(raw['keywords']).entries)
             e.key.trim().toLowerCase(): e.value.toString(),

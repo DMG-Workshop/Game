@@ -727,6 +727,20 @@
               }
             },
             {
+              "id": "take_back_name",
+              "label": "Ask him to take back the name on the rubbing",
+              "say": "The Queen carved this child's name on a road under the capital, with the names of those meant to go first. Master Hale says you can take it back.",
+              "outcome": {
+                "text": "Aldus reads the name, and reads it again, and sits down on the altar step with the paper on his knee. \"A child.\" He is quiet a long moment. \"There is a rite. Nobody has needed it in my lifetime: you ask the grave to give back a name it was promised before it was owed.\" He takes a candle from the altar and holds the corner of the rubbing in the flame until the name is ash, saying something under his breath the whole time. \"There. She is nobody's but her own again.\" He brushes the ash off his knee. \"Ashkyr keep her. Ashkyr keep all of us, down there.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["aldus_took_back_the_name"]
+              },
+              "requires": {
+                "flags": ["hale_read_the_rubbing"],
+                "notFlags": ["aldus_took_back_the_name"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "say": "Keep a lamp lit, Brother.",
@@ -799,6 +813,20 @@
               "requires": {
                 "flags": ["thorne_knew_the_stone"],
                 "notFlags": ["aldus_blessed_the_drowned"]
+              }
+            },
+            {
+              "id": "take_back_name",
+              "label": "Ask him to take back the name on the rubbing",
+              "say": "The Queen carved this child's name on a road under the capital, with the names of those meant to go first. Master Hale says you can take it back.",
+              "outcome": {
+                "text": "Aldus reads the name, and reads it again, and sits down on the altar step with the paper on his knee. \"A child.\" He is quiet a long moment. \"There is a rite. Nobody has needed it in my lifetime: you ask the grave to give back a name it was promised before it was owed.\" He takes a candle from the altar and holds the corner of the rubbing in the flame until the name is ash, saying something under his breath the whole time. \"There. She is nobody's but her own again.\" He brushes the ash off his knee. \"Ashkyr keep her. Ashkyr keep all of us, down there.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["aldus_took_back_the_name"]
+              },
+              "requires": {
+                "flags": ["hale_read_the_rubbing"],
+                "notFlags": ["aldus_took_back_the_name"]
               }
             },
             {
@@ -1973,6 +2001,20 @@
               }
             },
             {
+              "id": "show_rubbing",
+              "label": "Show him the rubbing from the causeway",
+              "say": "We found this carved on a causeway under the city. It was cut this week.",
+              "outcome": {
+                "text": "Hale takes the paper to the window to read it, as if the lamp at the desk might be lying. Behind him his daughter turns a page. \"That is the Queen's hand,\" he says at last. \"I have copied enough of her letters to know it.\" He folds the rubbing very small. \"That road is where the Quiet put the names of those it meant to stop first. It isn't a threat. It's a list.\" He looks at Wenna, and then at you. \"Brother Aldus, in Millhaven. Ashkyr keeps the grave, and what the grave has been promised it can be asked to give back. Take it to him. Please.\"",
+                "goTo": "hale_bye",
+                "setFlags": ["hale_read_the_rubbing"]
+              },
+              "requires": {
+                "flags": ["item_acquired_causeway_rubbing"],
+                "notFlags": ["hale_read_the_rubbing"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave them be",
               "outcome": { "text": "Somewhere in the stacks, Hale is humming.", "goTo": "hale_bye" }
@@ -2583,6 +2625,176 @@
           "id": "brask_bye",
           "title": "Foreman Ruel Brask",
           "body": "The winch creaks in the wind above the shaft.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_012_aldric",
+      "entries": [
+        {
+          "scene": "aldric_after",
+          "requires": ["boss_defeated_shadow_vessel"]
+        },
+        {
+          "scene": "aldric_again",
+          "requires": ["met_aldric"]
+        },
+        { "scene": "aldric_open" }
+      ],
+      "scenes": [
+        {
+          "id": "aldric_open",
+          "title": "King Aldric",
+          "body": "The King does not get up. He turns the crown over in his lap as if somebody had handed it to him in the street. \"Sit, if you like. The chairs in here were all hers, and I find I do not care.\" He looks at you properly for the first time. \"You broke Vex. The physicians say that is why I can think again. I owe you my wits, and I am about to ask you to spend them.\"",
+          "options": [
+            {
+              "id": "ask_queen",
+              "label": "Ask where the Queen has gone",
+              "say": "Where is the Queen?",
+              "outcome": {
+                "text": "\"Down.\" He points at the floor, and he does not mean this one. \"The night the plaza opened she went into it with a length of chain from Thornhaven over her arm and nobody to carry her train. The guards say she was smiling.\" He sets the crown down on the step beside him. \"I have been married to her for twenty years. I should like, before the end, to find out who she is. Go down after her. Whatever she means to do down there, she means to do it to all of us.\"",
+                "goTo": "aldric_ask",
+                "setFlags": ["met_aldric", "aldric_sent_you_down"]
+              }
+            },
+            {
+              "id": "ask_patrol",
+              "label": "Ask about the guard post that went down",
+              "say": "A whole guard post went into the rift. What happened to the men in it?",
+              "outcome": {
+                "text": "\"The Third Patrol.\" He says it the way a man says a debt. \"They went down the rift after her the same night, eight of them, with a roll to tick them off by. The post they were keeping went down into the dark after them, lamp and all.\" He looks at the floor again. \"Nobody has come back up. I should like their names read out, if there is anybody left to answer them.\"",
+                "goTo": "aldric_ask",
+                "setFlags": ["met_aldric", "aldric_asked_after_the_patrol"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave him to his crown",
+              "outcome": {
+                "text": "\"Come back when you are ready,\" he says. \"I am not going anywhere. I have only just arrived.\"",
+                "goTo": "aldric_bye",
+                "setFlags": ["met_aldric"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "aldric_ask",
+          "title": "King Aldric",
+          "body": "\"What else?\" says the King.",
+          "options": [
+            {
+              "id": "ask_queen",
+              "label": "Ask where the Queen has gone",
+              "say": "Where is the Queen?",
+              "outcome": {
+                "text": "\"Down.\" He points at the floor, and he does not mean this one. \"The night the plaza opened she went into it with a length of chain from Thornhaven over her arm and nobody to carry her train. The guards say she was smiling.\" He sets the crown down on the step beside him. \"I have been married to her for twenty years. I should like, before the end, to find out who she is. Go down after her. Whatever she means to do down there, she means to do it to all of us.\"",
+                "goTo": "aldric_ask",
+                "setFlags": ["met_aldric", "aldric_sent_you_down"]
+              },
+              "requires": {
+                "notFlags": ["aldric_sent_you_down"]
+              }
+            },
+            {
+              "id": "ask_patrol",
+              "label": "Ask about the guard post that went down",
+              "say": "A whole guard post went into the rift. What happened to the men in it?",
+              "outcome": {
+                "text": "\"The Third Patrol.\" He says it the way a man says a debt. \"They went down the rift after her the same night, eight of them, with a roll to tick them off by. The post they were keeping went down into the dark after them, lamp and all.\" He looks at the floor again. \"Nobody has come back up. I should like their names read out, if there is anybody left to answer them.\"",
+                "goTo": "aldric_ask",
+                "setFlags": ["met_aldric", "aldric_asked_after_the_patrol"]
+              },
+              "requires": {
+                "notFlags": ["aldric_asked_after_the_patrol"]
+              }
+            },
+            {
+              "id": "give_roll",
+              "label": "Give him the Third Patrol's watch-roll",
+              "say": "This was in the guard post, under the floor. We are sorry.",
+              "outcome": {
+                "text": "The King unrolls it on his knee and reads it aloud, every name, the way a sergeant reads a muster. Nobody answers. When he gets to the end he rolls it up again and holds it in both hands. \"Their families will have this, and a pension, and the truth. That is three things more than the Queen would have given them.\" He does not look up. \"Thank you.\"",
+                "goTo": "aldric_bye",
+                "setFlags": ["aldric_given_the_roll"]
+              },
+              "requires": {
+                "flags": ["item_acquired_patrol_roll"],
+                "notFlags": ["aldric_given_the_roll"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "He nods, and goes back to looking at the crown.", "goTo": "aldric_bye" }
+            }
+          ]
+        },
+        {
+          "id": "aldric_again",
+          "title": "King Aldric",
+          "body": "The King looks up from the crown in his lap. \"Well?\"",
+          "options": [
+            {
+              "id": "talk",
+              "label": "Talk",
+              "say": "A word, Your Majesty.",
+              "outcome": { "text": "\"Go on.\"", "goTo": "aldric_ask" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "He goes back to the crown.", "goTo": "aldric_bye" }
+            }
+          ]
+        },
+        {
+          "id": "aldric_after",
+          "title": "King Aldric",
+          "body": "The King is on the throne for the first time since you have known him, with the crown on his head, looking as though it pinches. He comes down the steps to meet you. \"It is quiet down there, I am told. Properly quiet.\" He waits. \"And my wife?\"",
+          "options": [
+            {
+              "id": "tell",
+              "label": "Tell him how it ended",
+              "say": "She chained herself to the thing to wear it. She nearly did.",
+              "outcome": {
+                "text": "He listens to all of it without a word, and at the end he nods once, as if you had confirmed something he had read in a report. \"Nearly something,\" he says. \"Yes. That was always the trouble with her.\" He takes the crown off and holds it out to look at. \"Valorheim is built on a kingdom that chose to stop. I think I should like this one to choose otherwise, and I think it will be hard work. Thank you for giving it the chance.\"",
+                "goTo": "aldric_bye",
+                "setFlags": ["aldric_told_the_end"]
+              },
+              "requires": {
+                "notFlags": ["aldric_told_the_end"]
+              }
+            },
+            {
+              "id": "give_roll",
+              "label": "Give him the Third Patrol's watch-roll",
+              "say": "This was in the guard post, under the floor. We are sorry.",
+              "outcome": {
+                "text": "The King unrolls it on his knee and reads it aloud, every name, the way a sergeant reads a muster. Nobody answers. When he gets to the end he rolls it up again and holds it in both hands. \"Their families will have this, and a pension, and the truth. That is three things more than the Queen would have given them.\" He does not look up. \"Thank you.\"",
+                "goTo": "aldric_bye",
+                "setFlags": ["aldric_given_the_roll"]
+              },
+              "requires": {
+                "flags": ["item_acquired_patrol_roll"],
+                "notFlags": ["aldric_given_the_roll"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave him to his kingdom",
+              "outcome": {
+                "text": "\"Come back,\" he says. \"Often. I shall need people who have been underneath it.\"",
+                "goTo": "aldric_bye"
+              }
+            }
+          ]
+        },
+        {
+          "id": "aldric_bye",
+          "title": "King Aldric",
+          "body": "The throne room doors close behind you, and for once nobody is listening at them.",
           "isEnding": true
         }
       ]

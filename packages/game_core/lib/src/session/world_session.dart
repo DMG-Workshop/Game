@@ -1613,11 +1613,12 @@ class WorldSession {
   // --- travellers ----------------------------------------------------------
 
   /// Everyone in this room: those who stay put, and any traveller whose
-  /// road has brought them here.
+  /// road has brought them here, as long as the story has them about.
   List<Npc> _npcsHere() => [
-        ...campaign.npcs.inRoom(_roomId),
+        for (final npc in campaign.npcs.inRoom(_roomId))
+          if (npc.isPresent(_flags)) npc,
         for (final npc in campaign.npcs.travellers)
-          if (_whereabouts[npc.id] == _roomId) npc,
+          if (_whereabouts[npc.id] == _roomId && npc.isPresent(_flags)) npc,
       ];
 
   Npc? _findNpcHere(String who) => NpcDirectory.findAmong(_npcsHere(), who);

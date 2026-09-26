@@ -103,6 +103,10 @@ SHELTERED = {
     'RF_001_Farm', 'VC_002_ThroneRoom', 'VC_003_GrandLibrary',
     'BM_002_DeepMine', 'TH_002_RitualChamber', 'MR_003_DrownedMill',
     'UA_001_SealedStacks', 'UA_002_OssuaryStair', 'UA_003_FalseSeal',
+    # Everything under the capital, where the Sundering opened.
+    'SD_001_Rift', 'SD_002_BuriedStreet', 'SD_003_UnmakingTemple',
+    'SD_004_GuardPost', 'QK_001_CausewayOfNames', 'QK_002_QuietCourt',
+    'QK_003_WellOfSeals', 'QK_004_Cradle',
 }
 
 locations = h.load('locations.json')
