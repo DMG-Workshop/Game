@@ -106,7 +106,7 @@ class GameConsole {
   List<({String command, String label})> _choices = const [];
 
   /// Options that mean "show me what you sell", when a shopkeeper has them.
-  static const _browsing = {'look', 'wares', 'stock', 'browse'};
+  static const _browsing = {'look', 'wares', 'stock', 'browse', 'ask_stock'};
 
   String _wrapped(String text, {String indent = ''}) =>
       wrap(text, width: width, indent: indent);

@@ -2294,9 +2294,18 @@
               }
             },
             {
+              "id": "look",
+              "label": "Ask to see his stock",
+              "say": "Show us what you have.",
+              "outcome": {
+                "text": "\"Have another look. It's all still here, more's the pity.\"",
+                "goTo": "jory_talk"
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
-              "say": "We'll have a look.",
+              "say": "We'll think about it.",
               "outcome": { "text": "\"Look all you like. Buying's where the joy is.\"", "goTo": "jory_bye" }
             }
           ]
@@ -2311,6 +2320,15 @@
               "label": "Talk",
               "say": "A word, Jory.",
               "outcome": { "text": "\"Always.\"", "goTo": "jory_talk" }
+            },
+            {
+              "id": "look",
+              "label": "Ask to see his stock",
+              "say": "What have you got today?",
+              "outcome": {
+                "text": "\"Same as ever, and cheaper than it deserves.\" He props the shutters open.",
+                "goTo": "jory_talk"
+              }
             },
             {
               "id": "leave",

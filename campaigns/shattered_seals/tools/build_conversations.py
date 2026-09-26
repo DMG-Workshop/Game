@@ -1469,9 +1469,12 @@ jory_talk_options = [
         go='jory_talk',
         say="Anything under the counter? Something the capital doesn't have?",
         sets=['jory_asked_rare'], unless=['jory_asked_rare']),
+    opt('look', 'Ask to see his stock',
+        '«Have another look. It\'s all still here, more\'s the pity.»',
+        go='jory_talk', say='Show us what you have.'),
     opt('leave', 'Leave',
         '«Look all you like. Buying\'s where the joy is.»',
-        go='jory_bye', say="We'll have a look."),
+        go='jory_bye', say="We'll think about it."),
 ]
 
 jory = conversation('npc_009_jory', [
@@ -1509,6 +1512,10 @@ jory = conversation('npc_009_jory', [
           'Jory looks up from his broadsheet. «Back for more?»',
           opt('talk', 'Talk', '«Always.»', go='jory_talk',
               say='A word, Jory.'),
+          opt('look', 'Ask to see his stock',
+              '«Same as ever, and cheaper than it deserves.» He props the '
+              'shutters open.',
+              go='jory_talk', say='What have you got today?'),
           opt('leave', 'Leave', 'He goes back to the broadsheet.',
               go='jory_bye')),
 
