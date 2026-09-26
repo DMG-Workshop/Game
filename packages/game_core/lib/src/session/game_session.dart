@@ -223,6 +223,7 @@ class GameSession {
       actorId: actor.id,
       actorName: actor.name,
       narration: result.text,
+      said: option.say,
       check: outcome,
       movedTo: goTo,
       flagsSet: result.setFlags,

@@ -133,6 +133,101 @@
         "While the ritual circles are intact, damage that would drop him instead leaves him at 1 Hit Point once per fight.",
         "Speaks throughout, and will stop to answer a genuine question."
       ]
+    },
+    {
+      "creature_id": "c_covenant_cutthroat",
+      "name": "Covenant Cutthroat",
+      "level": 2,
+      "description": "A Millhaven face you half recognise from the market, with a cudgel in one hand and a length of red cord tied round the other wrist. Paid, and not paid enough to look you in the eye.",
+      "ac": 18,
+      "hp": 30,
+      "perception": 7,
+      "fortitude": 9,
+      "reflex": 9,
+      "will": 5,
+      "speed": 25,
+      "traits": ["human", "covenant"],
+      "attacks": [
+        { "name": "cudgel", "bonus": 10, "damage": "1d6+4", "damage_type": "B", "reach": "engaged" },
+        { "name": "sling", "bonus": 9, "damage": "1d6+2", "damage_type": "B", "reach": "far" }
+      ],
+      "specials": [
+        "Breaks and runs at the first real wound once the others are down."
+      ]
+    },
+    {
+      "creature_id": "c_mere_drowned",
+      "name": "Mere-Drowned",
+      "level": 3,
+      "description": "Something that went into the mere a long time ago with a rope round its ankles and a stone on the rope, and has come back up with both. It is not one of the Avatar's. Somebody else asked it up.",
+      "ac": 17,
+      "hp": 50,
+      "perception": 8,
+      "fortitude": 12,
+      "reflex": 5,
+      "will": 8,
+      "speed": 20,
+      "traits": ["undead", "mindless", "water"],
+      "attacks": [
+        {
+          "name": "waterlogged grip",
+          "bonus": 12,
+          "damage": "1d10+5",
+          "damage_type": "B",
+          "reach": "engaged"
+        }
+      ],
+      "specials": [
+        "Drags whatever it holds toward the water's edge instead of striking it again."
+      ]
+    },
+    {
+      "creature_id": "c_archive_warden",
+      "name": "Archive Warden",
+      "level": 10,
+      "description": "A suit of palace armour with nobody in it, walking a patrol it was given before the library had its present name. There is a key in its back, and the key is turning.",
+      "ac": 30,
+      "hp": 150,
+      "perception": 18,
+      "fortitude": 22,
+      "reflex": 15,
+      "will": 18,
+      "speed": 20,
+      "traits": ["construct", "mindless"],
+      "attacks": [
+        { "name": "halberd", "bonus": 22, "damage": "2d10+12", "damage_type": "S", "reach": "near" }
+      ],
+      "specials": [
+        "Stops mid-swing if the key in its back is drawn out. Nobody can reach it from the front."
+      ]
+    },
+    {
+      "creature_id": "c_ossuary_reader",
+      "name": "Ossuary Reader",
+      "level": 9,
+      "description": "It was an archivist once, by the ink still in the creases of its knuckles. It has been kept down here to guard the stair, and fed just enough, and it is hungry now in a way that has nothing to do with reading.",
+      "ac": 28,
+      "hp": 145,
+      "perception": 18,
+      "fortitude": 18,
+      "reflex": 19,
+      "will": 17,
+      "speed": 30,
+      "traits": ["undead", "ghoul"],
+      "attacks": [
+        { "name": "jaws", "bonus": 20, "damage": "2d8+10", "damage_type": "P", "reach": "engaged" },
+        {
+          "name": "claw",
+          "bonus": 20,
+          "damage": "2d6+10",
+          "damage_type": "S",
+          "reach": "engaged",
+          "traits": ["agile"]
+        }
+      ],
+      "specials": [
+        "Its claws numb; whatever they open finds its hands slow to answer."
+      ]
     }
   ],
   "encounters": [
@@ -144,7 +239,8 @@
       "creatures": ["c_hollow_thrall", "c_hollow_thrall"],
       "start_zone": "near",
       "repeatable": false,
-      "victory_flags": ["cleared_whisperwood_thralls"]
+      "victory_flags": ["cleared_whisperwood_thralls"],
+      "ambush": true
     },
     {
       "encounter_id": "e_hollow_grove",
@@ -165,6 +261,74 @@
       "start_zone": "near",
       "requires": ["item_destroyed_bloodstone_geode"],
       "victory_flags": ["boss_defeated_malachai_vex"]
+    },
+    {
+      "encounter_id": "e_mere_road_cutthroats",
+      "location": "MR_001_MereRoad",
+      "name": "Paid to Wait",
+      "description": "Two figures stand up out of the reeds on either side of the causeway with cudgels already in hand. Neither of them looks surprised to see you.",
+      "rearm_description": "There are two more of them on the causeway now, standing exactly where the first two stood, red cord at their wrists. They have been waiting for you to come back up this road. They knew you would.",
+      "creatures": ["c_covenant_cutthroat", "c_covenant_cutthroat"],
+      "start_zone": "near",
+      "ambush": true,
+      "rearm_on": ["deception_revealed_mere_road"],
+      "victory_flags": ["cleared_mere_road"]
+    },
+    {
+      "encounter_id": "e_reed_beds_drowned",
+      "location": "MR_002_ReedBeds",
+      "name": "Up Out of the Water",
+      "description": "The water on either side of the causeway stands up, and keeps standing up, and has arms.",
+      "rearm_description": "The reeds you cut through have closed again, and the mere on either side of the road is standing up the way it did before. Something has called them back — the same something that rang the bell.",
+      "creatures": ["c_mere_drowned", "c_mere_drowned"],
+      "start_zone": "near",
+      "ambush": true,
+      "rearm_on": ["deception_revealed_mere_road"],
+      "victory_flags": ["cleared_reed_beds"]
+    },
+    {
+      "encounter_id": "e_drowned_mill",
+      "location": "MR_003_DrownedMill",
+      "name": "The Miller's Welcome",
+      "description": "They were sitting in the dark on the far side of the millstone, and they are on their feet the moment your boots touch the dry boards. One of them is still holding a length of the same red cord as the bundle.",
+      "creatures": ["c_covenant_cutthroat", "c_mere_drowned", "c_covenant_cutthroat"],
+      "start_zone": "near",
+      "ambush": true,
+      "victory_flags": ["cleared_drowned_mill"]
+    },
+    {
+      "encounter_id": "e_sealed_stacks_warden",
+      "location": "UA_001_SealedStacks",
+      "name": "The Night Patrol",
+      "description": "At the end of a row of empty shelves, something in palace armour turns on its heel and begins, without hurrying, to walk towards you.",
+      "rearm_description": "There is a suit on patrol between the shelves again — another, or the same one put back together. Someone came down the stair behind you and wound it; the key in its back is still turning.",
+      "creatures": ["c_archive_warden"],
+      "start_zone": "far",
+      "ambush": true,
+      "rearm_on": ["deception_revealed_under_archive"],
+      "victory_flags": ["cleared_sealed_stacks"]
+    },
+    {
+      "encounter_id": "e_ossuary_readers",
+      "location": "UA_002_OssuaryStair",
+      "name": "The Readers",
+      "description": "Two of the skulls in the wall are not set in mortar, and neither are the things behind them. They climb down.",
+      "rearm_description": "The skulls you left facing out have all been turned back to the wall, and the two empty niches are not empty any more.",
+      "creatures": ["c_ossuary_reader", "c_ossuary_reader"],
+      "start_zone": "near",
+      "ambush": true,
+      "rearm_on": ["deception_revealed_under_archive"],
+      "victory_flags": ["cleared_ossuary_stair"]
+    },
+    {
+      "encounter_id": "e_false_seal",
+      "location": "UA_003_FalseSeal",
+      "name": "The Vault's Keepers",
+      "description": "Two figures in crimson rise from where they were kneeling in front of the seal, and a third thing, on a chain, rises with them. They were not praying. They were listening for your feet on the stair.",
+      "creatures": ["c_covenant_acolyte", "c_covenant_acolyte", "c_ossuary_reader"],
+      "start_zone": "near",
+      "ambush": true,
+      "victory_flags": ["cleared_false_seal"]
     }
   ]
 }

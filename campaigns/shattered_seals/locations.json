@@ -8,7 +8,8 @@
       "zones": {
         "z_01_proper": ["MH_001_Square", "MH_002_GuardHall", "MH_003_Tavern", "MH_004_Temple", "MH_005_Forge"],
         "z_02_whisperwood": ["WW_001_Edge", "WW_002_Deep", "WW_003_HollowGrove"],
-        "z_03_ravencrest": ["RF_001_Farm", "RF_002_OakGrove"]
+        "z_03_ravencrest": ["RF_001_Farm", "RF_002_OakGrove"],
+        "z_07_mere_road": ["MR_001_MereRoad", "MR_002_ReedBeds", "MR_003_DrownedMill"]
       }
     },
     "town_02_valorheim_capital": {
@@ -19,7 +20,8 @@
       "zones": {
         "z_04_palace_district": ["VC_001_Plaza", "VC_002_ThroneRoom", "VC_003_GrandLibrary"],
         "z_05_bloodstone_mines": ["BM_001_Entrance", "BM_002_DeepMine"],
-        "z_06_thornhaven": ["TH_001_Gates", "TH_002_RitualChamber"]
+        "z_06_thornhaven": ["TH_001_Gates", "TH_002_RitualChamber"],
+        "z_08_under_archive": ["UA_001_SealedStacks", "UA_002_OssuaryStair", "UA_003_FalseSeal"]
       }
     }
   },
@@ -56,7 +58,14 @@
       "room_id": "MH_004_Temple",
       "title": "The Temple of Ashkyr",
       "description": "Whitewashed walls, a plain stone altar, and a smell of cold ash that no amount of scrubbing lifts. Offerings have been left in unusual numbers this week: bread, coins, milk, and in one case a child's shoe.",
-      "exits": { "north": "MH_001_Square" }
+      "exits": {
+        "north": "MH_001_Square",
+        "south": {
+          "to": "MR_001_MereRoad",
+          "requires": ["heard_of_the_mere_road"],
+          "blocked": "Past the graveyard wall the old Mere Road runs south into the reeds. Nobody in Millhaven uses it, and nobody has yet given you a reason to."
+        }
+      }
     },
     {
       "room_id": "MH_005_Forge",
@@ -120,7 +129,14 @@
       "room_id": "VC_003_GrandLibrary",
       "title": "The Grand Library",
       "description": "Eight floors of shelving around an open well of air, and a silence that feels enforced rather than kept. Whole sections have been emptied within the last year. The catalogue still lists what is missing, which is either an oversight or a message.",
-      "exits": { "west": "VC_001_Plaza" }
+      "exits": {
+        "west": "VC_001_Plaza",
+        "down": {
+          "to": "UA_001_SealedStacks",
+          "requires": ["heard_of_the_under_archive"],
+          "blocked": "Behind the catalogue desk there is a low iron door with no handle on this side. Whatever is under the library, the library does not show it to visitors."
+        }
+      }
     },
     {
       "room_id": "BM_001_Entrance",
@@ -145,6 +161,42 @@
       "title": "The Grand Ritual Chamber",
       "description": "A circular room at the estate's peak. The floor is covered in intricate ritual circles drawn in silver and blood. Tall windows overlook the burning city.",
       "exits": { "down": "TH_001_Gates" }
+    },
+    {
+      "room_id": "MR_001_MereRoad",
+      "title": "The Mere Road",
+      "description": "An embanked causeway older than the town, running south across the flats with black water on either side. The ruts are fresh. So are the footprints, and there are a great many of them, all going south and all in step, as if whoever made them had taken care to leave exactly one trail and to make it easy to follow.",
+      "exits": { "north": "MH_004_Temple", "south": "MR_002_ReedBeds" }
+    },
+    {
+      "room_id": "MR_002_ReedBeds",
+      "title": "The Reed Beds",
+      "description": "The causeway sinks until the mere laps across it. Reeds stand higher than a rider on either side, and something has been through them lately, snapping the stems at knee height in a line that runs beside the road for a long way and then simply stops. Someone has built a cairn of river stones at the water's edge this week. It marks nothing.",
+      "exits": { "north": "MR_001_MereRoad", "south": "MR_003_DrownedMill" }
+    },
+    {
+      "room_id": "MR_003_DrownedMill",
+      "title": "The Drowned Mill",
+      "description": "The mill stands to its sills in the mere, its wheel locked in weed. Inside, the floor is dry on the millstone dais and nowhere else. The dais has been swept. A lamp on the beam above it has been lit and left to burn down, the way you would leave a light for someone you expected.",
+      "exits": { "north": "MR_002_ReedBeds" }
+    },
+    {
+      "room_id": "UA_001_SealedStacks",
+      "title": "The Sealed Stacks",
+      "description": "The library's missing sections are down here, or their shelves are: row on row of them, empty, dusted and labelled. Every label has been corrected in the same neat hand to read NOT HELD. The dust between them has been walked into one clean path, straight down the middle, to a door at the far end.",
+      "exits": { "up": "VC_003_GrandLibrary", "down": "UA_002_OssuaryStair" }
+    },
+    {
+      "room_id": "UA_002_OssuaryStair",
+      "title": "The Ossuary Stair",
+      "description": "A spiral stair cut down through a charnel layer older than the library, skulls set into the wall in courses like brick. Half of them have been turned to face the stone. At every landing there are fresh chisel marks with fresh grime rubbed into them: someone has gone to some trouble to make this stair look older than it is.",
+      "exits": { "up": "UA_001_SealedStacks", "down": "UA_003_FalseSeal" }
+    },
+    {
+      "room_id": "UA_003_FalseSeal",
+      "title": "The Sealed Vault",
+      "description": "A round vault at the foot of the stair, and on its far wall a great seal in red and black of the kind the Covenant breaks: circles inside circles, and at the centre, a handprint. The chanting the archivist heard through the floor is here — a wind-organ set in the ceiling, turning slowly in a draught from nowhere, sounding its three notes over and over for nobody.",
+      "exits": { "up": "UA_002_OssuaryStair" }
     }
   ]
 }

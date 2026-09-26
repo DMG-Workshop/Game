@@ -10,6 +10,7 @@ import '../campaign/world.dart';
 import '../party/equipment.dart';
 import '../campaign/world_item.dart';
 import 'encounter_session.dart';
+import 'game_session.dart';
 import 'session_actor.dart';
 
 /// Thrown when the party is asked to do something they cannot do here.
@@ -72,11 +73,16 @@ class MoveResult {
     required this.direction,
     this.flagsSet = const [],
     this.changedRegion = false,
+    this.ambush,
   });
 
   final String from;
   final String to;
   final String direction;
+
+  /// A fight that springs on arrival, which a client should start rather
+  /// than merely mention.
+  final Encounter? ambush;
 
   /// Flags entering the new room set, which arcs may be watching.
   final List<String> flagsSet;
@@ -126,7 +132,9 @@ class WorldSession {
     Set<String>? flags,
     int hour = 8,
     PartyInventory? inventory,
+    String? cameFrom,
   })  : _actors = List.of(actors),
+        _cameFrom = cameFrom,
         _roller = roller,
         _roomId = roomId ?? _firstRoomOf(campaign),
         // Copied rather than kept: callers pass an unmodifiable view or a
@@ -157,6 +165,9 @@ class WorldSession {
   final List<SessionActor> _actors;
   final DiceRoller _roller;
   String _roomId;
+
+  /// The room the party walked in from, which is the one way past an ambush.
+  String? _cameFrom;
   final Set<String> _flags;
   int _hour;
   final PartyInventory _inventory;
@@ -268,9 +279,18 @@ class WorldSession {
           'The way $direction leads to "${exit.to}", which does not exist.');
     }
 
+    // Only the way back is open past an ambush. With no known way in — a
+    // session started in the room — every way counts as back.
+    final waiting = campaign.bestiary.ambushIn(_roomId, _flags);
+    if (waiting != null && _cameFrom != null && exit.to != _cameFrom) {
+      throw InvalidMoveException('${waiting.name} is between you and the way '
+          'on. Fight, or go back the way you came.');
+    }
+
     final fromRegion = currentRegion?.id;
     final from = _roomId;
     _roomId = exit.to;
+    _cameFrom = from;
     final set = _enter(exit.to);
 
     return MoveResult(
@@ -279,8 +299,16 @@ class WorldSession {
       direction: exit.direction,
       flagsSet: set,
       changedRegion: currentRegion?.id != fromRegion,
+      ambush: campaign.bestiary.ambushIn(_roomId, _flags),
     );
   }
+
+  /// The room the party came in from, if the session knows it.
+  String? get cameFrom => _cameFrom;
+
+  /// How a fight looks from here, which is different the second time.
+  String describeEncounter(Encounter encounter) =>
+      encounter.descriptionFor(_flags);
 
   /// Marks a room as visited, returning the flags that were newly set.
   ///
@@ -350,6 +378,53 @@ class WorldSession {
       flagsSet: set..sort(),
       exhaustedTopics: exhausted,
     );
+  }
+
+  /// Starts a proper conversation with [who].
+  ///
+  /// Returns null when they have nothing to say beyond a greeting, which a
+  /// client can fall back to with [talk]. The conversation runs on the world's
+  /// own dice and starts from a copy of its flags; nothing it does reaches the
+  /// world until [concludeConversation], so a conversation abandoned halfway
+  /// still counts for whatever was said before it was.
+  ({Npc npc, GameSession talk})? beginConversation(String who) {
+    final npc = campaign.npcs.findInRoom(_roomId, who);
+    if (npc == null) {
+      throw InvalidMoveException('There is nobody called "$who" here.');
+    }
+    final conversation = campaign.conversations.forNpc(npc.id);
+    final opening = conversation?.openingFor(_flags);
+    if (conversation == null || opening == null) return null;
+
+    return (
+      npc: npc,
+      talk: GameSession(
+        adventure: conversation.adventure,
+        actors: _actors,
+        roller: _roller,
+        sceneId: opening,
+        flags: _flags,
+      ),
+    );
+  }
+
+  /// Takes what a conversation changed back into the world, returning the
+  /// flags it newly set.
+  List<String> concludeConversation(GameSession conversation) {
+    final before = Set.of(_flags);
+    _flags
+      ..clear()
+      ..addAll(conversation.flags);
+    final set = _flags.difference(before).toList()..sort();
+
+    // Somebody handing the party something is recorded the way a drop is,
+    // so a gift and a kill end up in the same pack.
+    for (final flag in set) {
+      if (!flag.startsWith('loot_')) continue;
+      final id = flag.substring('loot_'.length);
+      if (campaign.gear.byId(id) != null) _inventory.add(id);
+    }
+    return set;
   }
 
   /// Which of [npc]'s keywords answered [topic].
@@ -473,7 +548,12 @@ class WorldSession {
   /// recorded here too: a drop the party never went back for is not theirs.
   List<String> concludeEncounter(EncounterSession fight) {
     final set = <String>[];
-    for (final flag in [...fight.victoryFlags, ...fight.lootFlags]) {
+    // Which wave was beaten is worked out before anything else changes, so
+    // a victory flag that happened to rearm something could not skip a wave.
+    final won = fight.outcome == EncounterOutcome.victory
+        ? [fight.encounter.wonFlag(fight.encounter.waveFor(_flags))]
+        : const <String>[];
+    for (final flag in [...won, ...fight.victoryFlags, ...fight.lootFlags]) {
       if (_flags.add(flag)) set.add(flag);
     }
     for (final item in fight.loot) {
@@ -584,6 +664,7 @@ class WorldSession {
   Map<String, Object?> snapshot() => {
         'campaignId': campaign.id,
         'roomId': _roomId,
+        'cameFrom': _cameFrom,
         'hour': _hour,
         'flags': (_flags.toList()..sort()),
         'inventory': _inventory.toJson(),
@@ -624,6 +705,7 @@ class WorldSession {
       flags: flags,
       hour: (snapshot['hour'] as num?)?.toInt() ?? 8,
       inventory: inventory,
+      cameFrom: snapshot['cameFrom']?.toString(),
     );
     for (final e in (snapshot['weather'] as Map? ?? const {}).entries) {
       session._weatherByRegion[e.key.toString()] = e.value.toString();

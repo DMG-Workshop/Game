@@ -7,6 +7,7 @@ library;
 export 'src/campaign/arc.dart';
 export 'src/campaign/campaign.dart';
 export 'src/campaign/campaign_loader.dart';
+export 'src/campaign/conversation.dart';
 export 'src/campaign/creature.dart';
 export 'src/campaign/gear.dart';
 export 'src/campaign/locations.dart';

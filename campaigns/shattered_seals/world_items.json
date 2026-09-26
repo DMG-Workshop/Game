@@ -30,6 +30,28 @@
       "takeable": true,
       "acquire_flags": ["item_acquired_harrow_ledger"],
       "on_take": "You take the ledger. The four marks are identical, and they are not a religious sign. Whoever made them did it after the entries were written, and did it in a hurry."
+    },
+    {
+      "item_id": "i_decoy_bundle",
+      "name": "A Bundle of Sacking",
+      "location": "MR_003_DrownedMill",
+      "in_room": "On the swept millstone lies a bundle of sacking about the size of a sleeping child, tied off with red cord.",
+      "description": "Sacking, red cord, and a shape that is very nearly right.",
+      "takeable": true,
+      "requires": ["cleared_drowned_mill"],
+      "acquire_flags": ["deception_revealed_mere_road"],
+      "on_take": "It is heavy the wrong way. You cut the cord and river stones spill across the millstone, and among them a strip of red cloth knotted the way the Covenant knots it.\n\nNobody carried a child down this road. Somebody wanted you to believe they had, and wanted you a long way from the Whisperwood while you believed it.\n\nFrom back up the causeway, faint across the water, a bell begins to ring."
+    },
+    {
+      "item_id": "i_queens_letter",
+      "name": "A Letter Under Black Wax",
+      "location": "UA_003_FalseSeal",
+      "in_room": "One of the kneelers left a courier's satchel by the mats. The flap is open, and there is a letter in it under a black wax seal.",
+      "description": "Heavy cream paper. The wax carries the royal cipher.",
+      "takeable": true,
+      "requires": ["cleared_false_seal"],
+      "acquire_flags": ["deception_revealed_under_archive"],
+      "on_take": "It is addressed to the keepers of the vault, and it is short.\n\n'Keep them below as long as they are willing to stay. Hale has done well; see that the girl is kept comfortable, and remind him of her if he wavers. — L.'\n\nThe seal on the wall is painted plaster. Close enough to read by, you can see the brush strokes. Above you, the stair you came down is full of small sounds, and all of them are coming this way."
     }
   ]
 }

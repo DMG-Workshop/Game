@@ -190,9 +190,11 @@ class AdventureLoader {
       automatic = _readOutcome(rawAuto.cast<String, Object?>());
     }
 
+    final say = raw['say']?.toString().trim();
     return SceneOption(
       id: id,
       label: _requireString(raw, 'label'),
+      say: say == null || say.isEmpty ? null : say,
       check: check,
       outcomes: outcomes,
       automatic: automatic,

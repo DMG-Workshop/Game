@@ -2,8 +2,11 @@ import 'dart:convert';
 
 import 'package:pf2e_core/pf2e_core.dart';
 
+import '../scene/adventure_loader.dart';
+import '../scene/scene.dart';
 import 'arc.dart';
 import 'campaign.dart';
+import 'conversation.dart';
 import 'creature.dart';
 import 'gear.dart';
 import 'locations.dart';
@@ -39,6 +42,7 @@ class CampaignLoader {
     String? arcsJson,
     String? bestiaryJson,
     String? itemsJson,
+    String? conversationsJson,
   }) =>
       Campaign(
         id: id,
@@ -50,6 +54,9 @@ class CampaignLoader {
         arcs: arcsJson == null ? ArcTrack(const []) : readArcs(arcsJson),
         bestiary: bestiaryJson == null ? null : readBestiary(bestiaryJson),
         items: itemsJson == null ? null : readItems(itemsJson),
+        conversations: conversationsJson == null
+            ? null
+            : readConversations(conversationsJson),
       );
 
   // --- world ---------------------------------------------------------------
@@ -309,6 +316,9 @@ class CampaignLoader {
         victoryFlags: _strings(raw['victory_flags']),
         requiredFlags: _strings(raw['requires']),
         repeatable: raw['repeatable'] == true,
+        rearmOn: _strings(raw['rearm_on']),
+        rearmDescription: _optional(raw['rearm_description']),
+        ambush: raw['ambush'] == true,
       ));
     }
 
@@ -365,6 +375,70 @@ class CampaignLoader {
       ));
     }
     return ItemPlacements(items);
+  }
+
+  // --- conversations -------------------------------------------------------
+
+  /// Reads the campaign's conversations.
+  ///
+  /// Each one's scenes go through the adventure loader, so a line that leads
+  /// nowhere or a choice with no outcome is refused here exactly as it would
+  /// be in an adventure, and named by the NPC it belongs to.
+  Conversations readConversations(String json) {
+    final root = _object(json, 'conversations');
+    final conversations = <Conversation>[];
+    final seen = <String>{};
+
+    for (final entry in _list(root['conversations'])) {
+      if (entry is! Map) continue;
+      final raw = entry.cast<String, Object?>();
+      final npcId = _string(raw['npc'], 'conversation npc');
+      if (!seen.add(npcId)) {
+        throw CampaignFormatException('Two conversations for "$npcId".');
+      }
+
+      final entries = [
+        for (final e in _list(raw['entries']))
+          if (e is Map)
+            ConversationEntry(
+              sceneId: _string(
+                  e.cast<String, Object?>()['scene'], 'entry scene on $npcId'),
+              requiredFlags: _strings(e['requires']),
+              forbiddenFlags: _strings(e['unless']),
+            ),
+      ];
+      if (entries.isEmpty) {
+        throw CampaignFormatException(
+            'The conversation with "$npcId" has no way in.');
+      }
+
+      final Adventure adventure;
+      try {
+        adventure = const AdventureLoader().fromMap({
+          'id': 'conversation_$npcId',
+          'title': npcId,
+          'startScene': entries.last.sceneId,
+          'scenes': raw['scenes'],
+        });
+      } on AdventureFormatException catch (e) {
+        throw CampaignFormatException(
+            'The conversation with "$npcId": ${e.message}');
+      }
+
+      for (final e in entries) {
+        if (adventure.sceneById(e.sceneId) == null) {
+          throw CampaignFormatException('The conversation with "$npcId" '
+              'opens on "${e.sceneId}", which it does not have.');
+        }
+      }
+
+      conversations.add(Conversation(
+        npcId: npcId,
+        entries: entries,
+        adventure: adventure,
+      ));
+    }
+    return Conversations(conversations);
   }
 
   // --- arcs ----------------------------------------------------------------

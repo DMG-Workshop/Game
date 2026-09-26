@@ -38,6 +38,71 @@
         "shadow": "Shadow is entropy—the natural force of ending. It grants clarity and power.",
         "ascension": "I am a Vessel. Soon, I will be consumed, and the true god will wear this flesh."
       }
+    },
+    {
+      "npc_id": "npc_002_marta",
+      "name": "Marta Whitmore",
+      "location": "RF_001_Farm",
+      "tier": 1,
+      "appearance": "A farm woman in a coat buttoned wrong stands at the fence, watching the treeline as if it might hand something back.",
+      "greeting": "Are you from the Captain? Have you— no. No, you'd have said.",
+      "keywords": {
+        "elara": "She's nine. She's got my mother's temper and her father's ears, and she has never once in her life come home when she was called.",
+        "grove": "The oak ring, back of the barn. Every child in the valley plays there, and every mother tells them not to.",
+        "doll": "She takes it everywhere. She'd have had it with her."
+      }
+    },
+    {
+      "npc_id": "npc_003_aldus",
+      "name": "Brother Aldus",
+      "location": "MH_004_Temple",
+      "tier": 1,
+      "appearance": "A priest in a plain grey habit kneels at the altar, sorting the week's offerings into what can be eaten and what cannot.",
+      "greeting": "Ashkyr keep you. If you've come to leave something, there is room on the step.",
+      "keywords": {
+        "burials": "Four this week. Each of them dead longer than they'd been missing, and each of them came to me with their eyes full of earth.",
+        "shoe": "Elara Whitmore's. Her mother brought it in. I keep meaning to give it back, and I can't decide whether that would be a kindness.",
+        "ashkyr": "Ashkyr keeps the hearth and the grave. Lately the grave has been keeping me."
+      }
+    },
+    {
+      "npc_id": "npc_004_harrow",
+      "name": "Ada Harrow",
+      "location": "MH_005_Forge",
+      "tier": 1,
+      "appearance": "The smith, broad and soot-grey, rests her hammer on the anvil and watches you the way she'd watch a horse she hadn't been told about.",
+      "greeting": "If you want a horse shod, it'll be a week. If you want anything else, it'll be longer.",
+      "keywords": {
+        "nails": "People buy nails. I sell them.",
+        "commissions": "Four this week I'll not be paid for. I stack them in the order I heard.",
+        "maul": "Seal-stone in the head, off the old boundary marker. I made three and finished one."
+      }
+    },
+    {
+      "npc_id": "npc_007_wendel",
+      "name": "Wendel Pike",
+      "location": "MH_003_Tavern",
+      "tier": 1,
+      "appearance": "The landlord, a round and pleasant man with a cloth over his shoulder, has a habit of standing near whoever is talking.",
+      "greeting": "Welcome to the Sparrow! Sit anywhere but by the door — there's a draught.",
+      "keywords": {
+        "ale": "Best in the valley, and the only one in the valley, which helps.",
+        "news": "Tollgate on the capital road's shut till the Captain says otherwise, so half the county's drinking my cellar dry waiting on it. Ill wind.",
+        "lamp": "For the late ones. Nobody wants to break their neck on the back stair in the dark."
+      }
+    },
+    {
+      "npc_id": "npc_008_hale",
+      "name": "Master Archivist Oswin Hale",
+      "location": "VC_003_GrandLibrary",
+      "tier": 2,
+      "appearance": "A thin man in ink-stained cuffs sits behind the catalogue desk, with the fixed, careful attention of someone who has not slept properly in a year.",
+      "greeting": "Quietly, please. The library is open to all subjects of the Crown. Mostly.",
+      "keywords": {
+        "catalogue": "Every volume this library has ever held, in the order it came to us. Including the ones it no longer holds.",
+        "missing": "Removed for conservation, by order of the Crown.",
+        "seals": "Not here. Not in front of the shelves. Ask me properly."
+      }
     }
   ]
 }

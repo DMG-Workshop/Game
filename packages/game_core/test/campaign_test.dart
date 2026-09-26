@@ -18,6 +18,7 @@ Campaign loadShatteredSeals() => const CampaignLoader().load(
       arcsJson: _read('campaign_arcs.json'),
       bestiaryJson: _read('bestiary.json'),
       itemsJson: _read('world_items.json'),
+      conversationsJson: _read('conversations.json'),
     );
 
 void main() {
@@ -79,8 +80,9 @@ void main() {
       expect(millhaven.maxLevel, 10);
       expect(millhaven.suitsLevel(6), isTrue);
       expect(millhaven.suitsLevel(14), isFalse);
-      expect(millhaven.zones, hasLength(3));
-      expect(millhaven.roomIds, hasLength(10));
+      // Town, wood, farm, and the Mere Road nobody should take.
+      expect(millhaven.zones, hasLength(4));
+      expect(millhaven.roomIds, hasLength(13));
     });
 
     test('maps a room back to its town and zone', () {
@@ -113,7 +115,7 @@ void main() {
 
   group('npcs', () {
     test('reads the cast and places them', () {
-      expect(campaign.npcs.length, 3);
+      expect(campaign.npcs.length, 8);
       expect(campaign.npcs.byId('npc_001_thorne')!.name,
           'Captain Thorne Ironhelm');
       expect(

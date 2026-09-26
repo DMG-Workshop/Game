@@ -1,4 +1,5 @@
 import 'arc.dart';
+import 'conversation.dart';
 import 'creature.dart';
 import 'gear.dart';
 import 'locations.dart';
@@ -18,8 +19,10 @@ class Campaign {
     required this.arcs,
     Bestiary? bestiary,
     ItemPlacements? items,
+    Conversations? conversations,
   })  : bestiary = bestiary ?? Bestiary(),
-        items = items ?? ItemPlacements(const []);
+        items = items ?? ItemPlacements(const []),
+        conversations = conversations ?? Conversations(const []);
 
   final String id;
   final String title;
@@ -34,6 +37,9 @@ class Campaign {
 
   /// Objects lying in rooms, as opposed to equipment.
   final ItemPlacements items;
+
+  /// What the cast says when properly talked to.
+  final Conversations conversations;
 
   /// Everything a player could see in a room: its text, exits, and who is
   /// standing there.
@@ -67,18 +73,21 @@ class Campaign {
         danglingDrops: gear.danglingDrops(
             {for (final creature in bestiary.creatures) creature.id}),
         unobtainableGear: gear.unobtainableRarities,
+        orphanedConversations:
+            conversations.orphanedFrom({for (final n in npcs.all) n.id}),
       );
 
   /// Arc conditions nothing in the campaign could ever set.
   ///
   /// A condition nothing can produce is a quest step that can never be ticked
   /// off, which strands a player. Working out what *can* produce one means
-  /// knowing what the engine does as well as what the data declares, so all
-  /// five sources are accounted for:
+  /// knowing what the engine does as well as what the data declares, so every
+  /// source is accounted for:
   ///
   /// - flags a completed arc awards;
   /// - flags a won fight awards, and flags an item awards when taken or
   ///   destroyed;
+  /// - flags a line of conversation sets;
   /// - `enter_<room>`, set by walking in — matched as a prefix, since the
   ///   triggers abbreviate and `enter_MH_001` means `MH_001_Square`;
   /// - `keyword_<topic>_unlocked`, set by raising a topic somebody answers;
@@ -91,6 +100,7 @@ class Campaign {
       for (final arc in arcs.all) ...arc.worldStateChanges,
       ...bestiary.victoryFlags,
       ...items.producibleFlags,
+      ...conversations.producibleFlags,
     };
 
     final knownRooms = <String>{
@@ -147,6 +157,7 @@ class CampaignReport {
     this.encountersMissingCreatures = const [],
     this.danglingDrops = const [],
     this.unobtainableGear = const [],
+    this.orphanedConversations = const [],
   });
 
   /// Rooms a zone or an exit names but nobody has written.
@@ -183,6 +194,9 @@ class CampaignReport {
   /// Rare items nothing in the campaign drops.
   final List<GearItem> unobtainableGear;
 
+  /// Conversations written for an NPC the campaign does not have.
+  final List<Conversation> orphanedConversations;
+
   bool get isClean =>
       unwrittenRooms.isEmpty &&
       danglingExits.isEmpty &&
@@ -194,7 +208,8 @@ class CampaignReport {
       misplacedItems.isEmpty &&
       encountersMissingCreatures.isEmpty &&
       danglingDrops.isEmpty &&
-      unobtainableGear.isEmpty;
+      unobtainableGear.isEmpty &&
+      orphanedConversations.isEmpty;
 
   /// Problems that would strand a player right now, as opposed to content
   /// that is merely unfinished.
@@ -252,6 +267,10 @@ class CampaignReport {
     section(
       'Loot naming a creature that does not exist',
       danglingDrops.map((d) => '${d.item.name} drops from "${d.creatureId}"'),
+    );
+    section(
+      'Conversations for somebody who does not exist',
+      orphanedConversations.map((c) => c.npcId),
     );
     section(
       'Rare items nothing drops',

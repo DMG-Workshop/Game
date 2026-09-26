@@ -81,6 +81,7 @@ Future<void> main(List<String> args) async {
       arcsJson: read('campaign_arcs.json'),
       bestiaryJson: read('bestiary.json'),
       itemsJson: read('world_items.json'),
+      conversationsJson: read('conversations.json'),
     );
     for (final path in characterPaths) {
       final file = File(path);
@@ -180,8 +181,8 @@ bool _handle(WorldSession session, String line,
 
   if (verb == 'quit' || verb == 'q') return false;
 
-  if (_directions.contains(verb)) return _go(session, verb);
-  if (verb == 'go' && rest.isNotEmpty) return _go(session, rest);
+  if (_directions.contains(verb)) return _go(session, verb, nextCommand);
+  if (verb == 'go' && rest.isNotEmpty) return _go(session, rest, nextCommand);
 
   switch (verb) {
     case 'look':
@@ -213,7 +214,7 @@ bool _handle(WorldSession session, String line,
 
     case 'talk':
     case 'ask':
-      return _talk(session, rest);
+      return _talk(session, rest, nextCommand);
 
     case 'take':
     case 'get':
@@ -292,23 +293,35 @@ bool _handle(WorldSession session, String line,
   }
 }
 
-bool _go(WorldSession session, String direction) {
+bool _go(WorldSession session, String direction,
+    String? Function({String prompt}) nextCommand) {
+  final MoveResult result;
   try {
-    final result = session.move(direction);
-    _renderRoom(session, full: true, showWeather: result.changedRegion);
-    if (result.changedRegion) {
-      final echo = session.ambianceEcho();
-      if (echo != null) stdout.writeln('\n${_wrap(echo)}');
-    }
-    _announceArcs(session);
+    result = session.move(direction);
   } on InvalidMoveException catch (e) {
     stdout.writeln(_wrap(e.message));
+    return true;
+  }
+
+  _renderRoom(session, full: true, showWeather: result.changedRegion);
+  if (result.changedRegion) {
+    final echo = session.ambianceEcho();
+    if (echo != null) stdout.writeln('\n${_wrap(echo)}');
+  }
+  _announceArcs(session);
+
+  // An ambush is not something to mention and move on from.
+  final ambush = result.ambush;
+  if (ambush != null) {
+    return _fight(session, nextCommand, encounterId: ambush.id);
   }
   return true;
 }
 
-/// Accepts "talk thorne", "ask thorne about elara", "talk thorne elara".
-bool _talk(WorldSession session, String rest) {
+/// Accepts "talk thorne" for a conversation, and "ask thorne about elara" or
+/// "talk thorne elara" for a single topic.
+bool _talk(WorldSession session, String rest,
+    String? Function({String prompt}) nextCommand) {
   if (rest.isEmpty) {
     stdout.writeln('Talk to whom?');
     return true;
@@ -318,6 +331,19 @@ bool _talk(WorldSession session, String rest) {
   var topic = words.skip(1).join(' ');
   if (topic.toLowerCase().startsWith('about ')) {
     topic = topic.substring(6);
+  }
+
+  if (topic.isEmpty) {
+    try {
+      final conversation = session.beginConversation(who);
+      if (conversation != null) {
+        return _converse(
+            session, conversation.npc, conversation.talk, nextCommand);
+      }
+    } on InvalidMoveException catch (e) {
+      stdout.writeln(e.message);
+      return true;
+    }
   }
 
   try {
@@ -339,6 +365,104 @@ bool _talk(WorldSession session, String rest) {
     stdout.writeln(e.message);
   }
   return true;
+}
+
+/// Runs a conversation to its end, or until the party walks away.
+///
+/// Its own loop for the same reason a fight has one: the verbs are different.
+/// Everything said before walking away still counts.
+bool _converse(
+  WorldSession session,
+  Npc npc,
+  GameSession talk,
+  String? Function({String prompt}) nextCommand,
+) {
+  final solo = session.actors.length == 1;
+  stdout
+    ..writeln('\n${'-' * 70}')
+    ..writeln(npc.name.toUpperCase())
+    ..writeln('-' * 70)
+    ..writeln('\n${_wrap(talk.currentScene.body)}');
+
+  var keepGoing = true;
+  while (!talk.isFinished) {
+    final options = talk.availableOptions();
+    stdout.writeln('');
+    for (var i = 0; i < options.length; i++) {
+      stdout.writeln('  ${i + 1}. ${options[i].label}'
+          '${_checkHint(talk, options[i], solo: solo)}');
+    }
+    stdout.writeln('  0. Walk away');
+
+    final line = nextCommand(prompt: 'say> ');
+    if (line == null) {
+      stdout.writeln('\n(script exhausted mid-conversation)');
+      keepGoing = false;
+      break;
+    }
+    final choice = line.trim().toLowerCase();
+    if (choice.isEmpty) continue;
+    if (const {'0', 'bye', 'leave', 'walk away'}.contains(choice)) {
+      stdout.writeln('\nYou leave ${npc.name} where you found them.');
+      break;
+    }
+
+    final number = int.tryParse(choice);
+    final option = number != null && number >= 1 && number <= options.length
+        ? options[number - 1]
+        : options
+            .where((o) =>
+                o.id == choice || o.label.toLowerCase().startsWith(choice))
+            .firstOrNull;
+    if (option == null) {
+      stdout.writeln('Pick a number from the list, or 0 to walk away.');
+      continue;
+    }
+
+    final GameEvent event;
+    try {
+      event = talk.choose(option.id);
+    } on InvalidChoiceException catch (e) {
+      stdout.writeln(e.message);
+      continue;
+    }
+
+    if (event.said case final said?) {
+      stdout.writeln('\n${_wrap('${event.actorName} says, "$said"')}');
+    }
+    final check = event.check;
+    if (check != null) {
+      stdout.writeln('\n  ~ ${solo ? '' : '${event.actorName} — '}'
+          '${check.label}: d20(${check.dieRoll}) '
+          '${_signed(check.modifier)} = ${check.total} vs DC ${check.dc} '
+          '-> ${check.degree.displayName}'
+          '${check.wasShiftedByNatural ? ' (natural ${check.dieRoll})' : ''}');
+    }
+    stdout.writeln('\n${_wrap(event.narration)}');
+
+    // A new scene is a new beat; returning to the same one is not, and
+    // repeating its opening every time would read like a stuck record.
+    final movedTo = event.movedTo;
+    if (movedTo != null && movedTo != event.sceneId) {
+      stdout.writeln('\n${_wrap(talk.currentScene.body)}');
+    }
+  }
+
+  final flags = session.concludeConversation(talk);
+  for (final flag in flags) {
+    stdout.writeln('\n  [$flag]');
+  }
+  _announceArcs(session);
+  return keepGoing;
+}
+
+String _checkHint(GameSession talk, SceneOption option, {required bool solo}) {
+  final check = option.check;
+  if (check == null) return '';
+  final best = talk.suggestedActorFor(option.id);
+  if (best == null) return '  (nobody can try this)';
+  final who = solo ? '' : '${best.actor.name} ';
+  return '  ($who${best.stat.formatted} vs DC ${check.dc})';
 }
 
 void _renderInventory(WorldSession session) {
@@ -490,8 +614,10 @@ void _renderRoom(WorldSession session,
   }
 
   for (final encounter in view.encounters) {
-    stdout.writeln('\n${_wrap(encounter.description)}');
-    stdout.writeln('\n  (${encounter.name} — type "fight" to begin)');
+    stdout.writeln('\n${_wrap(session.describeEncounter(encounter))}');
+    stdout.writeln(encounter.ambush
+        ? '\n  (${encounter.name} — between you and the way on)'
+        : '\n  (${encounter.name} — type "fight" to begin)');
   }
 
   stdout.writeln('\nExits: ${view.openDirections.join(', ')}'
@@ -552,8 +678,8 @@ const _commands = '''
   look                                            describe the room again
   exits                                           list ways out, open and shut
   who                                             who is here, and their topics
-  talk <name>                                     greet someone
-  ask <name> about <topic>                        raise a topic
+  talk <name>                                     talk to someone properly
+  ask <name> about <topic>                        raise a single topic
   quests                                          arc progress
   inventory (i)                                   what the party is carrying
   sheet [who]                                     AC, Strike, HP as equipped
@@ -620,9 +746,6 @@ bool _fight(
     ..writeln('\n${'=' * 70}')
     ..writeln(fight.encounter.name.toUpperCase())
     ..writeln('=' * 70);
-  if (fight.encounter.description.isNotEmpty) {
-    stdout.writeln('\n${_wrap(fight.encounter.description)}');
-  }
   _renderCombatants(fight);
 
   while (!fight.isOver) {

@@ -1,0 +1,1876 @@
+{
+  "conversations": [
+    {
+      "npc": "npc_001_thorne",
+      "entries": [
+        {
+          "scene": "thorne_after",
+          "requires": ["boss_defeated_hollow_avatar"]
+        },
+        {
+          "scene": "thorne_mere_road",
+          "requires": ["deception_revealed_mere_road"],
+          "unless": ["thorne_asked_about_mere_road"]
+        },
+        {
+          "scene": "thorne_again",
+          "requires": ["met_thorne"]
+        },
+        { "scene": "thorne_open" }
+      ],
+      "scenes": [
+        {
+          "id": "thorne_open",
+          "title": "Captain Thorne Ironhelm",
+          "body": "Captain Thorne looks up from a map of the valley pinned flat with daggers. \"Well met. If you're seeking work, you've come at the right time. Dark times are falling on Millhaven.\"",
+          "options": [
+            {
+              "id": "ask_quest",
+              "label": "Ask what has happened",
+              "say": "What kind of dark times?",
+              "outcome": {
+                "text": "\"The roads are unsafe. Caravans vanish, and young Elara Whitmore was taken three days ago.\" He taps the map west of the town, where somebody has shaded the Whisperwood in charcoal and then, it seems, thought better of it and tried to rub it out.",
+                "goTo": "thorne_case",
+                "setFlags": ["met_thorne", "keyword_quest_unlocked"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "\"Don't go far,\" he says, not looking up.",
+                "goTo": "thorne_bye",
+                "setFlags": ["met_thorne"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "thorne_case",
+          "title": "Captain Thorne Ironhelm",
+          "body": "\"Her mother's Marta, out at Ravencrest Farm, north past the treeline. She's said everything she's going to say to me twice.\" He rubs his eyes. \"Council's put up fifty gold. I know how that sounds.\"",
+          "options": [
+            {
+              "id": "ask_elara",
+              "label": "Ask about the girl",
+              "say": "Tell me about Elara.",
+              "outcome": {
+                "text": "\"Nine years old. Plays in the old oak ring behind the farm, which every child in the valley has done and every mother has told them not to. Went out on Tuesday with her doll and didn't come back for supper.\" He says it the way people say things they have said a great many times this week.",
+                "goTo": "thorne_case",
+                "setFlags": ["thorne_told_elara"]
+              },
+              "requires": {
+                "notFlags": ["thorne_told_elara"]
+              }
+            },
+            {
+              "id": "ask_creatures",
+              "label": "Ask about the creatures",
+              "say": "What's been getting at the livestock?",
+              "outcome": {
+                "text": "\"Farmers speak of shadows moving. Animals found dead, or worse... corrupted.\" He looks at the door as if he expects someone to be listening at it. \"Brother Aldus believes it's dark magic. He's buried four people this week, so I'm inclined to let him believe what he likes.\"",
+                "goTo": "thorne_case",
+                "setFlags": ["thorne_told_creatures"]
+              },
+              "requires": {
+                "notFlags": ["thorne_told_creatures"]
+              }
+            },
+            {
+              "id": "haggle",
+              "label": "[Diplomacy] Ask for more money",
+              "say": "Fifty gold is what you pay to find a lost goat, Captain.",
+              "check": { "stat": "diplomacy", "dc": 16 },
+              "outcomes": {
+                "criticalSuccess": {
+                  "text": "He looks at you for a long moment. \"A hundred,\" he says finally. \"If you bring her back breathing, a hundred, and I'll find the rest somewhere.\"",
+                  "goTo": "thorne_case",
+                  "setFlags": ["thorne_haggled", "thorne_reward_doubled"]
+                },
+                "success": {
+                  "text": "He looks at you, then at the map, then back. \"Seventy-five. The rest comes out of my own purse, and if the council asks, you found her for fifty.\"",
+                  "goTo": "thorne_case",
+                  "setFlags": ["thorne_haggled", "thorne_reward_raised"]
+                },
+                "failure": {
+                  "text": "\"It's what the council gave,\" he says flatly. \"You can take it or leave it, and I've men out on those roads doing it for nothing.\"",
+                  "goTo": "thorne_case",
+                  "setFlags": ["thorne_haggled"]
+                },
+                "criticalFailure": {
+                  "text": "His face shuts like a door. \"Get out of my hall.\" He means it for about a minute, and then he doesn't, but the offer does not improve.",
+                  "goTo": "thorne_case",
+                  "setFlags": ["thorne_haggled", "thorne_offended"]
+                }
+              },
+              "requires": {
+                "notFlags": ["thorne_haggled"]
+              }
+            },
+            {
+              "id": "ask_who",
+              "label": "Ask who else might know something",
+              "say": "Who else should we talk to?",
+              "outcome": {
+                "text": "\"Marta, first. Brother Aldus at the temple — he's been burying what we find, so he's seen more of it than I have. Harrow at the forge, if you can get her to put the hammer down.\" He almost smiles. \"And Wendel Pike at the Sparrow hears everything, though I'd not swear he understands half of it.\"",
+                "goTo": "thorne_case",
+                "setFlags": ["thorne_told_who"]
+              },
+              "requires": {
+                "notFlags": ["thorne_told_who"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "say": "We'll find her.",
+              "outcome": {
+                "text": "\"See that you do,\" he says. \"And come back and tell me, either way. I'd rather know.\"",
+                "goTo": "thorne_bye"
+              }
+            }
+          ]
+        },
+        {
+          "id": "thorne_again",
+          "title": "Captain Thorne Ironhelm",
+          "body": "Thorne glances up from the map. \"Anything?\"",
+          "options": [
+            {
+              "id": "talk",
+              "label": "Go over it again",
+              "say": "Not yet. Tell me again how it stands.",
+              "outcome": { "text": "\"Go on, then.\"", "goTo": "thorne_case" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "say": "Not yet.",
+              "outcome": { "text": "He nods and goes back to the map.", "goTo": "thorne_bye" }
+            }
+          ]
+        },
+        {
+          "id": "thorne_mere_road",
+          "title": "Captain Thorne Ironhelm",
+          "body": "Thorne is on his feet before you reach the desk. \"You went down the Mere Road.\" It isn't a question; you are wet to the knee. \"On whose word?\"",
+          "options": [
+            {
+              "id": "name_confessed",
+              "label": "Tell him Wendel has confessed",
+              "say": "Wendel Pike's. He's admitted it — the Covenant pays him to send people south.",
+              "outcome": {
+                "text": "Thorne says nothing at all for a while. Then he takes his sword belt down off its peg. \"I've drunk in that man's house for twenty years.\" He goes out past you without another word, and by evening the Drowned Sparrow is shut, with a guard on the door.",
+                "goTo": "thorne_gone",
+                "setFlags": ["thorne_asked_about_mere_road", "wendel_reported", "wendel_arrested"]
+              },
+              "requires": {
+                "flags": ["wendel_confessed"]
+              }
+            },
+            {
+              "id": "name_suspected",
+              "label": "Tell him it was Wendel",
+              "say": "Wendel Pike's. He sent us down there, and somebody was waiting for us.",
+              "outcome": {
+                "text": "\"Wendel.\" Thorne sits back down, slowly. \"Pike's lived here his whole life.\" He looks at the red cord in your hand for a long time. \"I can't hang a man on a bit of string. But I can watch him. And I will.\"",
+                "goTo": "thorne_bye",
+                "setFlags": ["thorne_asked_about_mere_road", "wendel_reported"]
+              },
+              "requires": {
+                "notFlags": ["wendel_confessed"]
+              }
+            },
+            {
+              "id": "keep_quiet",
+              "label": "Keep it to yourself",
+              "say": "Doesn't matter whose. We're back.",
+              "outcome": {
+                "text": "\"It matters to me,\" he says. But he lets it go.",
+                "goTo": "thorne_bye",
+                "setFlags": ["thorne_asked_about_mere_road"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "thorne_after",
+          "title": "Captain Thorne Ironhelm",
+          "body": "Thorne stands when you come in, which he has not done before. \"Marta's got her girl back,\" he says. \"She came in this morning to tell me herself, and she brought bread, and I've not the faintest idea what to do with it.\"",
+          "options": [
+            {
+              "id": "paid_double",
+              "label": "Collect the reward",
+              "say": "The council's gold, Captain.",
+              "outcome": {
+                "text": "\"A hundred,\" he says, and counts it out, and it is a hundred, in coin that has been several different people's savings.",
+                "goTo": "thorne_after",
+                "setFlags": ["thorne_paid"]
+              },
+              "requires": {
+                "flags": ["thorne_reward_doubled"],
+                "notFlags": ["thorne_paid"]
+              }
+            },
+            {
+              "id": "paid_raised",
+              "label": "Collect the reward",
+              "say": "The council's gold, Captain.",
+              "outcome": {
+                "text": "Seventy-five, counted out twice, the second time more slowly.",
+                "goTo": "thorne_after",
+                "setFlags": ["thorne_paid"]
+              },
+              "requires": {
+                "flags": ["thorne_reward_raised"],
+                "notFlags": ["thorne_paid"]
+              }
+            },
+            {
+              "id": "paid_base",
+              "label": "Collect the reward",
+              "say": "The council's gold, Captain.",
+              "outcome": {
+                "text": "\"Fifty, as promised.\" He pushes the purse across. \"It's not enough. It never was.\"",
+                "goTo": "thorne_after",
+                "setFlags": ["thorne_paid"]
+              },
+              "requires": {
+                "notFlags": ["thorne_paid", "thorne_reward_raised", "thorne_reward_doubled"]
+              }
+            },
+            {
+              "id": "ask_next",
+              "label": "Ask what comes next",
+              "say": "What happens now?",
+              "outcome": {
+                "text": "\"Now?\" He unrolls a second map, older, of the whole kingdom. \"Now the tollgate on the capital road opens again, and every merchant who's been sitting in the Sparrow waiting on it goes home. And you, if you've any sense, go with them.\" He taps the capital. \"Whatever that thing in the wood was, it didn't start here. Things like that come from money.\"",
+                "goTo": "thorne_after",
+                "setFlags": ["thorne_pointed_to_capital"]
+              },
+              "requires": {
+                "notFlags": ["thorne_pointed_to_capital"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "say": "Look after them, Captain.",
+              "outcome": {
+                "text": "\"Millhaven owes you,\" he says. \"It won't remember for long. I will.\"",
+                "goTo": "thorne_bye"
+              }
+            }
+          ]
+        },
+        {
+          "id": "thorne_gone",
+          "title": "Captain Thorne Ironhelm",
+          "body": "The Guard Hall is empty behind him, the map still pinned to the desk with its daggers.",
+          "isEnding": true
+        },
+        {
+          "id": "thorne_bye",
+          "title": "Captain Thorne Ironhelm",
+          "body": "Thorne goes back to his map.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_002_marta",
+      "entries": [
+        {
+          "scene": "marta_home",
+          "requires": ["boss_defeated_hollow_avatar"]
+        },
+        {
+          "scene": "marta_doll",
+          "requires": ["item_acquired_elaras_doll"],
+          "unless": ["marta_saw_doll"]
+        },
+        {
+          "scene": "marta_again",
+          "requires": ["met_marta"]
+        },
+        { "scene": "marta_open" }
+      ],
+      "scenes": [
+        {
+          "id": "marta_open",
+          "title": "Marta Whitmore",
+          "body": "Marta Whitmore doesn't turn from the fence. \"Are you from the Captain?\" Her voice is steady in the way of someone holding it steady. \"Have you— no. You'd have said.\"",
+          "options": [
+            {
+              "id": "gentle",
+              "label": "Answer her gently",
+              "say": "Not yet. But we're looking, and we'd like your help.",
+              "outcome": {
+                "text": "She nods at the treeline, which is easier than nodding at you. \"Ask, then. I've told it so many times it doesn't sound like her any more.\"",
+                "goTo": "marta_ask",
+                "setFlags": ["met_marta"]
+              }
+            },
+            {
+              "id": "blunt",
+              "label": "Get straight to it",
+              "say": "Where was she last seen?",
+              "outcome": {
+                "text": "\"Out the back. Toward the oaks.\" She points without looking: east, past the barn, to a dark ring of trees on the rise. \"She's not meant to go there.\"",
+                "goTo": "marta_ask",
+                "setFlags": ["met_marta", "marta_told_of_the_grove"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave her be",
+              "outcome": {
+                "text": "She doesn't watch you go. She is watching the trees.",
+                "goTo": "marta_bye"
+              }
+            }
+          ]
+        },
+        {
+          "id": "marta_ask",
+          "title": "Marta Whitmore",
+          "body": "\"What do you want to know?\"",
+          "options": [
+            {
+              "id": "ask_grove",
+              "label": "Ask about the oak ring",
+              "say": "Tell us about the grove.",
+              "outcome": {
+                "text": "\"Nine oaks. Been there longer than the farm. Every child in the valley plays in it, and every mother tells them not to, and the mothers played there too.\" She is quiet a moment. \"She took her doll. She always takes the doll. I found her shoe by the gate, and I took it to the temple, because I didn't know what else to do with it.\"",
+                "goTo": "marta_ask",
+                "setFlags": ["marta_asked_grove", "marta_told_of_the_grove"]
+              },
+              "requires": {
+                "notFlags": ["marta_asked_grove"]
+              }
+            },
+            {
+              "id": "ask_strangers",
+              "label": "Ask about strangers",
+              "say": "Anyone odd come by, before she went?",
+              "outcome": {
+                "text": "\"Tinkers. A priest, once, not ours — red cord on his wrist. Asked for water and didn't drink it.\" She frowns. \"And Wendel Pike from the Sparrow, all the way out here, asking had we seen anything. That was after she went. Kind of him, I thought.\"",
+                "goTo": "marta_ask",
+                "setFlags": ["marta_asked_strangers", "marta_mentioned_wendel"]
+              },
+              "requires": {
+                "notFlags": ["marta_asked_strangers"]
+              }
+            },
+            {
+              "id": "remember",
+              "label": "[Diplomacy] Help her remember",
+              "say": "Take your time. Anything at all — a sound, a smell, the dog barking at nothing.",
+              "check": { "stat": "diplomacy", "dc": 15 },
+              "outcomes": {
+                "criticalSuccess": {
+                  "text": "She closes her eyes. \"The night before... the stock wouldn't settle. And there was a smell off the wood like a cold hearth, like the Brother's temple. I thought it was the rain coming.\" Her eyes open. \"And singing. Very faint. From the west, from the deep wood. I told myself I dreamed it.\"",
+                  "goTo": "marta_ask",
+                  "setFlags": ["marta_remembered", "marta_heard_singing_west"]
+                },
+                "success": {
+                  "text": "She closes her eyes. \"The night before... the stock wouldn't settle. And there was a smell off the wood like a cold hearth, like the Brother's temple.\" Her eyes open. \"I thought it was the rain coming. It wasn't raining yet.\"",
+                  "goTo": "marta_ask",
+                  "setFlags": ["marta_remembered"]
+                },
+                "failure": {
+                  "text": "\"I don't know. I don't know. I've gone over it and over it.\" She grips the fence rail. \"I'm sorry.\"",
+                  "goTo": "marta_ask",
+                  "setFlags": ["marta_pressed"]
+                }
+              },
+              "requires": {
+                "notFlags": ["marta_pressed", "marta_remembered"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "say": "We'll bring her home.",
+              "outcome": {
+                "text": "\"Don't promise me that,\" she says. \"Just go and look.\"",
+                "goTo": "marta_bye"
+              }
+            }
+          ]
+        },
+        {
+          "id": "marta_again",
+          "title": "Marta Whitmore",
+          "body": "Marta is still at the fence.",
+          "options": [
+            {
+              "id": "ask",
+              "label": "Ask her something",
+              "say": "Marta. A few more questions.",
+              "outcome": { "text": "She turns, a little, to listen.", "goTo": "marta_ask" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave her be",
+              "outcome": { "text": "She goes back to watching the trees.", "goTo": "marta_bye" }
+            }
+          ]
+        },
+        {
+          "id": "marta_doll",
+          "title": "Marta Whitmore",
+          "body": "Marta sees what you are carrying before you say anything, and takes the doll from you with both hands.",
+          "options": [
+            {
+              "id": "tell_dry",
+              "label": "Tell her how you found it",
+              "say": "It was lying in the grove. It was dry, after three days of rain.",
+              "outcome": {
+                "text": "\"Dry.\" She turns it over. \"Then somebody's been keeping it for her.\" It is the first thing anyone has said in three days that has made her face do anything but hold still, and you are not sure it is hope.",
+                "goTo": "marta_doll_after",
+                "setFlags": ["marta_saw_doll"]
+              }
+            },
+            {
+              "id": "silent",
+              "label": "Say nothing",
+              "outcome": {
+                "text": "She holds it against her for a long time.",
+                "goTo": "marta_doll_after",
+                "setFlags": ["marta_saw_doll"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "marta_doll_after",
+          "title": "Marta Whitmore",
+          "body": "She gives it back. \"Take it with you. She'll want it.\"",
+          "options": [
+            {
+              "id": "promise",
+              "label": "Promise her",
+              "say": "She'll have it back. From us.",
+              "outcome": { "text": "She doesn't tell you not to, this time.", "goTo": "marta_bye" }
+            },
+            {
+              "id": "go",
+              "label": "Go",
+              "outcome": { "text": "She is already watching the trees again.", "goTo": "marta_bye" }
+            }
+          ]
+        },
+        {
+          "id": "marta_home",
+          "title": "Marta Whitmore",
+          "body": "Elara is sitting on the fence rail where her mother stood, swinging her feet, the doll in her lap. Marta is inside. You can hear her singing, badly, through the open kitchen window.",
+          "options": [
+            {
+              "id": "talk_elara",
+              "label": "Talk to Elara",
+              "say": "Hello, Elara.",
+              "outcome": {
+                "text": "\"Mum says you're the ones.\" She considers you with a nine-year-old's total seriousness. \"The tall man in the grove was very cold, and he knew all our names. He said he was keeping us for somebody.\" She hugs the doll. \"He said *us*.\"",
+                "goTo": "marta_home",
+                "setFlags": ["elara_spoke_of_us"]
+              },
+              "requires": {
+                "notFlags": ["elara_spoke_of_us"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave them to it",
+              "outcome": { "text": "Elara waves until you are out of sight.", "goTo": "marta_home_bye" }
+            }
+          ]
+        },
+        {
+          "id": "marta_home_bye",
+          "title": "Marta Whitmore",
+          "body": "Behind you, through the kitchen window, somebody is still singing.",
+          "isEnding": true
+        },
+        {
+          "id": "marta_bye",
+          "title": "Marta Whitmore",
+          "body": "The farm is quiet behind you.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_003_aldus",
+      "entries": [
+        {
+          "scene": "aldus_after",
+          "requires": ["boss_defeated_hollow_avatar"]
+        },
+        {
+          "scene": "aldus_again",
+          "requires": ["met_aldus"]
+        },
+        { "scene": "aldus_open" }
+      ],
+      "scenes": [
+        {
+          "id": "aldus_open",
+          "title": "Brother Aldus",
+          "body": "Brother Aldus sets a loaf aside and gets up off his knees, one at a time. \"Ashkyr keep you. If you've come to leave something, there is room on the step. If you've come to ask something, I'd sooner you asked it than left it.\"",
+          "options": [
+            {
+              "id": "ask_burials",
+              "label": "Ask about the burials",
+              "say": "The Captain says you've been burying what they find.",
+              "outcome": {
+                "text": "\"Four this week.\" He does not need to count. \"Two farmhands, a drover, and old Tessaly who kept the bees. Each of them had been dead longer than they'd been missing, if you follow me. And each of them came to me with their eyes full of earth.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["met_aldus", "aldus_told_burials"]
+              }
+            },
+            {
+              "id": "ask_shoe",
+              "label": "Ask about the child's shoe on the step",
+              "say": "Whose is the shoe?",
+              "outcome": {
+                "text": "\"Elara Whitmore's. Her mother brought it in.\" He looks at it rather than at you. \"I keep meaning to give it back, and I keep not being able to decide whether that would be a kindness.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["met_aldus", "aldus_told_shoe"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave him to his work",
+              "outcome": {
+                "text": "\"Ashkyr keep you,\" he says again, and kneels.",
+                "goTo": "aldus_bye",
+                "setFlags": ["met_aldus"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "aldus_ask",
+          "title": "Brother Aldus",
+          "body": "Aldus waits, hands folded into his sleeves.",
+          "options": [
+            {
+              "id": "ask_burials",
+              "label": "Ask about the burials",
+              "say": "Tell us about the dead.",
+              "outcome": {
+                "text": "\"Four this week. Each dead longer than they'd been missing, and each with their eyes full of earth.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["aldus_told_burials"]
+              },
+              "requires": {
+                "notFlags": ["aldus_told_burials"]
+              }
+            },
+            {
+              "id": "ask_what",
+              "label": "Ask what he thinks is doing it",
+              "say": "What's doing this, Brother? Honestly.",
+              "outcome": {
+                "text": "\"Honestly? Something that wants the dead and has learned to ask nicely.\" He glances west, toward the forge and the wood beyond it. \"It came out of the Whisperwood. Somebody's driven iron nails into the trees along the edge to keep it in there. They're new, and I didn't put them there, and neither did anyone who will admit to it.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["aldus_pointed_west"]
+              },
+              "requires": {
+                "notFlags": ["aldus_pointed_west"]
+              }
+            },
+            {
+              "id": "rite",
+              "label": "[Religion] Ask about the earth in their eyes",
+              "say": "Earth packed into the eyes. That's a rite, isn't it?",
+              "check": { "stat": "religion", "dc": 16 },
+              "outcomes": {
+                "success": {
+                  "text": "He looks at you properly for the first time. \"It is. An old burial rite, older than Ashkyr in this valley — you pack the eyes so the dead can't find their way home.\" His mouth tightens. \"Or so something else can find its way in. Whoever's doing this knows the old rites, and knows them from the wrong side.\"",
+                  "goTo": "aldus_ask",
+                  "setFlags": ["aldus_explained_the_rite"]
+                },
+                "failure": {
+                  "text": "\"It's a sign of something,\" he says. \"I'd hoped you might know what.\"",
+                  "goTo": "aldus_ask",
+                  "setFlags": ["aldus_rite_asked"]
+                }
+              },
+              "requires": {
+                "notFlags": ["aldus_explained_the_rite", "aldus_rite_asked"]
+              }
+            },
+            {
+              "id": "ask_mere",
+              "label": "Ask about the Mere Road",
+              "say": "Wendel Pike says they took her south, down the Mere Road.",
+              "outcome": {
+                "text": "\"The Mere Road.\" Aldus frowns. \"Nobody's used that causeway since the mill drowned. I bury from that end of the parish, and there's been nothing from it to bury.\" He hesitates. \"Wendel's a good man for a rumour. I'd not say he was a good man for a fact.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["aldus_doubted_the_mere"]
+              },
+              "requires": {
+                "flags": ["heard_of_the_mere_road"],
+                "notFlags": ["aldus_doubted_the_mere", "deception_revealed_mere_road"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "say": "Keep a lamp lit, Brother.",
+              "outcome": {
+                "text": "\"I always do,\" he says, and goes back to the bread.",
+                "goTo": "aldus_bye"
+              }
+            }
+          ]
+        },
+        {
+          "id": "aldus_again",
+          "title": "Brother Aldus",
+          "body": "Aldus looks up from the altar. \"Back again?\"",
+          "options": [
+            {
+              "id": "ask",
+              "label": "Ask him something",
+              "say": "A few more questions, Brother.",
+              "outcome": { "text": "\"Ask.\"", "goTo": "aldus_ask" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave him to his work",
+              "outcome": { "text": "He nods, and kneels.", "goTo": "aldus_bye" }
+            }
+          ]
+        },
+        {
+          "id": "aldus_after",
+          "title": "Brother Aldus",
+          "body": "The child's shoe is gone from the step. \"Marta came by,\" Aldus says. \"She didn't need it after all.\" He smiles, which changes his whole face. \"Ashkyr keep you. I mean it rather more than usual.\"",
+          "options": [
+            {
+              "id": "ask_over",
+              "label": "Ask if it is over",
+              "say": "Is it over?",
+              "outcome": {
+                "text": "\"The thing in the grove is over. Whoever taught it that rite is not, and they didn't learn it here.\" He looks east, toward the capital road. \"I'd want to know who pays for a thing like that.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["aldus_warned_of_teacher"]
+              },
+              "requires": {
+                "notFlags": ["aldus_warned_of_teacher"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "He goes back to his altar, humming.", "goTo": "aldus_bye" }
+            }
+          ]
+        },
+        {
+          "id": "aldus_bye",
+          "title": "Brother Aldus",
+          "body": "The temple smells of cold ash and new bread.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_004_harrow",
+      "entries": [
+        {
+          "scene": "harrow_after",
+          "requires": ["boss_defeated_hollow_avatar"]
+        },
+        {
+          "scene": "harrow_again",
+          "requires": ["met_harrow"]
+        },
+        { "scene": "harrow_open" }
+      ],
+      "scenes": [
+        {
+          "id": "harrow_open",
+          "title": "Ada Harrow",
+          "body": "The hammer stops. Ada Harrow does not put it down. \"If you want a horse shod, it'll be a week. If you want anything else, it'll be longer.\"",
+          "options": [
+            {
+              "id": "commissions",
+              "label": "Ask about the unclaimed work",
+              "say": "That's a lot of work nobody's collected.",
+              "outcome": {
+                "text": "\"Hinges for a man who's dead. Plough-share for a man who's dead. That's a cradle-hook for a family that went to their sister's in Thornhaven and hasn't written.\" She sets the hammer down, finally. \"Four this week. I stack them in the order I heard.\"",
+                "goTo": "harrow_ask",
+                "setFlags": ["met_harrow"]
+              }
+            },
+            {
+              "id": "nails",
+              "label": "Ask about the nails in the trees",
+              "say": "Somebody's been driving iron into the trees along the Whisperwood.",
+              "outcome": {
+                "text": "Her face does nothing at all, which is a great deal for a face to do.",
+                "goTo": "harrow_nails",
+                "setFlags": ["met_harrow"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "The hammer starts again before you reach the door.",
+                "goTo": "harrow_bye",
+                "setFlags": ["met_harrow"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "harrow_nails",
+          "title": "Ada Harrow",
+          "body": "\"Is that so,\" says Harrow.",
+          "options": [
+            {
+              "id": "persuade",
+              "label": "[Diplomacy] Tell her you are on the same side",
+              "say": "Whoever's doing it is the only one in this town trying to keep something in that wood. I'd like to help them.",
+              "check": { "stat": "diplomacy", "dc": 17 },
+              "outcomes": {
+                "criticalSuccess": {
+                  "text": "She looks at you a long while. Then she opens a drawer under the bench, and it is full of nails, square-cut, each with a mark scratched into its head. \"My grandmother did it the last time. I've her book. Iron and a name, one for every soul in the parish, so it knows who's spoken for.\" She scoops up a handful, binds them in waxed thread, and puts them in your hand. \"If you're going in there, you'll want to be spoken for.\"",
+                  "goTo": "harrow_ask",
+                  "setFlags": ["harrow_admitted_the_nails", "loot_g_003_charm_of_iron_nails"]
+                },
+                "success": {
+                  "text": "She looks at you a long while. Then she opens a drawer under the bench, and it is full of nails, square-cut, each with a mark scratched into its head. \"My grandmother did it the last time. I've her book. Iron and a name, one for every soul in the parish, so it knows who's spoken for.\" She shuts the drawer. \"I've run out of names I know. I've started on the ones in the ledger.\"",
+                  "goTo": "harrow_ask",
+                  "setFlags": ["harrow_admitted_the_nails"]
+                },
+                "failure": {
+                  "text": "\"I'm a smith,\" she says. \"I make nails. People buy them.\" She picks the hammer back up.",
+                  "goTo": "harrow_ask",
+                  "setFlags": ["harrow_refused"]
+                }
+              },
+              "requires": {
+                "notFlags": ["harrow_admitted_the_nails", "harrow_refused"]
+              }
+            },
+            {
+              "id": "lean",
+              "label": "[Intimidation] Lean on her",
+              "say": "You know exactly who. Say it.",
+              "check": { "stat": "intimidation", "dc": 19 },
+              "outcomes": {
+                "success": {
+                  "text": "\"Fine. Me.\" She says it the way you would drop something heavy. \"And if you tell the council, they'll make me stop, and then there'll be nothing between Millhaven and that wood but you.\"",
+                  "goTo": "harrow_ask",
+                  "setFlags": ["harrow_admitted_the_nails", "harrow_resents_you"]
+                },
+                "failure": {
+                  "text": "Harrow looks at you, and then at the hammer, and then at you again, and you find you have taken a step back without deciding to.",
+                  "goTo": "harrow_ask",
+                  "setFlags": ["harrow_refused"]
+                }
+              },
+              "requires": {
+                "notFlags": ["harrow_admitted_the_nails", "harrow_refused"]
+              }
+            },
+            {
+              "id": "drop",
+              "label": "Let it go",
+              "say": "Never mind.",
+              "outcome": { "text": "\"Good,\" she says.", "goTo": "harrow_ask" }
+            }
+          ]
+        },
+        {
+          "id": "harrow_ask",
+          "title": "Ada Harrow",
+          "body": "\"Well?\" says Harrow.",
+          "options": [
+            {
+              "id": "ask_ledger",
+              "label": "Show her the undertaker's ledger",
+              "say": "This ledger was on your bench. Who marked it?",
+              "outcome": {
+                "text": "\"Not mine. It came in with the undertaker's hinges, and I've been meaning to walk it back.\" She runs a thumb down the page. \"Four marks, four burials — the four the Brother's had. That's not the undertaker's hand.\" She taps one. \"That's somebody counting.\"",
+                "goTo": "harrow_ask",
+                "setFlags": ["harrow_read_the_ledger"]
+              },
+              "requires": {
+                "flags": ["item_acquired_harrow_ledger"],
+                "notFlags": ["harrow_read_the_ledger"]
+              }
+            },
+            {
+              "id": "ask_maul",
+              "label": "Ask about the maul on the wall",
+              "say": "That maul's head — is that stone set into the iron?",
+              "outcome": {
+                "text": "\"Seal-stone. A broken one, off the old boundary marker at the end of the Mere causeway.\" She doesn't take it down. \"I made three. I finished one. The other two cracked in the quench, and I don't know why, and I don't like not knowing why.\"",
+                "goTo": "harrow_ask",
+                "setFlags": ["harrow_told_of_the_maul"]
+              },
+              "requires": {
+                "notFlags": ["harrow_told_of_the_maul"]
+              }
+            },
+            {
+              "id": "ask_nails",
+              "label": "Ask about the nails in the trees",
+              "say": "About the nails along the Whisperwood.",
+              "outcome": { "text": "Her face does nothing at all.", "goTo": "harrow_nails" },
+              "requires": {
+                "notFlags": ["harrow_admitted_the_nails", "harrow_refused"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "The hammer starts again before you reach the door.", "goTo": "harrow_bye" }
+            }
+          ]
+        },
+        {
+          "id": "harrow_again",
+          "title": "Ada Harrow",
+          "body": "The hammer stops. \"You again.\"",
+          "options": [
+            {
+              "id": "talk",
+              "label": "Talk",
+              "say": "A word, if you can spare it.",
+              "outcome": { "text": "\"Go on.\"", "goTo": "harrow_ask" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "The hammer starts again.", "goTo": "harrow_bye" }
+            }
+          ]
+        },
+        {
+          "id": "harrow_after",
+          "title": "Ada Harrow",
+          "body": "The commissions along the back wall have been collected, all but the cradle-hook. Harrow is working, and for the first time since you came to Millhaven the hammer does not stop when you walk in.",
+          "options": [
+            {
+              "id": "quiet",
+              "label": "Tell her the wood is quiet",
+              "say": "The wood's quiet.",
+              "outcome": {
+                "text": "\"For now.\" She holds up a nail between two fingers without looking round. \"I'm not pulling them out.\"",
+                "goTo": "harrow_bye"
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave her to it",
+              "outcome": { "text": "She lifts a hand without turning.", "goTo": "harrow_bye" }
+            }
+          ]
+        },
+        {
+          "id": "harrow_bye",
+          "title": "Ada Harrow",
+          "body": "The forge is loud behind you.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_007_wendel",
+      "entries": [
+        {
+          "scene": "wendel_arrested",
+          "requires": ["wendel_arrested"]
+        },
+        {
+          "scene": "wendel_gone",
+          "requires": ["wendel_fled"]
+        },
+        {
+          "scene": "wendel_ashamed",
+          "requires": ["wendel_confessed"]
+        },
+        {
+          "scene": "wendel_caught",
+          "requires": ["deception_revealed_mere_road"]
+        },
+        {
+          "scene": "wendel_again",
+          "requires": ["met_wendel"]
+        },
+        { "scene": "wendel_open" }
+      ],
+      "scenes": [
+        {
+          "id": "wendel_open",
+          "title": "Wendel Pike",
+          "body": "\"Welcome to the Sparrow!\" The landlord is at your elbow before you have the door shut behind you, cloth over his shoulder, smile ready. \"Sit anywhere but by the door — there's a draught. You're the ones the Captain's sent after the Whitmore girl, aren't you? Terrible thing. Terrible.\"",
+          "options": [
+            {
+              "id": "ask_elara",
+              "label": "Ask what he has heard",
+              "say": "You hear everything in here, they say. What have you heard about Elara?",
+              "outcome": {
+                "text": "Wendel lowers his voice, though there is nobody near. \"More than heard.\"",
+                "goTo": "wendel_story",
+                "setFlags": ["met_wendel"]
+              }
+            },
+            {
+              "id": "small_talk",
+              "label": "Order a drink",
+              "say": "Whatever's good.",
+              "outcome": {
+                "text": "\"Coming up!\"",
+                "goTo": "wendel_bar",
+                "setFlags": ["met_wendel"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "wendel_bar",
+          "title": "Wendel Pike",
+          "body": "Wendel leans on the bar, cloth in hand. At the back of the room a lamp burns on the stair in the middle of the day. \"What'll it be?\"",
+          "options": [
+            {
+              "id": "ask_elara",
+              "label": "Ask what he has heard about Elara",
+              "say": "What have you heard about the Whitmore girl?",
+              "outcome": {
+                "text": "Wendel lowers his voice, though there is nobody near. \"More than heard.\"",
+                "goTo": "wendel_story"
+              },
+              "requires": {
+                "notFlags": ["heard_of_the_mere_road"]
+              }
+            },
+            {
+              "id": "ask_lamp",
+              "label": "Ask about the lamp on the stair",
+              "say": "Why's there a lamp lit on the stair at noon?",
+              "outcome": {
+                "text": "\"For the late ones,\" he says easily. \"Nobody wants to break their neck on the stair in the dark.\" It is broad daylight through every window in the room.",
+                "goTo": "wendel_bar",
+                "setFlags": ["asked_wendel_lamp"]
+              },
+              "requires": {
+                "notFlags": ["asked_wendel_lamp"]
+              }
+            },
+            {
+              "id": "ask_news",
+              "label": "Ask for the news",
+              "say": "What's the talk in here?",
+              "outcome": {
+                "text": "\"Tollgate on the capital road's shut till the Captain says otherwise, so half the county's drinking my cellar dry waiting on it.\" He beams. \"Ill wind.\"",
+                "goTo": "wendel_bar",
+                "setFlags": ["asked_wendel_news"]
+              },
+              "requires": {
+                "notFlags": ["asked_wendel_news"]
+              }
+            },
+            {
+              "id": "doubt",
+              "label": "Tell him what Brother Aldus said",
+              "say": "Brother Aldus says nobody's used the Mere Road in years.",
+              "outcome": {
+                "text": "\"Well, somebody has,\" Wendel says, a shade too quickly. \"Two somebodies, carrying a third.\" He picks up a cup that is already clean and cleans it.",
+                "goTo": "wendel_bar",
+                "setFlags": ["caught_wendel_lying"]
+              },
+              "requires": {
+                "flags": ["aldus_doubted_the_mere"],
+                "notFlags": ["caught_wendel_lying", "deception_revealed_mere_road"]
+              }
+            },
+            {
+              "id": "confront",
+              "label": "Tell him you know he is lying",
+              "say": "You told that story like a man reading it off a card. Who wrote it for you?",
+              "outcome": { "text": "The cloth stops moving on the bar.", "goTo": "wendel_cornered" },
+              "requires": {
+                "flags": ["caught_wendel_lying"],
+                "notFlags": ["deception_revealed_mere_road", "wendel_stonewalled"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "\"Mind the draught!\"", "goTo": "wendel_bye" }
+            }
+          ]
+        },
+        {
+          "id": "wendel_story",
+          "title": "Wendel Pike",
+          "body": "\"I saw them,\" Wendel says. \"Three nights back, closing up, I'm out the back with the slops and there's two men going past the temple wall, south, carrying something the size of a child wrapped in sacking. Down the Mere Road, toward the old drowned mill.\" He shakes his head. \"I told the Captain. He said I'd had a drink. Well — I had. But I know what I saw.\"",
+          "options": [
+            {
+              "id": "believe",
+              "label": "Thank him",
+              "say": "That's the first real lead anyone's given us. Thank you.",
+              "outcome": {
+                "text": "\"Least I can do.\" He squeezes your arm. \"South past the temple and over the causeway. Mind how you go on it — it floods.\"",
+                "goTo": "wendel_bye",
+                "setFlags": ["heard_of_the_mere_road", "believed_wendel"]
+              }
+            },
+            {
+              "id": "watch",
+              "label": "[Perception] Watch him while he tells it again",
+              "say": "Say it again. Slowly. What exactly did you see?",
+              "check": { "stat": "perception", "dc": 19 },
+              "outcomes": {
+                "criticalSuccess": {
+                  "text": "He tells it again, word for word — exactly word for word, the same pauses in the same places, like a man reciting. And when he says *south*, his eyes go, just for a moment, to the lamp burning on the back stair.\n\nHe is lying, and lying to send you south, which means whatever he is covering for is somewhere else. The Whisperwood is west.",
+                  "goTo": "wendel_bye",
+                  "setFlags": ["heard_of_the_mere_road", "caught_wendel_lying", "wendel_looked_at_the_lamp"]
+                },
+                "success": {
+                  "text": "He tells it again, and it comes out the same — too much the same, the same pauses in the same places, like a man reciting something he has practised. He is lying to you. You are not sure yet why.",
+                  "goTo": "wendel_bye",
+                  "setFlags": ["heard_of_the_mere_road", "caught_wendel_lying"]
+                },
+                "failure": {
+                  "text": "He tells it again. It is a good story, and he tells it like a man who has been telling it all week to anybody who would listen, which is probably exactly what he has been doing.",
+                  "goTo": "wendel_bye",
+                  "setFlags": ["heard_of_the_mere_road", "believed_wendel"]
+                },
+                "criticalFailure": {
+                  "text": "He tells it again, better, with the weight of the bundle and the sound their boots made on the causeway. You find you are leaning in.",
+                  "goTo": "wendel_bye",
+                  "setFlags": ["heard_of_the_mere_road", "believed_wendel"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "wendel_again",
+          "title": "Wendel Pike",
+          "body": "\"Back again!\" Wendel wipes the bar in front of you. \"What'll it be?\"",
+          "options": [
+            {
+              "id": "bar",
+              "label": "Lean on the bar",
+              "say": "A word, landlord.",
+              "outcome": { "text": "He waits, smiling.", "goTo": "wendel_bar" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "\"Mind the draught!\"", "goTo": "wendel_bye" }
+            }
+          ]
+        },
+        {
+          "id": "wendel_caught",
+          "title": "Wendel Pike",
+          "body": "Wendel sees the red cord in your hand from across the room, and for a moment his face isn't doing anything at all. Then the smile comes back, a little too wide. \"You're back! Any luck?\"",
+          "options": [
+            {
+              "id": "cord",
+              "label": "Put the red cord on the bar",
+              "say": "Stones in a sack, Wendel. And this, knotted the Covenant way.",
+              "outcome": { "text": "He looks at it. He doesn't touch it.", "goTo": "wendel_cornered" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave him wondering",
+              "outcome": { "text": "The smile follows you to the door.", "goTo": "wendel_bye" }
+            }
+          ]
+        },
+        {
+          "id": "wendel_cornered",
+          "title": "Wendel Pike",
+          "body": "\"Anyone can tie a knot,\" Wendel says. His hands have gone flat on the bar.",
+          "options": [
+            {
+              "id": "lean",
+              "label": "[Intimidation] Make him tell you where she really is",
+              "say": "Where is she? The truth, this time, or I stop being polite.",
+              "check": { "stat": "intimidation", "dc": 17 },
+              "outcomes": {
+                "criticalSuccess": {
+                  "text": "\"The Hollow Grove!\" It comes out of him all at once. \"West, through the Whisperwood, past where the trees stop having birds. They said nobody would be hurt. They said she'd be kept, not— they said *kept*.\" He is crying now, which does not make you like him any better.",
+                  "goTo": "wendel_broken",
+                  "setFlags": ["wendel_confessed", "wendel_named_the_grove"]
+                },
+                "success": {
+                  "text": "\"West.\" He can't hold your eye. \"The Whisperwood, the grove at the heart of it. They pay me to send people south, and I send them south, and I don't ask what's west.\"",
+                  "goTo": "wendel_broken",
+                  "setFlags": ["wendel_confessed", "wendel_named_the_grove"]
+                },
+                "failure": {
+                  "text": "\"I don't know what you're talking about,\" he says, and walks into the back, and bolts the door. A moment later the lamp on the back stair goes out.",
+                  "goTo": "wendel_bolted",
+                  "setFlags": ["wendel_fled"]
+                }
+              },
+              "requires": {
+                "notFlags": ["wendel_stonewalled", "wendel_confessed"]
+              }
+            },
+            {
+              "id": "coax",
+              "label": "[Diplomacy] Give him a way out",
+              "say": "Whatever they've got on you, Wendel, we can help. But not while you're lying to us.",
+              "check": { "stat": "diplomacy", "dc": 17 },
+              "outcomes": {
+                "success": {
+                  "text": "He sits down on the nearest bench as if his legs have been cut. \"They've got my boy,\" he says. \"Not— not like that. He's with them. He went to Thornhaven for work and came back with a red cord on his wrist, and he's so *happy*, and they said if I did as I was told he'd stay happy.\" A long breath. \"The Hollow Grove. West, through the wood. That's where they're keeping her.\"",
+                  "goTo": "wendel_broken",
+                  "setFlags": ["wendel_confessed", "wendel_named_the_grove", "wendel_spoke_of_his_son"]
+                },
+                "failure": {
+                  "text": "\"I've done nothing I need a way out of,\" he says, and turns his back on you to serve somebody who isn't there.",
+                  "goTo": "wendel_bye",
+                  "setFlags": ["wendel_stonewalled"]
+                }
+              },
+              "requires": {
+                "notFlags": ["wendel_stonewalled", "wendel_confessed"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave him",
+              "outcome": {
+                "text": "He does not watch you go, which is how you know he wants to.",
+                "goTo": "wendel_bye"
+              }
+            }
+          ]
+        },
+        {
+          "id": "wendel_ashamed",
+          "title": "Wendel Pike",
+          "body": "Wendel won't look at you. He keeps polishing the same cup, and the lamp on the back stair is cold.",
+          "isEnding": true
+        },
+        {
+          "id": "wendel_gone",
+          "title": "Wendel Pike",
+          "body": "Wendel isn't behind the bar. The pot-boy says he's gone to his sister's in the capital, and doesn't believe it either. The lamp on the back stair has been put out.",
+          "isEnding": true
+        },
+        {
+          "id": "wendel_arrested",
+          "title": "Wendel Pike",
+          "body": "The Sparrow is shut. Through the window you can see Wendel sitting alone at a table, a guard on a stool by the door, the lamp on the back stair cold.",
+          "isEnding": true
+        },
+        {
+          "id": "wendel_broken",
+          "title": "Wendel Pike",
+          "body": "Wendel stays where he is. Nobody else in the Sparrow looks at him, or at you.",
+          "isEnding": true
+        },
+        {
+          "id": "wendel_bolted",
+          "title": "Wendel Pike",
+          "body": "Somewhere below, a yard door bangs. By the time anyone thinks to go after him, the lane behind the Sparrow is empty.",
+          "isEnding": true
+        },
+        {
+          "id": "wendel_bye",
+          "title": "Wendel Pike",
+          "body": "Wendel goes back to his bar. The lamp on the back stair burns on in the daylight.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_005_queen_liora",
+      "entries": [
+        {
+          "scene": "liora_gone",
+          "requires": ["boss_defeated_malachai_vex"]
+        },
+        {
+          "scene": "liora_exposed",
+          "requires": ["deception_revealed_under_archive"],
+          "unless": ["liora_confronted"]
+        },
+        {
+          "scene": "liora_again",
+          "requires": ["met_liora"]
+        },
+        { "scene": "liora_open" }
+      ],
+      "scenes": [
+        {
+          "id": "liora_open",
+          "title": "Queen Liora",
+          "body": "Queen Liora does not rise. \"Ah, the heroes of Millhaven. How quaint.\" A servant is already pouring. \"Perhaps you might join us for wine?\"",
+          "options": [
+            {
+              "id": "accept",
+              "label": "Accept the wine",
+              "say": "Thank you, Majesty.",
+              "outcome": {
+                "text": "The wine is very good, and she watches you drink it with the attention of someone checking a recipe.",
+                "goTo": "liora_court",
+                "setFlags": ["met_liora", "drank_with_liora"]
+              }
+            },
+            {
+              "id": "decline",
+              "label": "Decline",
+              "say": "We'll stay thirsty, Majesty.",
+              "outcome": {
+                "text": "\"How careful.\" The smile does not move at all. \"Careful people live such long, dull lives.\"",
+                "goTo": "liora_court",
+                "setFlags": ["met_liora"]
+              }
+            },
+            {
+              "id": "protocol",
+              "label": "[Society] Greet her with full court protocol",
+              "say": "Your Majesty honours us. We come at the commendation of the Captain of Millhaven, to offer the Crown our service.",
+              "check": { "stat": "society", "dc": 28 },
+              "outcomes": {
+                "success": {
+                  "text": "The courtiers along the wall stop whispering. \"Someone has taught you manners,\" Liora says. \"How unexpected. Sit.\"",
+                  "goTo": "liora_court",
+                  "setFlags": ["met_liora", "liora_respects_you"]
+                },
+                "failure": {
+                  "text": "A courtier laughs behind his hand at something in the phrasing, and Liora lets him. \"Charming,\" she says.",
+                  "goTo": "liora_court",
+                  "setFlags": ["met_liora"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "liora_court",
+          "title": "Queen Liora",
+          "body": "\"The King is resting,\" Liora says, before you can ask. \"The King is always resting now. You will address yourselves to me.\"",
+          "options": [
+            {
+              "id": "ask_king",
+              "label": "Ask after the King",
+              "say": "What ails the King?",
+              "outcome": {
+                "text": "\"The King is adjusting to recent pressures. His paranoia is tiresome, but I remain steadfast.\" She turns her cup a quarter turn on the arm of the throne. \"He sees shadows in the corners of rooms. One would think a king would be used to that.\"",
+                "goTo": "liora_court",
+                "setFlags": ["liora_asked_king"]
+              },
+              "requires": {
+                "notFlags": ["liora_asked_king"]
+              }
+            },
+            {
+              "id": "ask_covenant",
+              "label": "Ask about the Crimson Covenant",
+              "say": "What does Your Majesty know of the Crimson Covenant?",
+              "outcome": {
+                "text": "\"Ah, you know. How delightful.\" She says it the way other people say *good morning*. \"We are not murderers. We are gravediggers for a dead world.\" A pause, while the courtiers along the wall find somewhere else to look. \"I speak figuratively, of course.\"",
+                "goTo": "liora_court",
+                "setFlags": ["liora_asked_covenant"]
+              },
+              "requires": {
+                "flags": ["liora_asked_king"],
+                "notFlags": ["liora_asked_covenant"]
+              }
+            },
+            {
+              "id": "ask_corruption",
+              "label": "Ask about the corruption",
+              "say": "The corruption in this city — the red grain in the stone, the lamps, the shadows. What is it?",
+              "outcome": {
+                "text": "\"Such an ugly word. I call it *transformation*.\" She leans forward, and for the first time looks interested. \"The shadow will purge the weak. The question every sensible person in this kingdom is asking is which side of that sentence they intend to be on.\"",
+                "goTo": "liora_court",
+                "setFlags": ["liora_asked_corruption"]
+              },
+              "requires": {
+                "notFlags": ["liora_asked_corruption"]
+              }
+            },
+            {
+              "id": "ask_mines",
+              "label": "Ask about the Bloodstone mines",
+              "say": "The Bloodstone mines. What's down there?",
+              "outcome": {
+                "text": "\"Rock,\" she says. \"Men. Accidents.\" She sets the cup down. \"I would not go down the mines, if I were you. I would go home to Millhaven and be thanked by farmers.\" It is the first thing she has said that sounds like advice, and the first that sounds like a threat.",
+                "goTo": "liora_court",
+                "setFlags": ["liora_warned_of_mines"]
+              },
+              "requires": {
+                "flags": ["liora_asked_corruption"],
+                "notFlags": ["liora_warned_of_mines"]
+              }
+            },
+            {
+              "id": "turncoat",
+              "label": "[Deception] Let her think you want to join",
+              "say": "Suppose someone wanted to be on the right side of that sentence, Majesty.",
+              "check": { "stat": "deception", "dc": 28 },
+              "outcomes": {
+                "success": {
+                  "text": "\"Then someone would visit the Grand Library,\" she says slowly, \"and ask Master Hale for the old records of the seals. He is very helpful to people I send.\" She smiles. \"Tell him I sent you.\"",
+                  "goTo": "liora_court",
+                  "setFlags": ["liora_sent_you_to_hale"]
+                },
+                "failure": {
+                  "text": "\"No,\" she says pleasantly. \"You don't.\" And that is the end of that.",
+                  "goTo": "liora_court",
+                  "setFlags": ["liora_saw_through_you"]
+                }
+              },
+              "requires": {
+                "flags": ["liora_asked_covenant"],
+                "notFlags": ["liora_sent_you_to_hale", "liora_saw_through_you"]
+              }
+            },
+            {
+              "id": "take_leave",
+              "label": "Take your leave",
+              "say": "Your Majesty has been generous with her time.",
+              "outcome": {
+                "text": "\"I have, haven't I.\" She lifts two fingers, and the audience is over. As the doors close behind you, you hear her laugh — not at you, you think, but at something she has just decided.",
+                "goTo": "liora_bye",
+                "setFlags": ["dialogue_complete_queen_liora"]
+              },
+              "requires": {
+                "flags": ["liora_asked_king", "liora_asked_covenant", "liora_asked_corruption"]
+              }
+            },
+            {
+              "id": "walk_out",
+              "label": "Walk out",
+              "say": "We've heard enough.",
+              "outcome": { "text": "\"Have you,\" she says, to your back.", "goTo": "liora_bye" }
+            }
+          ]
+        },
+        {
+          "id": "liora_again",
+          "title": "Queen Liora",
+          "body": "Queen Liora regards you over the rim of her cup. \"Again? The court will talk.\"",
+          "options": [
+            {
+              "id": "audience",
+              "label": "Ask for an audience",
+              "say": "A few more questions, Majesty.",
+              "outcome": { "text": "\"Well?\"", "goTo": "liora_court" }
+            },
+            {
+              "id": "leave",
+              "label": "Bow and leave",
+              "outcome": { "text": "She does not watch you go.", "goTo": "liora_bye" }
+            }
+          ]
+        },
+        {
+          "id": "liora_exposed",
+          "title": "Queen Liora",
+          "body": "You lay the letter on the arm of her throne. Liora reads her own handwriting without any change of expression at all. \"Hale always did keep everything,\" she says.",
+          "options": [
+            {
+              "id": "demand",
+              "label": "[Intimidation] Demand the archivist's daughter",
+              "say": "The archivist's girl. Where is she?",
+              "check": { "stat": "intimidation", "dc": 30 },
+              "outcomes": {
+                "success": {
+                  "text": "For a moment the smile goes away entirely, and what is underneath it is only tired. \"Thornhaven,\" she says. \"With the others. Malachai likes to keep the families close.\" The smile comes back. \"You'll be going there anyway, I expect.\"",
+                  "goTo": "liora_bye",
+                  "setFlags": ["liora_confronted", "liora_named_thornhaven"]
+                },
+                "failure": {
+                  "text": "\"Guards,\" says Liora, without raising her voice, and you are escorted from the throne room with great courtesy and no discussion.",
+                  "goTo": "liora_bye",
+                  "setFlags": ["liora_confronted", "liora_had_you_removed"]
+                }
+              }
+            },
+            {
+              "id": "accuse",
+              "label": "Accuse her before the court",
+              "say": "Your Queen sends honest men's children to Thornhaven to keep their fathers quiet.",
+              "outcome": {
+                "text": "Nobody along the wall moves. Nobody along the wall looks at you. Liora lets the silence go on until it is embarrassing for everyone except her. \"The kingdom has heard you,\" she says. \"The kingdom is not interested.\"",
+                "goTo": "liora_bye",
+                "setFlags": ["liora_confronted", "liora_accused_publicly"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Take the letter back and go",
+              "outcome": { "text": "\"Do keep it,\" she says. \"I have the original.\"", "goTo": "liora_bye" }
+            }
+          ]
+        },
+        {
+          "id": "liora_gone",
+          "title": "Queen Liora",
+          "body": "The throne is empty. A servant tells you the Queen has retired to the country for her health, and does not say which country.",
+          "isEnding": true
+        },
+        {
+          "id": "liora_bye",
+          "title": "Queen Liora",
+          "body": "The doors of the throne room close behind you.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_008_hale",
+      "entries": [
+        {
+          "scene": "hale_home",
+          "requires": ["boss_defeated_malachai_vex"]
+        },
+        {
+          "scene": "hale_ashamed",
+          "requires": ["hale_confessed"]
+        },
+        {
+          "scene": "hale_caught",
+          "requires": ["deception_revealed_under_archive"]
+        },
+        {
+          "scene": "hale_again",
+          "requires": ["met_hale"]
+        },
+        { "scene": "hale_open" }
+      ],
+      "scenes": [
+        {
+          "id": "hale_open",
+          "title": "Master Archivist Oswin Hale",
+          "body": "The archivist looks up from the catalogue. \"Quietly, please.\" He takes in your road-dirt and your weapons, and something in his face settles, the way a face settles when a thing that has been dreaded for a long time finally arrives. \"You'll be the ones from Millhaven.\"",
+          "options": [
+            {
+              "id": "ask_missing",
+              "label": "Ask about the empty sections",
+              "say": "Whole sections of your shelves are empty.",
+              "outcome": {
+                "text": "\"Removed for conservation,\" Hale says. \"By order of the Crown.\" He does not look at the catalogue, which still lists every missing volume in his own neat hand.",
+                "goTo": "hale_desk",
+                "setFlags": ["met_hale", "hale_asked_missing"]
+              }
+            },
+            {
+              "id": "ask_seals",
+              "label": "Ask about the seals",
+              "say": "We need to know about the seals the Covenant is breaking.",
+              "outcome": {
+                "text": "Hale is quiet for a moment. Then he closes the catalogue.",
+                "goTo": "hale_story",
+                "setFlags": ["met_hale"]
+              }
+            },
+            {
+              "id": "queen_sent",
+              "label": "Tell him the Queen sent you",
+              "say": "The Queen sent us. She says you're very helpful.",
+              "outcome": {
+                "text": "Something crosses Hale's face and is put away. \"Then I shall be,\" he says, and closes the catalogue.",
+                "goTo": "hale_story",
+                "setFlags": ["met_hale", "hale_knows_the_queen_sent_you"]
+              },
+              "requires": {
+                "flags": ["liora_sent_you_to_hale"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "hale_desk",
+          "title": "Master Archivist Oswin Hale",
+          "body": "Hale waits with his hands folded on the closed catalogue.",
+          "options": [
+            {
+              "id": "ask_seals",
+              "label": "Ask about the seals",
+              "say": "The seals the Covenant is breaking. Tell us.",
+              "outcome": {
+                "text": "Hale is quiet for a moment. \"Not in front of the shelves,\" he says, and lowers his voice.",
+                "goTo": "hale_story"
+              },
+              "requires": {
+                "notFlags": ["heard_of_the_under_archive"]
+              }
+            },
+            {
+              "id": "ask_missing",
+              "label": "Ask about the empty sections",
+              "say": "Where did the missing books go?",
+              "outcome": {
+                "text": "\"Removed for conservation. By order of the Crown.\"",
+                "goTo": "hale_desk",
+                "setFlags": ["hale_asked_missing"]
+              },
+              "requires": {
+                "notFlags": ["hale_asked_missing"]
+              }
+            },
+            {
+              "id": "confront",
+              "label": "Tell him you know he lied",
+              "say": "The stair under your desk. You were lying about it, and we both know it.",
+              "outcome": { "text": "His hands press flat on the catalogue.", "goTo": "hale_cornered" },
+              "requires": {
+                "flags": ["caught_hale_lying"],
+                "notFlags": ["deception_revealed_under_archive", "hale_stonewalled"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "\"Quietly, please,\" he says, to nobody.", "goTo": "hale_bye" }
+            }
+          ]
+        },
+        {
+          "id": "hale_story",
+          "title": "Master Archivist Oswin Hale",
+          "body": "\"You'll have been told the mines,\" Hale says, low. \"Everyone is told the mines. The Queen wants you told the mines.\" He glances across the plaza toward the throne room. \"They are a feint — a red grain in the rock to draw the eye. The seal they are really working is beneath this library. I hear the chanting through the floor at night. There is a stair behind this desk, and I can give you the key.\"",
+          "options": [
+            {
+              "id": "take_key",
+              "label": "Take the key",
+              "say": "Show us the stair.",
+              "outcome": {
+                "text": "He puts an iron key on the desk and doesn't take his hand off it quite as quickly as he should. \"Behind the catalogue, and down. Be careful. Nobody has been below the stacks since my predecessor.\"",
+                "goTo": "hale_bye",
+                "setFlags": ["heard_of_the_under_archive", "believed_hale"]
+              }
+            },
+            {
+              "id": "watch",
+              "label": "[Perception] Watch his hands while he answers",
+              "say": "You've heard chanting. Through the floor. How often?",
+              "check": { "stat": "perception", "dc": 28 },
+              "outcomes": {
+                "criticalSuccess": {
+                  "text": "\"Most nights,\" he says, and his hands, which have been still on the catalogue, press down flat as if to hold it shut. He isn't lying about the chanting. He is lying about everything around it. And when he says *the mines are a feint*, he looks, for a fraction of a second, like a man who badly wants to be contradicted.",
+                  "goTo": "hale_bye",
+                  "setFlags": ["heard_of_the_under_archive", "caught_hale_lying", "hale_wants_to_be_stopped"]
+                },
+                "success": {
+                  "text": "\"Most nights,\" he says, and his hands press flat on the catalogue as if to hold it shut. The story is good. The man telling it is terrified. He is lying to you.",
+                  "goTo": "hale_bye",
+                  "setFlags": ["heard_of_the_under_archive", "caught_hale_lying"]
+                },
+                "failure": {
+                  "text": "\"Most nights,\" he says. \"Low. In a language I can read but have never heard spoken.\" He is afraid, but everyone in this city is afraid, and he has more reason than most.",
+                  "goTo": "hale_bye",
+                  "setFlags": ["heard_of_the_under_archive", "believed_hale"]
+                }
+              }
+            },
+            {
+              "id": "mines_first",
+              "label": "Tell him you will try the mines first",
+              "say": "Then we'll look at the mines first, and come back to your stair.",
+              "outcome": {
+                "text": "\"Of course,\" says Hale, and looks as though someone has taken one weight off him and put a different one on.",
+                "goTo": "hale_bye",
+                "setFlags": ["heard_of_the_under_archive"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "hale_again",
+          "title": "Master Archivist Oswin Hale",
+          "body": "Hale looks up from the catalogue. \"Yes?\"",
+          "options": [
+            {
+              "id": "desk",
+              "label": "Speak with him",
+              "say": "A word, Master Hale.",
+              "outcome": { "text": "He closes the catalogue.", "goTo": "hale_desk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "\"Quietly, please.\"", "goTo": "hale_bye" }
+            }
+          ]
+        },
+        {
+          "id": "hale_caught",
+          "title": "Master Archivist Oswin Hale",
+          "body": "Hale sees the letter in your hand, and all the air goes out of him. He sits down behind the catalogue desk as if someone has cut a string.",
+          "options": [
+            {
+              "id": "coax",
+              "label": "[Diplomacy] Tell him you know about his daughter",
+              "say": "We read the letter. We know what she is holding over you.",
+              "check": { "stat": "diplomacy", "dc": 26 },
+              "outcomes": {
+                "success": {
+                  "text": "\"Her name is Wenna,\" Hale says. \"She's eleven. They took her to Thornhaven for her schooling, the Queen said, a great honour.\" He wipes his eyes with an ink-stained cuff. \"The mines. It's the mines, it was always the mines. There's a geode at the bottom of the deep workings that the whole city is drinking from, and while it stands, what's in Thornhaven can't be stopped.\"",
+                  "goTo": "hale_bye",
+                  "setFlags": ["hale_confessed", "hale_named_the_geode"]
+                },
+                "failure": {
+                  "text": "\"You don't know anything,\" Hale says, too loudly for a library, and then, in a whisper: \"Please go away.\"",
+                  "goTo": "hale_bye",
+                  "setFlags": ["hale_stonewalled"]
+                }
+              },
+              "requires": {
+                "notFlags": ["hale_stonewalled", "hale_confessed"]
+              }
+            },
+            {
+              "id": "threaten",
+              "label": "[Intimidation] Tell him the next lie will cost him",
+              "say": "You sent us to die under your floor. Give me one reason not to return the favour.",
+              "check": { "stat": "intimidation", "dc": 26 },
+              "outcomes": {
+                "success": {
+                  "text": "\"Because I'm the only one who'll tell you the truth!\" He is on his feet and shaking. \"The mines. The geode in the deep workings. Break it and Thornhaven's gates can be opened — he can't hold the ritual without it.\" He sits back down. \"She has my daughter.\"",
+                  "goTo": "hale_bye",
+                  "setFlags": ["hale_confessed", "hale_named_the_geode"]
+                },
+                "failure": {
+                  "text": "Hale flinches, and then — to his own evident surprise — doesn't. \"There is nothing you can do to me that she hasn't already,\" he says, quite calmly.",
+                  "goTo": "hale_bye",
+                  "setFlags": ["hale_stonewalled"]
+                }
+              },
+              "requires": {
+                "notFlags": ["hale_stonewalled", "hale_confessed"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave him",
+              "outcome": { "text": "He does not look up as you go.", "goTo": "hale_bye" }
+            }
+          ]
+        },
+        {
+          "id": "hale_cornered",
+          "title": "Master Archivist Oswin Hale",
+          "body": "\"I don't know what you mean,\" says Hale. He is looking at the door behind his desk.",
+          "options": [
+            {
+              "id": "coax",
+              "label": "[Diplomacy] Tell him you know about his daughter",
+              "say": "We read the letter. We know what she is holding over you.",
+              "check": { "stat": "diplomacy", "dc": 26 },
+              "outcomes": {
+                "success": {
+                  "text": "\"Her name is Wenna,\" Hale says. \"She's eleven. They took her to Thornhaven for her schooling, the Queen said, a great honour.\" He wipes his eyes with an ink-stained cuff. \"The mines. It's the mines, it was always the mines. There's a geode at the bottom of the deep workings that the whole city is drinking from, and while it stands, what's in Thornhaven can't be stopped.\"",
+                  "goTo": "hale_bye",
+                  "setFlags": ["hale_confessed", "hale_named_the_geode"]
+                },
+                "failure": {
+                  "text": "\"You don't know anything,\" Hale says, too loudly for a library, and then, in a whisper: \"Please go away.\"",
+                  "goTo": "hale_bye",
+                  "setFlags": ["hale_stonewalled"]
+                }
+              },
+              "requires": {
+                "notFlags": ["hale_stonewalled", "hale_confessed"]
+              }
+            },
+            {
+              "id": "threaten",
+              "label": "[Intimidation] Tell him the next lie will cost him",
+              "say": "You sent us to die under your floor. Give me one reason not to return the favour.",
+              "check": { "stat": "intimidation", "dc": 26 },
+              "outcomes": {
+                "success": {
+                  "text": "\"Because I'm the only one who'll tell you the truth!\" He is on his feet and shaking. \"The mines. The geode in the deep workings. Break it and Thornhaven's gates can be opened — he can't hold the ritual without it.\" He sits back down. \"She has my daughter.\"",
+                  "goTo": "hale_bye",
+                  "setFlags": ["hale_confessed", "hale_named_the_geode"]
+                },
+                "failure": {
+                  "text": "Hale flinches, and then — to his own evident surprise — doesn't. \"There is nothing you can do to me that she hasn't already,\" he says, quite calmly.",
+                  "goTo": "hale_bye",
+                  "setFlags": ["hale_stonewalled"]
+                }
+              },
+              "requires": {
+                "notFlags": ["hale_stonewalled", "hale_confessed"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave him",
+              "outcome": { "text": "He does not look up as you go.", "goTo": "hale_bye" }
+            }
+          ]
+        },
+        {
+          "id": "hale_ashamed",
+          "title": "Master Archivist Oswin Hale",
+          "body": "Hale won't look up from the catalogue. \"Find her,\" he says, to the page. \"Please.\"",
+          "isEnding": true
+        },
+        {
+          "id": "hale_home",
+          "title": "Master Archivist Oswin Hale",
+          "body": "Hale is not at the catalogue desk. A girl of about eleven is sitting in his chair with her feet not touching the floor, reading, and when you come in she says, without looking up, \"Quietly, please.\"",
+          "isEnding": true
+        },
+        {
+          "id": "hale_bye",
+          "title": "Master Archivist Oswin Hale",
+          "body": "The library's silence closes over you again.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_006_malachai",
+      "entries": [
+        {
+          "scene": "malachai_after",
+          "requires": ["boss_defeated_malachai_vex"]
+        },
+        { "scene": "malachai_open" }
+      ],
+      "scenes": [
+        {
+          "id": "malachai_open",
+          "title": "Malachai Vex",
+          "body": "Malachai Vex does not stand. He gestures to the chair across from him, just inside the outermost circle. \"At last we meet. Sit with me. Let us discuss the world as it truly is.\"",
+          "options": [
+            {
+              "id": "sit",
+              "label": "Sit",
+              "say": "Talk, then.",
+              "outcome": {
+                "text": "You sit. The circle is warm through the chair, the way a hearth is warm after the fire has gone out.",
+                "goTo": "malachai_talk",
+                "setFlags": ["sat_with_malachai"]
+              }
+            },
+            {
+              "id": "stand",
+              "label": "Stay standing",
+              "say": "We'll stand.",
+              "outcome": {
+                "text": "\"As you like.\" He seems, if anything, pleased. \"The last ones sat.\"",
+                "goTo": "malachai_talk"
+              }
+            }
+          ]
+        },
+        {
+          "id": "malachai_talk",
+          "title": "Malachai Vex",
+          "body": "Vex waits, patient as a stone.",
+          "options": [
+            {
+              "id": "vision",
+              "label": "Ask what he is doing",
+              "say": "What is it you think you're doing?",
+              "outcome": {
+                "text": "\"The old order is a fossil,\" he says. \"This kingdom was built on a people who understood entropy, and buried them, and put seals on the grave, and has spent a thousand years pretending the grave isn't there. We will be perfected through the shadow.\"",
+                "goTo": "malachai_talk",
+                "setFlags": ["malachai_spoke_of_the_vision"]
+              },
+              "requires": {
+                "notFlags": ["malachai_spoke_of_the_vision"]
+              }
+            },
+            {
+              "id": "shadow",
+              "label": "Ask what the shadow is",
+              "say": "And the shadow? What is it, really?",
+              "outcome": {
+                "text": "\"Shadow is entropy — the natural force of ending. It grants clarity and power.\" He opens his hand, and the dark in the palm of it is darker than the room. \"Everything ends. I have simply stopped pretending otherwise.\"",
+                "goTo": "malachai_talk",
+                "setFlags": ["malachai_spoke_of_the_shadow"]
+              },
+              "requires": {
+                "notFlags": ["malachai_spoke_of_the_shadow"]
+              }
+            },
+            {
+              "id": "ascension",
+              "label": "Ask what becomes of him",
+              "say": "What happens to you, at the end of all this?",
+              "outcome": {
+                "text": "\"I am a Vessel.\" He says it as simply as a man giving his trade. \"Soon I will be consumed, and the true god will wear this flesh.\" A pause. \"You are wondering whether I mind. That is the most interesting question anyone has asked me this year.\"",
+                "goTo": "malachai_talk",
+                "setFlags": ["malachai_spoke_of_the_ascension"]
+              },
+              "requires": {
+                "notFlags": ["malachai_spoke_of_the_ascension"]
+              }
+            },
+            {
+              "id": "children",
+              "label": "Ask where the children are",
+              "say": "Where are the children? Hale's daughter. The others.",
+              "outcome": {
+                "text": "\"Upstairs. Asleep. Well fed.\" He sounds faintly offended. \"I am ending the world, not being *cruel*.\" He glances at the ceiling. \"When I am finished, it will not matter where anybody is.\"",
+                "goTo": "malachai_talk",
+                "setFlags": ["malachai_told_of_the_children"]
+              },
+              "requires": {
+                "flags": ["hale_confessed"],
+                "notFlags": ["malachai_told_of_the_children"]
+              }
+            },
+            {
+              "id": "name_him",
+              "label": "[Religion] Tell him what he is",
+              "say": "A Vessel doesn't choose. You're not a prophet. You're a jar.",
+              "check": { "stat": "religion", "dc": 30 },
+              "outcomes": {
+                "success": {
+                  "text": "For the first time something in Vex's face moves without his permission. \"...Yes,\" he says, after a while. \"Yes. That is exactly right.\" He stands. \"Thank you. I had wondered whether anyone would say it.\"",
+                  "goTo": "malachai_rise",
+                  "setFlags": ["malachai_shaken"]
+                },
+                "failure": {
+                  "text": "\"Of course I am a jar,\" he says kindly. \"So are you. The difference is that I know what I am for.\"",
+                  "goTo": "malachai_talk",
+                  "setFlags": ["malachai_unshaken"]
+                }
+              },
+              "requires": {
+                "flags": ["malachai_spoke_of_the_ascension"],
+                "notFlags": ["malachai_shaken", "malachai_unshaken"]
+              }
+            },
+            {
+              "id": "enough",
+              "label": "End it",
+              "say": "Enough talk.",
+              "outcome": { "text": "\"Yes,\" says Vex. \"I suppose it is.\"", "goTo": "malachai_rise" }
+            }
+          ]
+        },
+        {
+          "id": "malachai_rise",
+          "title": "Malachai Vex",
+          "body": "He closes the ledger, sets it down with care, and stands. The two acolytes move to the edges of the circle without being told.",
+          "isEnding": true
+        },
+        {
+          "id": "malachai_after",
+          "title": "Malachai Vex",
+          "body": "Nothing of Malachai Vex remains in the chamber but the ledger, closed, and a shadow on the floor that does not belong to anything still standing.",
+          "isEnding": true
+        }
+      ]
+    }
+  ]
+}

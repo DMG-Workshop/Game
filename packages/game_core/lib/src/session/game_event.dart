@@ -14,6 +14,7 @@ class GameEvent {
     required this.actorId,
     required this.actorName,
     required this.narration,
+    this.said,
     this.check,
     this.movedTo,
     this.flagsSet = const [],
@@ -35,6 +36,9 @@ class GameEvent {
 
   /// Narration produced by the outcome.
   final String narration;
+
+  /// What [actorName] said aloud to take the option, if it was speech.
+  final String? said;
 
   /// Null for an option that needed no roll.
   final CheckOutcome? check;

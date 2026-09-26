@@ -106,6 +106,9 @@ class Encounter {
     this.victoryFlags = const [],
     this.requiredFlags = const [],
     this.repeatable = false,
+    this.rearmOn = const [],
+    this.rearmDescription,
+    this.ambush = false,
   });
 
   final String id;
@@ -135,9 +138,45 @@ class Encounter {
   /// Whether it can happen again once resolved.
   final bool repeatable;
 
+  /// Flags that bring this fight back after it has been won.
+  ///
+  /// Each one set is another wave: the road the party fought down is full
+  /// again on the way back, because whoever sent them down it was waiting
+  /// for them to reach the end.
+  final List<String> rearmOn;
+
+  /// What the party sees when the fight has come back, if it differs.
+  final String? rearmDescription;
+
+  /// True when it stops the party walking on past it.
+  ///
+  /// An ambush leaves exactly one way out, the way the party came in. Without
+  /// that, a fight is scenery the party can stroll through, and a road that
+  /// fills up behind them costs nothing.
+  final bool ambush;
+
+  /// How many times this fight has been brought back.
+  int waveFor(Set<String> flags) => rearmOn.where(flags.contains).length;
+
+  /// The flag that records winning [wave] of this fight.
+  String wonFlag(int wave) => 'won_${id}_wave_$wave';
+
   bool isAvailable(Set<String> flags) {
-    if (!repeatable && victoryFlags.any(flags.contains)) return false;
-    return requiredFlags.every(flags.contains);
+    if (!requiredFlags.every(flags.contains)) return false;
+    if (repeatable) return true;
+
+    final wave = waveFor(flags);
+    if (flags.contains(wonFlag(wave))) return false;
+    // The first time through, a win is also known by its victory flags —
+    // which is all a save from before waves existed has to go on.
+    if (wave == 0 && victoryFlags.any(flags.contains)) return false;
+    return true;
+  }
+
+  /// The description for the wave the party is facing.
+  String descriptionFor(Set<String> flags) {
+    final rearmed = rearmDescription;
+    return waveFor(flags) > 0 && rearmed != null ? rearmed : description;
   }
 
   @override
@@ -185,6 +224,14 @@ class Bestiary {
         for (final e in inRoom(roomId))
           if (e.isAvailable(flags)) e
       ];
+
+  /// The ambush waiting in [roomId], if one is.
+  Encounter? ambushIn(String roomId, Set<String> flags) {
+    for (final e in availableIn(roomId, flags)) {
+      if (e.ambush) return e;
+    }
+    return null;
+  }
 
   /// Encounters placed in a room that does not exist.
   List<Encounter> misplacedIn(Set<String> knownRoomIds) => [
