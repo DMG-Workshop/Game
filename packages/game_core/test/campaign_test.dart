@@ -301,9 +301,9 @@ void main() {
   });
 
   group('rare drops', () {
-    test('nothing rare is impossible to find', () {
-      // A rare item is one that cannot be bought, so if nothing drops it the
-      // item does not exist as far as a player is concerned.
+    test('nothing is impossible to come by', () {
+      // An item nothing drops, sells or gives does not exist as far as a
+      // player is concerned, whatever its rarity says.
       final report = campaign.survey();
       expect(report.unobtainableGear, isEmpty,
           reason: report.unobtainableGear.map((i) => i.name).join(', '));
@@ -586,7 +586,10 @@ void main() {
     // Detection is tested against data built to be wrong, rather than by
     // relying on the shipping campaign happening to be incomplete.
     Campaign broken(String locationsJson,
-            {String? npcsJson, String? gearJson}) =>
+            {String? npcsJson,
+            String? gearJson,
+            String? economyJson,
+            String? conversationsJson}) =>
         const CampaignLoader().load(
           id: 'broken',
           title: 'Broken',
@@ -594,6 +597,8 @@ void main() {
           locationsJson: locationsJson,
           npcsJson: npcsJson ?? '{"npcs":[]}',
           gearJson: gearJson,
+          economyJson: economyJson,
+          conversationsJson: conversationsJson,
         );
 
     const oneRoom =
@@ -653,7 +658,43 @@ void main() {
  "rarity":"rare"}]}''',
       );
       expect(c.survey().unobtainableGear.single.name, 'Ghost Blade');
-      expect(c.survey().render(), contains('Rare items nothing drops'));
+      expect(
+          c.survey().render(), contains('Items nothing drops, sells or gives'));
+    });
+
+    group('an item nobody can come by', () {
+      const blades = '''
+{"gear":[
+ {"item_id":"i_sold","name":"Shop Blade","level":5,"stats":{"magic":true}},
+ {"item_id":"i_given","name":"Gift Blade","level":5,"stats":{"magic":true}},
+ {"item_id":"i_lost","name":"Lost Blade","level":5,"stats":{"magic":true}}]}''';
+      const keeper = '''
+{"npcs":[{"npc_id":"npc_x","name":"X","location":"A","appearance":"x",
+ "greeting":"y"}]}''';
+      const shop = '''
+{"shops":[{"shop_id":"s","name":"S","keeper":"npc_x","location":"A",
+ "stock":[{"item":"i_sold","requires":["late"]}]}]}''';
+      const gift = '''
+{"conversations":[{"npc":"npc_x","entries":[{"scene":"a"}],
+ "scenes":[{"id":"a","title":"t","body":"b","options":[
+   {"id":"o","label":"l","outcome":{"text":"t",
+    "setFlags":["loot_i_given"]}}]}]}]}''';
+
+      test('is reported whatever its rarity', () {
+        // Common means it can be bought, not that anything sells it.
+        final c = broken(oneRoom, npcsJson: keeper, gearJson: blades);
+        expect(c.survey().unobtainableGear.map((i) => i.name),
+            ['Shop Blade', 'Gift Blade', 'Lost Blade']);
+      });
+
+      test('is not one a shop stocks, or somebody gives', () {
+        final c = broken(oneRoom,
+            npcsJson: keeper,
+            gearJson: blades,
+            economyJson: shop,
+            conversationsJson: gift);
+        expect(c.survey().unobtainableGear.map((i) => i.name), ['Lost Blade']);
+      });
     });
 
     test('reports loot carried by a creature nobody wrote', () {

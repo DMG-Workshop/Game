@@ -700,6 +700,16 @@ harrow = conversation('npc_004_harrow', [
               '«For now.» She holds up a nail between two fingers without '
               'looking round. «I\'m not pulling them out.»',
               go='harrow_bye', say="The wood's quiet."),
+          opt('maul', 'Ask about the maul on the wall',
+              'She looks at it a long moment. Then she reaches up, lifts it '
+              'down, and lays it across the anvil between you, haft first. '
+              '«Three I made for the thing in that wood, and one came through '
+              'the quench. The thing is done.» She takes her hand off it. '
+              '«Whoever raised it isn\'t. Take it to them.»',
+              go='harrow_bye',
+              say='The maul on the wall. Is it still spoken for?',
+              sets=['loot_w_009_thrall_breaker'],
+              unless=['loot_w_009_thrall_breaker']),
           opt('leave', 'Leave her to it', 'She lifts a hand without turning.',
               go='harrow_bye')),
 

@@ -82,6 +82,22 @@
         {
           "item": "w_018_shadow_ripper",
           "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "a_011_monarchs_vestment",
+          "requires": ["dialogue_complete_queen_liora"]
+        },
+        {
+          "item": "g_017_vessels_chain",
+          "requires": ["boss_defeated_malachai_vex"]
+        },
+        {
+          "item": "w_019_the_last_nail",
+          "requires": ["boss_defeated_hollow_avatar"]
+        },
+        {
+          "item": "g_020_quiet_crown",
+          "requires": ["deception_revealed_under_archive"]
         }
       ],
       "lines": {

@@ -99,7 +99,7 @@ class Campaign {
         encountersMissingCreatures: bestiary.missingCreatures,
         danglingDrops: gear.danglingDrops(
             {for (final creature in bestiary.creatures) creature.id}),
-        unobtainableGear: gear.unobtainableRarities,
+        unobtainableGear: _unobtainableGear(),
         orphanedConversations:
             conversations.orphanedFrom({for (final n in npcs.all) n.id}),
         unpaidEncounters: [
@@ -126,6 +126,28 @@ class Campaign {
           levels: [for (var l = 1; l <= world.metadata.levelCap; l++) l],
         ),
       );
+
+  /// Items no amount of playing would turn up: nothing drops them, no shop
+  /// stocks them, and nobody hands them over.
+  ///
+  /// Rarity says where an item may come from, not whether it comes from
+  /// anywhere, so every item is checked. A gift is a line of conversation
+  /// setting `loot_<item>`, which is how somebody gives the party a thing.
+  List<GearItem> _unobtainableGear() {
+    final sold = {
+      for (final shop in economy.shops)
+        for (final line in shop.stock) line.itemId,
+    };
+    final given = {
+      for (final flag in conversations.producibleFlags)
+        if (flag.startsWith('loot_')) flag.substring('loot_'.length),
+    };
+    return [
+      for (final item in gear.all)
+        if (!item.isDrop && !sold.contains(item.id) && !given.contains(item.id))
+          item,
+    ]..sort((a, b) => a.level.compareTo(b.level));
+  }
 
   /// Item bonuses that could never apply: a condition naming a region or a
   /// part of the map that does not exist, or one the engine does not know.
@@ -372,7 +394,7 @@ class CampaignReport {
   /// Loot tables naming a creature the bestiary does not have.
   final List<({GearItem item, String creatureId})> danglingDrops;
 
-  /// Rare items nothing in the campaign drops.
+  /// Items nothing in the campaign drops, sells or gives.
   final List<GearItem> unobtainableGear;
 
   /// Conversations written for an NPC the campaign does not have.
@@ -497,7 +519,7 @@ class CampaignReport {
       orphanedConversations.map((c) => c.npcId),
     );
     section(
-      'Rare items nothing drops',
+      'Items nothing drops, sells or gives',
       unobtainableGear
           .map((i) => '${i.name} (level ${i.level} ${i.rarity.name})'),
     );

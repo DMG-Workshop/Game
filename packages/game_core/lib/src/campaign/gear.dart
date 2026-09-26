@@ -66,11 +66,6 @@ class DropSource {
   String toString() => '$creatureId ($chance%)';
 }
 
-/// An item in the campaign's loot tables.
-///
-/// Traits are Pathfinder traits and stay as written strings: the engine does
-/// not implement them yet, and inventing a partial interpretation would be
-/// worse than carrying them through untouched.
 /// An item bonus an item gives to a check, and when.
 ///
 /// The part of an item's text the engine can act on. [when] is null for a
@@ -89,6 +84,11 @@ class CheckBonus {
   String toString() => '+$bonus $stat${when == null ? '' : ' ($when)'}';
 }
 
+/// An item in the campaign's loot tables.
+///
+/// Traits are Pathfinder traits and stay as written strings: the engine does
+/// not implement them yet, and inventing a partial interpretation would be
+/// worse than carrying them through untouched.
 class GearItem {
   const GearItem({
     required this.id,
@@ -262,12 +262,6 @@ class GearTable {
     }
     return out;
   }
-
-  /// Rare items nothing drops, which no amount of playing would turn up.
-  List<GearItem> get unobtainableRarities => [
-        for (final item in _items)
-          if (item.rarity.mustBeFound && item.drops.isEmpty) item,
-      ]..sort((a, b) => a.level.compareTo(b.level));
 
   List<GearItem> ofType(String type) {
     final needle = type.trim().toLowerCase();
