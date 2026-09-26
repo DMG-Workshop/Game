@@ -84,6 +84,25 @@ class CheckBonus {
   String toString() => '+$bonus $stat${when == null ? '' : ' ($when)'}';
 }
 
+/// What using up a consumable does, where the engine can do it.
+///
+/// Healing for now: a draught drunk, or got into somebody else. A consumable
+/// without one is spent when something calls for it, as its own text says,
+/// rather than by hand.
+class ItemUse {
+  const ItemUse({required this.heal, this.actions = 1});
+
+  /// The Hit Points it gives back, rolled when it is used.
+  final DamageExpression heal;
+
+  /// What it costs in a fight: Pathfinder's one action to drink a potion or
+  /// feed it to someone within reach.
+  final int actions;
+
+  @override
+  String toString() => 'restores $heal HP';
+}
+
 /// An item in the campaign's loot tables.
 ///
 /// Traits are Pathfinder traits and stay as written strings: the engine does
@@ -103,10 +122,14 @@ class GearItem {
     this.drops = const [],
     this.listedPrice,
     this.checkBonuses = const [],
+    this.use,
   });
 
   /// Item bonuses to checks, where the item's text can be put into numbers.
   final List<CheckBonus> checkBonuses;
+
+  /// What using it up does, for a consumable the engine can use by hand.
+  final ItemUse? use;
 
   final String id;
   final String name;

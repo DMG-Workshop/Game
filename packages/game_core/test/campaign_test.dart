@@ -198,7 +198,7 @@ void main() {
       // tables have nothing to offer.
       expect(
           campaign.gear.levelGaps(campaign.world.metadata.levelCap), isEmpty);
-      expect(campaign.gear.length, 32);
+      expect(campaign.gear.length, 37);
       for (var level = 1; level <= 20; level++) {
         expect(campaign.gear.forLevel(level), isNotEmpty,
             reason: 'nothing within two levels of $level');
@@ -449,7 +449,9 @@ void main() {
       // Pathfinder stacks one bonus of each type and no more. An untyped "+2
       // to Diplomacy" would either stack with everything or with nothing,
       // depending on who implemented it, so the text always says which kind.
-      final signed = RegExp(r'[+-]\d+');
+      // A sign straight after a digit is part of a roll, as in 2d8+5, and a
+      // roll is not a bonus.
+      final signed = RegExp(r'(?<!\d)[+-]\d+');
       final typed = RegExp(r'^[+-]\d+ \w+ (bonus|penalty)\b');
       final untyped = <String>[];
       for (final item in campaign.gear.all) {

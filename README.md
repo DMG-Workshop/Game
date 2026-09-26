@@ -71,6 +71,7 @@ packages/
   game_core/     Scene engine, party store, campaign model (depends on pf2e_core)
 campaigns/
   shattered_seals/   Campaign I: Shattered Seals — the world of Valorheim
+    tools/           The scripts that write part of its data; see its README
 ```
 
 Campaign content is data, kept out of the packages entirely. That is both a
@@ -221,7 +222,12 @@ dart test
 
 CI runs exactly those three checks on both packages, on the same pinned Dart
 version the SessionStart hook installs, so a local run and a CI run disagree
-about nothing.
+about nothing. It also checks that the campaign's content scripts still
+reproduce its data:
+
+```
+python3 campaigns/shattered_seals/tools/regenerate.py --check
+```
 
 ## Licence and attribution
 

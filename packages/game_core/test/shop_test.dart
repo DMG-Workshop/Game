@@ -138,7 +138,10 @@ void main() {
       final wares = _world().wares();
       expect(wares.map((r) => r.item.id), [
         'w_001_guard_sword',
+        'g_033_hearth_water_minor',
+        'g_034_hearth_water_lesser',
         'w_002_nail_iron_spade',
+        'g_035_hearth_water_moderate',
         'w_004_whisperwood_bow',
         'w_006_shadowbane_dagger',
         'a_006_ravencrest_hide',
@@ -149,7 +152,7 @@ void main() {
 
     test('gets a wagon from the capital once the road opens', () {
       final wares = _world(flags: {'Unlock_Travel_to_Valorheim'}).wares();
-      expect(wares, hasLength(10));
+      expect(wares, hasLength(14));
       expect(wares.map((r) => r.item.id), contains('a_011_palace_cuirass'));
       expect(wares.map((r) => r.item.level).reduce((a, b) => a > b ? a : b),
           lessThanOrEqualTo(12),

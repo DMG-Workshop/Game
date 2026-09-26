@@ -488,6 +488,20 @@ bool _handle(WorldSession session, String line,
       }
       return true;
 
+    case 'use':
+    case 'drink':
+      final args = _useArgs(rest);
+      if (args == null) {
+        stdout.writeln('Use what? ("inventory" shows what you carry.)');
+        return true;
+      }
+      try {
+        _renderUse(session.use(args.what, who: args.who));
+      } on InvalidMoveException catch (e) {
+        stdout.writeln(_wrap(e.message));
+      }
+      return true;
+
     case 'refocus':
       try {
         final back = session.refocus();
@@ -1409,6 +1423,8 @@ const _commands = '''
   rest                                            sleep 8 hours: HP back,
                                                   spells and focus restored
   treat [who]                                     Treat Wounds (Medicine)
+  use <item> [on <who>]                           drink a draught, or give
+                                                  it (1 action in a fight)
   refocus                                         10 minutes: 1 focus back
   shelter                                         make shelter from a storm
   quit                                            stop
@@ -1558,6 +1574,14 @@ bool _fight(
           fight.flee();
         case 'cast':
           _cast(fight, rest, script);
+        case 'use':
+        case 'drink':
+          final args = _useArgs(rest);
+          if (args == null) {
+            stdout.writeln('Use what?');
+            break;
+          }
+          _renderUse(fight.use(args.what, targetId: args.who));
         case 'spells':
           final options = fight.castOptions();
           stdout.writeln(options.isEmpty
@@ -1570,7 +1594,8 @@ bool _fight(
           return false;
         default:
           stdout.writeln('In a fight you can: strike <target>, cast <spell> '
-              '[target], spells, close, back, end, status, flee.');
+              '[target], spells, use <item> [on <who>], close, back, end, '
+              'status, flee.');
       }
     } on InvalidActionException catch (e) {
       stdout.writeln('  ${e.message}');
@@ -1616,6 +1641,31 @@ bool _fight(
       session.concludeEncounter(fight);
   }
   return true;
+}
+
+/// "hearth-water", or "hearth-water on sela": what to use, and on whom.
+({String what, String? who})? _useArgs(String rest) {
+  final text = rest.trim();
+  if (text.isEmpty) return null;
+  final on = text.toLowerCase().lastIndexOf(' on ');
+  if (on < 0) return (what: text, who: null);
+  return (
+    what: text.substring(0, on).trim(),
+    who: text.substring(on + 4).trim()
+  );
+}
+
+/// What using something did, the dice included.
+void _renderUse(UseResult result) {
+  final item = result.item.name;
+  final who = result.onSelf
+      ? '${result.user} drinks $item'
+      : '${result.user} gets $item into ${result.target}';
+  stdout.writeln('\n  $who: ${result.roll}, +${result.healed} HP '
+      '(${result.hp}/${result.maxHp}).');
+  if (result.revived) {
+    stdout.writeln('  ${result.target} is back on their feet.');
+  }
 }
 
 /// Casts a spell: "cast fireball", or "cast needle darts c_hollow_thrall_1".

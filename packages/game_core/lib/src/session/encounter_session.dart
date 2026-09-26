@@ -7,6 +7,7 @@ import '../party/equipment.dart';
 import '../party/experience.dart';
 import '../party/vitals.dart';
 import 'casting.dart';
+import 'item_use.dart';
 import 'session_actor.dart';
 
 /// Thrown when an action is not legal right now.
@@ -256,8 +257,10 @@ class EncounterSession {
     this.rangedPenalty = 0,
     SpellBook? spells,
     Map<String, ActorVitals> vitals = const {},
+    PartyInventory? inventory,
   })  : _spells = spells ?? SpellBook(),
         _vitals = vitals,
+        _inventory = inventory,
         _roller = roller,
         _gear = gear,
         _loadouts = loadouts,
@@ -312,6 +315,10 @@ class EncounterSession {
 
   final DiceRoller _roller;
   final CheckResolver _resolver;
+
+  /// What the party carries, shared with the world, so something used up
+  /// here is gone afterwards. Null when the caller brought no pack.
+  final PartyInventory? _inventory;
 
   /// The campaign's loot tables, when the caller wants drops rolled.
   final GearTable? _gear;
@@ -558,6 +565,68 @@ class EncounterSession {
       hits: hits,
       damageRoll: shared,
     );
+  }
+
+  /// Uses up one of something the party carries: drinks it, or gets it into
+  /// [targetId], somebody in the party standing in the same zone.
+  ///
+  /// Pathfinder's one action for a potion, whoever it is for. Somebody down
+  /// who is healed is back on their feet, and has their turns again.
+  UseResult use(String what, {String? targetId}) {
+    _requirePartyTurn();
+    final inventory = _inventory;
+    final item = inventory?.find(what);
+    if (inventory == null || item == null) {
+      throw InvalidActionException('You are not carrying a "$what".');
+    }
+    final effect = item.use;
+    if (effect == null) throw InvalidActionException(cannotUseByHand(item));
+    _requireActions(effect.actions);
+
+    final user = current;
+    final target = targetId == null ? user : _partyMember(targetId);
+    if (target == null) {
+      throw InvalidActionException('There is nobody in the party called '
+          '"$targetId".');
+    }
+    if (_distance(user, target) > 0) {
+      throw InvalidActionException(
+          '${target.name} is out of reach. Get to them first.');
+    }
+    if (target.hp >= target.maxHp) {
+      throw InvalidActionException('${target.name} is not hurt.');
+    }
+
+    inventory.remove(item.id);
+    final roll = effect.heal.rollDetailed(_roller);
+    final wasDown = target.isDown;
+    final before = target.hp;
+    target.hp = (target.hp + roll.total).clamp(0, target.maxHp);
+    _actionsLeft -= effect.actions;
+    return UseResult(
+      item: item,
+      user: user.name,
+      target: target.name,
+      roll: roll,
+      healed: target.hp - before,
+      hp: target.hp,
+      maxHp: target.maxHp,
+      revived: wasDown && !target.isDown,
+    );
+  }
+
+  /// Somebody in the party, by id or by any one of their names.
+  Combatant? _partyMember(String who) {
+    final needle = who.trim().toLowerCase();
+    for (final c in party) {
+      if (c.id.toLowerCase() == needle) return c;
+    }
+    for (final c in party) {
+      if (c.name.toLowerCase().split(RegExp(r'\s+')).contains(needle)) {
+        return c;
+      }
+    }
+    return null;
   }
 
   /// A combatant's save of [kind]: a creature's own, or a character's sheet.

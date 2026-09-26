@@ -30,6 +30,17 @@
         {
           "item": "w_012_bloodstone_pick",
           "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        { "item": "g_033_hearth_water_minor" },
+        { "item": "g_034_hearth_water_lesser" },
+        { "item": "g_035_hearth_water_moderate" },
+        {
+          "item": "g_036_hearth_water_greater",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "g_037_hearth_water_major",
+          "requires": ["boss_defeated_malachai_vex"]
         }
       ],
       "price_modifiers": [
