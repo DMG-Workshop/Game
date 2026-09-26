@@ -34,6 +34,7 @@ export 'src/session/casting.dart';
 export 'src/session/game_event.dart';
 export 'src/session/encounter_session.dart';
 export 'src/session/fight_script.dart';
+export 'src/session/game_console.dart';
 export 'src/session/game_session.dart';
 export 'src/session/item_use.dart';
 export 'src/session/session_actor.dart';
