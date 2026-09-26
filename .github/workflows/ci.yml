@@ -41,3 +41,14 @@ jobs:
 
       - name: Test
         run: dart test
+
+  content:
+    name: campaign content scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The scripts own part of the campaign's data; this fails if the two
+      # have drifted, before the next run of the scripts undoes a hand edit.
+      - name: Scripts reproduce the data
+        run: python3 campaigns/shattered_seals/tools/regenerate.py --check

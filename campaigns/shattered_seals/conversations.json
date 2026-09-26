@@ -1007,6 +1007,19 @@
               }
             },
             {
+              "id": "maul",
+              "label": "Ask about the maul on the wall",
+              "say": "The maul on the wall. Is it still spoken for?",
+              "outcome": {
+                "text": "She looks at it a long moment. Then she reaches up, lifts it down, and lays it across the anvil between you, haft first. \"Three I made for the thing in that wood, and one came through the quench. The thing is done.\" She takes her hand off it. \"Whoever raised it isn't. Take it to them.\"",
+                "goTo": "harrow_bye",
+                "setFlags": ["loot_w_009_thrall_breaker"]
+              },
+              "requires": {
+                "notFlags": ["loot_w_009_thrall_breaker"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave her to it",
               "outcome": { "text": "She lifts a hand without turning.", "goTo": "harrow_bye" }

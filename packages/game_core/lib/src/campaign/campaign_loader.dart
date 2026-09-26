@@ -272,9 +272,39 @@ class CampaignLoader {
                 when: _optional(b['when']),
               ),
         ],
+        use: _readUse(raw['use'], id, _strings(raw['traits'])),
       ));
     }
     return GearTable(items);
+  }
+
+  /// Reads what using an item up does.
+  ///
+  /// Only a consumable is used up, and a healing roll the engine cannot read
+  /// is a typo worth hearing about now rather than the first time somebody
+  /// is bleeding and reaches for it.
+  ItemUse? _readUse(Object? raw, String itemId, List<String> traits) {
+    if (raw == null) return null;
+    if (raw is! Map) {
+      throw CampaignFormatException(
+          'Item "$itemId" has a "use" that is not an object.');
+    }
+    if (!traits.any((t) => t.trim().toLowerCase() == 'consumable')) {
+      throw CampaignFormatException('Item "$itemId" can be used up, but is not '
+          'consumable.');
+    }
+    final heal = DamageExpression.tryParse(_optional(raw['heal']) ?? '');
+    if (heal == null) {
+      throw CampaignFormatException('Item "$itemId" heals "${raw['heal']}", '
+          'which is not a roll the engine can read.');
+    }
+    // A turn is three actions, so nothing can take more.
+    final actions = _int(raw['actions'], fallback: 1);
+    if (actions < 1 || actions > 3) {
+      throw CampaignFormatException('Item "$itemId" takes $actions actions to '
+          'use, which is not 1 to 3.');
+    }
+    return ItemUse(heal: heal, actions: actions);
   }
 
   /// Reads an item's rarity, defaulting to common where it says nothing.

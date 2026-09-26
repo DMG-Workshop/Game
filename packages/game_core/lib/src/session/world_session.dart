@@ -20,6 +20,7 @@ import '../party/wealth.dart';
 import 'casting.dart';
 import 'encounter_session.dart';
 import 'game_session.dart';
+import 'item_use.dart';
 import 'session_actor.dart';
 import 'world_event.dart';
 
@@ -726,20 +727,7 @@ class WorldSession {
     if (healers.isEmpty) {
       throw InvalidMoveException('Nobody in the party is trained in Medicine.');
     }
-    final SessionActor patient;
-    if (who != null && who.trim().isNotEmpty) {
-      patient = actorFor(who);
-    } else {
-      final hurt = [
-        for (final a in _actors)
-          if (_vitals[a.id]!.isHurt) a,
-      ]..sort((a, b) => (_vitals[a.id]!.hp / _vitals[a.id]!.maxHp)
-          .compareTo(_vitals[b.id]!.hp / _vitals[b.id]!.maxHp));
-      if (hurt.isEmpty) {
-        throw InvalidMoveException('Nobody needs it.');
-      }
-      patient = hurt.first;
-    }
+    final patient = _patient(who);
     final vitals = _vitals[patient.id]!;
     if (!vitals.isHurt) {
       throw InvalidMoveException('${patient.name} is not hurt.');
@@ -781,6 +769,50 @@ class WorldSession {
       check: check,
       roll: roll,
       change: change,
+    );
+  }
+
+  /// [who], or whoever in the party is worst hurt for their size.
+  SessionActor _patient(String? who) {
+    if (who != null && who.trim().isNotEmpty) return actorFor(who);
+    final hurt = [
+      for (final a in _actors)
+        if (_vitals[a.id]!.isHurt) a,
+    ]..sort((a, b) => (_vitals[a.id]!.hp / _vitals[a.id]!.maxHp)
+        .compareTo(_vitals[b.id]!.hp / _vitals[b.id]!.maxHp));
+    if (hurt.isEmpty) throw InvalidMoveException('Nobody needs it.');
+    return hurt.first;
+  }
+
+  /// Uses up one of something the party carries, on [who] or on whoever is
+  /// worst hurt.
+  ///
+  /// A moment's work rather than ten minutes', so it takes no time and can
+  /// be done with something at the door. The copy is spent before the dice
+  /// are rolled: a draught drunk is gone however well it goes down.
+  UseResult use(String what, {String? who}) {
+    final item = _inventory.find(what);
+    if (item == null) {
+      throw InvalidMoveException('You are not carrying a "$what".');
+    }
+    final effect = item.use;
+    if (effect == null) throw InvalidMoveException(cannotUseByHand(item));
+    final patient = _patient(who);
+    final vitals = _vitals[patient.id]!;
+    if (!vitals.isHurt) {
+      throw InvalidMoveException('${patient.name} is not hurt.');
+    }
+    _inventory.remove(item.id);
+    final roll = effect.heal.rollDetailed(_roller);
+    final healed = vitals.heal(roll.total);
+    return UseResult(
+      item: item,
+      user: patient.name,
+      target: patient.name,
+      roll: roll,
+      healed: healed,
+      hp: vitals.hp,
+      maxHp: vitals.maxHp,
     );
   }
 
@@ -1418,6 +1450,8 @@ class WorldSession {
       hp: {for (final a in _actors) a.id: _vitals[a.id]!.hp},
       fatigued: _fatiguedIds,
       spells: spells,
+      // What the party carries, so a draught drunk in a fight is gone.
+      inventory: _inventory,
       vitals: _vitals,
       rangedPenalty: currentRoom.shelter ? 0 : weatherNow?.rangedPenalty ?? 0,
     );

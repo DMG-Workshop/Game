@@ -11,6 +11,18 @@
       "stats": { "damage": "1d8", "bonus": 0, "magic": false }
     },
     {
+      "item_id": "g_033_hearth_water_minor",
+      "name": "Minor Hearth-Water",
+      "level": 1,
+      "type": "potion",
+      "price": 4,
+      "traits": ["consumable", "magical", "healing", "potion"],
+      "description": "Water from the temple well at Millhaven, kept a night beside the altar fire in a stoppered clay flask. Ashkyr keeps the hearth, and the water remembers being kept.",
+      "stats": { "magic": true },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 1d8 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "1d8" }
+    },
+    {
       "item_id": "w_002_nail_iron_spade",
       "name": "Nail-Iron Spade",
       "level": 2,
@@ -53,6 +65,18 @@
       "description": "An ash staff shod with iron at one end and a bronze hook at the other, worn smooth by a lifetime of arguing with cattle. The bronze is a good deal older than the ash.",
       "stats": { "damage": "1d6", "bonus": 1, "magic": true },
       "special": "+1 item bonus to Nature checks made to Command an Animal."
+    },
+    {
+      "item_id": "g_034_hearth_water_lesser",
+      "name": "Lesser Hearth-Water",
+      "level": 3,
+      "type": "potion",
+      "price": 12,
+      "traits": ["consumable", "magical", "healing", "potion"],
+      "description": "The same temple water, kept three nights instead of one, with a pinch of hearth-ash stirred in. It tastes of smoke and is warm all the way down.",
+      "stats": { "magic": true },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 2d8+5 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "2d8+5" }
     },
     {
       "item_id": "w_004_whisperwood_bow",
@@ -109,6 +133,18 @@
       "stats": { "ac": 15, "bonus": 1, "magic": true, "ac_bonus": 2, "dex_cap": 3 },
       "special": "+1 item bonus to Survival checks made within a day's walk of Millhaven.",
       "check_bonuses": [{ "stat": "survival", "bonus": 1, "when": "region:r_001_millhaven_valley" }]
+    },
+    {
+      "item_id": "g_035_hearth_water_moderate",
+      "name": "Moderate Hearth-Water",
+      "level": 6,
+      "type": "potion",
+      "price": 50,
+      "traits": ["consumable", "magical", "healing", "potion"],
+      "description": "Kept a full week by the fire and blessed at every dawn of it. Brother Aldus seals these himself, in wax the colour of embers.",
+      "stats": { "magic": true },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 3d8+10 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "3d8+10" }
     },
     {
       "item_id": "g_007_last_shift_lamp",
@@ -243,6 +279,18 @@
       "check_bonuses": [{ "stat": "intimidation", "bonus": 2 }]
     },
     {
+      "item_id": "g_036_hearth_water_greater",
+      "name": "Greater Hearth-Water",
+      "level": 12,
+      "type": "potion",
+      "price": 400,
+      "traits": ["consumable", "magical", "healing", "potion"],
+      "description": "Drawn from the old cistern under the temple floor, which is opened once in a generation, and kept a month by the fire. The flask stays warm in the coldest pack.",
+      "stats": { "magic": true },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 6d8+20 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "6d8+20" }
+    },
+    {
       "item_id": "w_027_ascension_rod",
       "name": "Vex's Ascension Rod",
       "level": 13,
@@ -327,6 +375,18 @@
       "description": "A blade forged to sever the ties between reality and the void.",
       "stats": { "damage": "1d10", "bonus": 3, "magic": true, "striking": "greaterStriking" },
       "special": "Dispels shadow magic in a 15-foot radius on critical hit."
+    },
+    {
+      "item_id": "g_037_hearth_water_major",
+      "name": "Major Hearth-Water",
+      "level": 18,
+      "type": "potion",
+      "price": 5000,
+      "traits": ["consumable", "magical", "healing", "potion"],
+      "description": "Hearth-water kept a whole winter beside a fire nobody let go out. There are never more than a handful in the valley, and the temple knows where every one of them is.",
+      "stats": { "magic": true },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 8d8+30 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "8d8+30" }
     },
     {
       "item_id": "w_019_the_last_nail",
