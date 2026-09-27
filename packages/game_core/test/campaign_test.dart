@@ -22,6 +22,7 @@ Campaign loadShatteredSeals() => const CampaignLoader().load(
       economyJson: _read('economy.json'),
       huntJson: _read('hunt.json'),
       weatherJson: _read('weather.json'),
+      mapsJson: _read('maps.json'),
     );
 
 void main() {
@@ -198,7 +199,7 @@ void main() {
       // tables have nothing to offer.
       expect(
           campaign.gear.levelGaps(campaign.world.metadata.levelCap), isEmpty);
-      expect(campaign.gear.length, 37);
+      expect(campaign.gear.length, 39);
       for (var level = 1; level <= 20; level++) {
         expect(campaign.gear.forLevel(level), isNotEmpty,
             reason: 'nothing within two levels of $level');
@@ -220,10 +221,15 @@ void main() {
       for (final item in campaign.gear.all.where((i) => i.isMagical)) {
         expect(item.special?.trim(), isNotEmpty, reason: item.name);
       }
-      // The only mundane item is the militia sword a first-level character
-      // starts with.
-      expect(campaign.gear.all.where((i) => !i.isMagical).map((i) => i.id),
-          ['w_001_guard_sword']);
+      // The only mundane items are the militia sword a first-level
+      // character starts with, and the maps.
+      expect(
+          campaign.gear.all.where((i) => !i.isMagical).map((i) => i.id),
+          unorderedEquals([
+            'w_001_guard_sword',
+            'g_038_map_of_the_valley',
+            'g_039_plan_of_valorheim',
+          ]));
     });
 
     test('every weapon rolls damage the engine can read', () {

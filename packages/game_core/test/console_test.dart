@@ -17,7 +17,7 @@ late SpellBook _spells;
 /// entry containing those words, so a test says what it picks rather than
 /// where that happens to sit in the list.
 Future<String> _play(String room, List<String> commands,
-    {int seed = 1, int gold = 0}) async {
+    {int seed = 1, int gold = 0, List<String> carrying = const []}) async {
   final world = WorldSession(
     campaign: _campaign,
     actors: [SessionActor(id: 'korash', character: loadKorash())],
@@ -26,6 +26,9 @@ Future<String> _play(String room, List<String> commands,
     spells: _spells,
   );
   if (gold > 0) world.inventory.earn(gold * 100);
+  for (final item in carrying) {
+    world.inventory.add(item);
+  }
   final out = StringBuffer();
   final queue = List.of(commands);
   Future<String?> next({String prompt = '> '}) async {
@@ -216,6 +219,52 @@ void main() {
           log,
           contains('That takes 2 actions, and Korash Blackearth has '
               '1 left this turn.'));
+    });
+  });
+
+  group('the map', () {
+    const valley = ['g_038_map_of_the_valley'];
+
+    test('starts in fog, with the ways out to explore', () async {
+      final log = await _play('MH_001_Square', ['map', '0']);
+      expect(
+          log,
+          contains('THE MILLHAVEN VALLEY  (as far as you have walked '
+              'it)'));
+      expect(log, contains('?--[Square]--?'));
+      expect(log, contains('Explore north'));
+      expect(log, contains('Sal Mercy sells maps of the valley'));
+    });
+
+    test('with the map, a number walks the whole way there', () async {
+      final log = await _play('MH_001_Square', ['map', '#Ravencrest Farm'],
+          carrying: valley);
+      expect(log, contains("west, to Harrow's Forge"));
+      expect(log, contains('west, to The Edge of Whisperwood'));
+      expect(log, contains('## Ravencrest Farm'));
+      expect(log, isNot(contains('Sal Mercy sells maps')),
+          reason: 'the party has one');
+    });
+
+    test('something waiting on the way stops the walk', () async {
+      final log = await _play('MH_001_Square', ['map', '#The Hollow Grove'],
+          carrying: valley);
+      expect(log, contains('## Deep Whisperwood'));
+      expect(log, contains('SOMETHING KEEPING PACE'));
+      expect(log, isNot(contains('## The Hollow Grove')));
+    });
+
+    test('a command typed at it puts it away and is done', () async {
+      final log = await _play('MH_001_Square', ['map', 'north']);
+      expect(log, contains('## The Guard Hall'));
+    });
+
+    test('Hale will sell a plan of the city across his desk', () async {
+      final log = await _play('VC_003_GrandLibrary',
+          ['talk hale', '#empty sections', '#plan of the city', '1', '0'],
+          gold: 20);
+      expect(log, contains("The Library's Copying Desk"));
+      expect(log, contains('You buy A Plan of Valorheim for 12 gp'));
     });
   });
 

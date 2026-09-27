@@ -73,6 +73,7 @@
       "keeper": "npc_010_sal",
       "carries": 3,
       "stock": [
+        { "item": "g_038_map_of_the_valley", "always": true },
         { "item": "w_029_drovers_goad" },
         { "item": "g_022_hollow_ash" },
         { "item": "a_030_oilskin_brigandine" },
@@ -126,6 +127,31 @@
         ],
         "broke": [
           "Mercy's the name, not charity. Come back with coin."
+        ]
+      }
+    },
+    {
+      "shop_id": "s_003_library_copying_desk",
+      "name": "The Library's Copying Desk",
+      "keeper": "npc_008_hale",
+      "location": "VC_003_GrandLibrary",
+      "stock": [
+        { "item": "g_039_plan_of_valorheim" }
+      ],
+      "lines": {
+        "greet": [
+          "The survey copies are in the press by the window. Please do not fold them the wrong way.",
+          "Quietly, please. The copies are kept flat, over there."
+        ],
+        "buy": [
+          "Sign the ledger. Everyone signs the ledger.",
+          "The Crown thanks you. The copyists would, if they were paid."
+        ],
+        "sell": [
+          "The Library will take it for the collection. Half, as the Crown's rules require."
+        ],
+        "broke": [
+          "The Crown sets the price, not I. Come back when you can pay it."
         ]
       }
     }

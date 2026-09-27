@@ -1159,6 +1159,16 @@ hale_confront = [
     opt('leave', 'Leave him', 'He does not look up as you go.', go='hale_bye'),
 ]
 
+def _hale_plans(back):
+    return opt('wares', 'Ask for a plan of the city',
+               'He points, without getting up, to a press by the window where '
+               'the copies are kept flat. «The Library\'s survey of the city, '
+               'copied fair. The streets, the palace, the mine head, '
+               'Thornhaven\'s gates.» A pause. «Nothing below the streets. The '
+               'Crown does not survey below the streets.»',
+               go=back, say='Do you have maps of the city?')
+
+
 hale = conversation('npc_008_hale', [
     entry('hale_home', requires=['boss_defeated_malachai_vex']),
     entry('hale_ashamed', requires=['hale_confessed']),
@@ -1211,6 +1221,7 @@ hale = conversation('npc_008_hale', [
               requires=['caught_hale_lying'],
               unless=['deception_revealed_under_archive', 'hale_stonewalled']),
           hale_daybook,
+          _hale_plans('hale_desk'),
           opt('leave', 'Leave', '«Quietly, please,» he says, to nobody.',
               go='hale_bye')),
 
@@ -1266,6 +1277,7 @@ hale = conversation('npc_008_hale', [
     scene('hale_again', O, 'Hale looks up from the catalogue. «Yes?»',
           opt('desk', 'Speak with him', 'He closes the catalogue.',
               go='hale_desk', say='A word, Master Hale.'),
+          _hale_plans('hale_again'),
           opt('leave', 'Leave', '«Quietly, please.»', go='hale_bye')),
 
     scene('hale_caught', O,
@@ -1553,9 +1565,16 @@ sal_options = [
     opt('ask_stock', 'Ask what she is carrying',
         '«Today? Whatever didn\'t sell yesterday.» She slaps a pannier. «Things '
         'a town merchant won\'t carry and a few he\'s never heard of. '
-        'Different every time you find me — if you find me.»',
+        'Different every time you find me — if you find me.» She taps a '
+        'bundle of folded paper tied to the saddle. «Except maps. I always '
+        'have maps of the valley. It\'s how people find their way back to '
+        'me.»',
         go='sal_talk', say="What's on the mule today?",
         sets=['sal_told_of_her_stock'], unless=['sal_told_of_her_stock']),
+    opt('wares', 'See what is on the mule',
+        '«Go on, then. Don\'t touch the mule.»',
+        go='sal_talk', say='Show us what you have today.',
+        requires=['sal_told_of_her_stock']),
     roll('rumour', '[Diplomacy] Ask what she has heard on the roads',
          "You've been on every road in the valley. What's worth knowing?",
          'diplomacy', 15, unless=['sal_rumoured'],

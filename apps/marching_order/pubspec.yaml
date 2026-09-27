@@ -28,3 +28,10 @@ flutter:
     - assets/campaign/
     - assets/content/
     - assets/characters/
+  # A fixed-width face for the game's text, so its tables and maps line up
+  # in columns everywhere. The web has no system monospace to fall back on.
+  # Licence: fonts/LICENSE-DejaVu.txt.
+  fonts:
+    - family: DejaVuSansMono
+      fonts:
+        - asset: fonts/DejaVuSansMono.ttf

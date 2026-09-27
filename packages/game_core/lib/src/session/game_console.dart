@@ -1,6 +1,7 @@
 import 'package:pf2e_core/pf2e_core.dart';
 
 import '../campaign/arc.dart';
+import '../campaign/atlas.dart';
 import '../campaign/gear.dart';
 import '../campaign/hunt.dart';
 import '../campaign/npc.dart';
@@ -15,6 +16,7 @@ import 'fight_script.dart';
 import 'game_event.dart';
 import 'game_session.dart';
 import 'item_use.dart';
+import 'map_drawing.dart';
 import 'session_actor.dart';
 import 'world_event.dart';
 import 'world_session.dart';
@@ -24,6 +26,8 @@ const consoleCommands = '''
   north/south/east/west/up/down (or n/s/e/w/u/d)  walk
   look                                            describe the room again
   exits                                           list ways out, open and shut
+  map                                             the map of where you are,
+                                                  and a number to travel
   who                                             who is here, and their topics
   talk <name>                                     talk to someone properly
   ask <name> about <topic>                        raise a single topic
@@ -228,6 +232,9 @@ class GameConsole {
       case 'l':
         _renderRoom(session, full: true, showWeather: true);
         return true;
+
+      case 'map':
+        return _map(session);
 
       case 'exits':
         final view = session.look();
@@ -517,13 +524,30 @@ class GameConsole {
     }
   }
 
-  Future<bool> _go(WorldSession session, String direction,
-      Future<String?> Function({String prompt}) nextCommand) async {
+  Future<bool> _go(
+    WorldSession session,
+    String direction,
+    Future<String?> Function({String prompt}) nextCommand, {
+    bool brief = false,
+  }) async {
     final MoveResult result;
     try {
       result = session.move(direction);
     } on InvalidMoveException catch (e) {
       out.writeln(_wrapped(e.message));
+      _stopped = true;
+      return true;
+    }
+
+    final ambush = result.ambush;
+    final hunt = result.hunt;
+    // On the way somewhere else, a room is a line, unless something is
+    // waiting in it.
+    if (brief && ambush == null && hunt == null) {
+      out.writeln('  ${result.direction}, to ${session.currentRoom.title}'
+          '  (${_shortTime(result.minutes)})');
+      _announceArcs(session);
+      _announceEvents(session);
       return true;
     }
 
@@ -541,21 +565,186 @@ class GameConsole {
     _announceEvents(session);
 
     // An ambush is not something to mention and move on from.
-    final ambush = result.ambush;
     if (ambush != null) {
+      _stopped = true;
       return _fight(session, nextCommand, encounterId: ambush.id);
     }
 
     // Nor is something that has followed the party's money this far.
-    final hunt = result.hunt;
     final roll = result.huntRoll;
     if (hunt != null) {
+      _stopped = true;
       out.writeln('\n  [The hunt: d100(${roll?.die}) against '
           '${roll?.chance}% — something has your scent]');
       out.writeln('\n${_wrapped(hunt.description)}');
       return _fight(session, nextCommand, encounterId: hunt.id);
     }
     return true;
+  }
+
+  /// Set when a walk ends somewhere other than where it was going: a fight,
+  /// or a road that would not be taken.
+  bool _stopped = false;
+
+  /// Walks [directions] one road at a time, a line for each place passed
+  /// through and the whole of the last, and stops wherever something
+  /// happens on the way.
+  Future<bool> _travel(WorldSession session, List<String> directions) async {
+    out.writeln('');
+    for (var i = 0; i < directions.length; i++) {
+      _stopped = false;
+      final last = i == directions.length - 1;
+      final keepGoing =
+          await _go(session, directions[i], nextCommand, brief: !last);
+      if (!keepGoing) return false;
+      if (_stopped) {
+        if (!last) out.writeln('\n(You stop here.)');
+        return true;
+      }
+    }
+    return true;
+  }
+
+  // --- the map -------------------------------------------------------------
+
+  /// The town the party is in, drawn from what they know, with every known
+  /// place they could walk to from here, nearest first, and the ways into
+  /// what they do not know. A number sets off; 0 puts the map away.
+  Future<bool> _map(WorldSession session) async {
+    final map = session.mapHere;
+    if (map == null) {
+      out.writeln('Nobody has drawn a map of this place.');
+      return true;
+    }
+    final charted = session.carriesMap(map);
+    final here = session.currentRoom.id;
+    final drawing = <String>[];
+    out.writeln('\n${map.title.toUpperCase()}'
+        '${charted ? '' : '  (as far as you have walked it)'}');
+    for (final sheet in map.sheets) {
+      final lines = drawSheet(
+        sheet: sheet,
+        map: map,
+        knows: session.knowsRoom,
+        exitsOf: session.knownExits,
+        here: here,
+      );
+      if (lines.isEmpty) continue;
+      if (sheet.title != map.title) {
+        out.writeln('\n${sheet.title}'
+            '${sheet.under == null ? '' : ', ${sheet.under}'}');
+      }
+      out.writeln('');
+      for (final line in lines) {
+        out.writeln('  $line');
+      }
+      drawing.addAll(lines);
+      for (final way in _waysOff(session, map, sheet)) {
+        out.writeln('  $way');
+      }
+    }
+    out.writeln('\n  ${[
+      '[ ] you are here',
+      if (drawing.any((l) => l.contains('?'))) '? not explored',
+      if (drawing.any((l) => l.contains(':'))) ': a way up or down',
+    ].join('   ')}');
+    final hint = map.hint;
+    if (!charted && hint != null) out.writeln(_wrapped(hint, indent: '  '));
+
+    final locations = session.campaign.locations;
+    final routes = [
+      for (final route in session.routes())
+        if (locations.roomById(route.roomId) case final room?)
+          (room: room, route: route),
+    ];
+    final explore = [
+      for (final exit in session.currentRoom.exits.values)
+        if (exit.isOpen(session.flags) && !session.knowsRoom(exit.to)) exit,
+    ];
+    // As wide as the longest name here and no wider: on a phone, a place,
+    // how long, and which way all have to fit on one line.
+    final names = [
+      for (final r in routes) r.room.title,
+      for (final exit in explore) 'Explore ${exit.direction}',
+    ];
+    final pad = names.fold(0, (w, n) => n.length > w ? n.length : w);
+    final options = <({_Entry entry, List<String> directions})>[
+      for (final (:room, :route) in routes)
+        (
+          entry: (
+            text: '${room.title.padRight(pad)} '
+                '${_shortTime(route.minutes).padLeft(6)}  '
+                '${_route(route.directions)}',
+            chip: '${room.title} · ${_shortTime(route.minutes)}',
+          ),
+          directions: route.directions,
+        ),
+      for (final exit in explore)
+        (
+          entry: (
+            text: '${'Explore ${exit.direction}'.padRight(pad)} '
+                '${_shortTime(session.travelMinutes(exit.direction)).padLeft(6)}',
+            chip: 'Explore ${exit.direction}',
+          ),
+          directions: [exit.direction],
+        ),
+    ];
+    out.writeln('\nWhere to, from ${session.currentRoom.title}:');
+    if (options.isEmpty) out.writeln('  Nowhere you know of is open to you.');
+    _offer([for (final o in options) o.entry], 'Put the map away');
+    final got = await _read('map> ', options.length);
+    if (got == null) return false;
+    final pick = got.pick;
+    if (pick == null) {
+      if (got.line.isNotEmpty) _pending = got.line;
+      return true;
+    }
+    if (pick == 0) return true;
+    return _travel(session, options[pick - 1].directions);
+  }
+
+  /// The ways off [sheet] from the rooms on it the party knows: stairs to
+  /// another sheet, and roads to another town.
+  List<String> _waysOff(WorldSession session, TownMap map, MapSheet sheet) {
+    final atlas = session.campaign.atlas;
+    final locations = session.campaign.locations;
+    final out = <String>[];
+    for (final roomId in sheet.places.keys) {
+      for (final exit in session.knownExits(roomId)) {
+        if (sheet.places.containsKey(exit.to)) continue;
+        final elsewhere = map.sheetOf(exit.to)?.title ??
+            atlas.forRoom(exit.to)?.title ??
+            locations.townForRoom(exit.to)?.name ??
+            'somewhere';
+        final known = session.knowsRoom(exit.to);
+        out.add('${map.labelOf(roomId)}: ${exit.direction} to '
+            '${known ? elsewhere : 'somewhere not yet explored'}'
+            '${exit.isOpen(session.flags) ? '' : ' (shut)'}');
+      }
+    }
+    return out;
+  }
+
+  /// "west ×3, north".
+  String _route(List<String> directions) {
+    final parts = <String>[];
+    for (var i = 0; i < directions.length;) {
+      var j = i;
+      while (j < directions.length && directions[j] == directions[i]) {
+        j++;
+      }
+      parts.add(j - i > 1 ? '${directions[i]} ×${j - i}' : directions[i]);
+      i = j;
+    }
+    return parts.join(', ');
+  }
+
+  /// "15 min", "1 h 30", "8 h".
+  String _shortTime(int minutes) {
+    final h = minutes ~/ 60;
+    final m = minutes % 60;
+    if (h == 0) return '$m min';
+    return m == 0 ? '$h h' : '$h h ${m.toString().padLeft(2, '0')}';
   }
 
   /// Accepts "talk thorne" for a conversation, and "ask thorne about elara" or

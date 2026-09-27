@@ -196,6 +196,7 @@ class GameController extends ChangeNotifier {
         (label: 'Shop', command: 'list'),
       ],
       const (label: 'Look', command: 'look'),
+      const (label: 'Map', command: 'map'),
       const (label: 'Pack', command: 'inventory'),
       const (label: 'Status', command: 'status'),
       const (label: 'Quests', command: 'quests'),
@@ -294,6 +295,7 @@ class GameController extends ChangeNotifier {
       economyJson: await read('economy.json'),
       huntJson: await read('hunt.json'),
       weatherJson: await read('weather.json'),
+      mapsJson: await read('maps.json'),
     );
     final spells = const CampaignLoader().readSpells(
       await rootBundle.loadString('$_contentDir/spells.json'),

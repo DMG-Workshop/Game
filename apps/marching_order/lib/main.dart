@@ -246,15 +246,22 @@ class _GameScreenState extends State<GameScreen> {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                controller: _scroll,
-                padding: const EdgeInsets.all(12),
-                child: SelectableText(
-                  game.log,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 13,
-                    height: 1.35,
+              child: LayoutBuilder(
+                // Small enough that a map's widest line, 48 columns, fits
+                // on a narrow phone without wrapping; never larger than 13.
+                builder: (context, box) => SingleChildScrollView(
+                  controller: _scroll,
+                  padding: const EdgeInsets.all(12),
+                  child: SelectableText(
+                    game.log,
+                    style: TextStyle(
+                      fontFamily: 'DejaVuSansMono',
+                      fontSize: ((box.maxWidth - 24) / (48 * 0.64)).clamp(
+                        9.0,
+                        13.0,
+                      ),
+                      height: 1.35,
+                    ),
                   ),
                 ),
               ),

@@ -194,6 +194,22 @@ than through a second mechanism bolted alongside.
 Exits can be gated on flags, which is how the road out of Millhaven stays shut
 until the arc that opens it completes.
 
+`map` draws the town from what the party knows. Rooms they have walked are
+labelled, a way seen but not taken is a `?`, and the rest is fog until they
+buy the area's map from whoever sells it: Sal Mercy's mule for the valley, the
+Grand Library for the capital's streets. What is under the capital is on no
+map anyone will sell. Below the drawing, every known place is listed with how
+long it takes to reach in today's weather and which way to go, and a number
+walks there, stopping for anything waiting on the road:
+
+```
+                Farm--Oaks    Guards
+                 |              |
+  Hollow--Deep--Wood--Forge--[Square]--Sparrow
+                                |
+                              Temple
+```
+
 A game saves to a file and picks up where it was left. The save remembers
 its campaign and characters, so resuming needs nothing else; pass
 `--characters` to bring a sheet re-exported from Pathbuilder, and a level

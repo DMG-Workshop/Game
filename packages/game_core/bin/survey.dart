@@ -48,6 +48,7 @@ void main(List<String> args) {
       economyJson: read('economy.json'),
       huntJson: read('hunt.json'),
       weatherJson: read('weather.json'),
+      mapsJson: read('maps.json'),
     );
   } on CampaignFormatException catch (e) {
     stderr.writeln('Could not read the campaign: ${e.message}');

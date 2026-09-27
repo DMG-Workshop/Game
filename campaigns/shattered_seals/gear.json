@@ -67,6 +67,17 @@
       "special": "+1 item bonus to Nature checks made to Command an Animal."
     },
     {
+      "item_id": "g_038_map_of_the_valley",
+      "name": "A Map of the Millhaven Valley",
+      "level": 1,
+      "type": "gear",
+      "price": 3,
+      "traits": ["map"],
+      "description": "Drawn on the back of a feed merchant's bill in three colours of ink and corrected in a fourth: the town, the wood's edge and what lies past it, the farms to the north, and the Mere Road south to the old mill. Somebody has drawn a small careful cross in the middle of the Whisperwood, and then scratched it out.",
+      "stats": { "magic": false },
+      "special": "Carry it, and \"map\" shows the whole of the Millhaven Valley, every road through it and how long each one takes."
+    },
+    {
       "item_id": "g_034_hearth_water_lesser",
       "name": "Lesser Hearth-Water",
       "level": 3,
@@ -122,6 +133,17 @@
       "stats": { "ac": 14, "bonus": 1, "magic": true, "ac_bonus": 3, "dex_cap": 2 },
       "special": "+1 item bonus to Fortitude saves against cold and exposure.",
       "check_bonuses": [{ "stat": "fortitude", "bonus": 1, "when": "exposure" }]
+    },
+    {
+      "item_id": "g_039_plan_of_valorheim",
+      "name": "A Plan of Valorheim",
+      "level": 5,
+      "type": "gear",
+      "price": 12,
+      "traits": ["map"],
+      "description": "A copyist's fair copy of the Grand Library's survey of the capital: the palace and its plaza, the mine head, the gates of Thornhaven. The Crown's seal is printed in the corner. What is under the city is not on it, and the margin where it would go has been left very carefully blank.",
+      "stats": { "magic": false },
+      "special": "Carry it, and \"map\" shows the streets of Valorheim and every road out of them. Nothing below the streets is on it."
     },
     {
       "item_id": "a_006_ravencrest_hide",

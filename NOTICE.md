@@ -149,6 +149,14 @@ data is bundled or scraped here; users supply their own export. Pathbuilder's
 export dialog advertises the Pathmuncher Foundry VTT module, so third-party
 import is a sanctioned use of that export.
 
+## Bundled font
+
+The app ships DejaVu Sans Mono, unmodified, so the game's text and maps line
+up in columns on the web, which has no system monospace to fall back on. It is
+under the Bitstream Vera licence, which allows redistribution with its
+notice; the notice travels with the font in
+`apps/marching_order/fonts/LICENSE-DejaVu.txt`.
+
 ## Project source licence
 
 No licence has been chosen for this project's own source. That is a deliberate

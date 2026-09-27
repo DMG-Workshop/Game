@@ -82,6 +82,7 @@ Future<void> main(List<String> args) async {
       economyJson: read('economy.json'),
       huntJson: read('hunt.json'),
       weatherJson: read('weather.json'),
+      mapsJson: read('maps.json'),
     );
     for (final path in characterPaths) {
       final file = File(path);

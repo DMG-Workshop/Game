@@ -1,6 +1,7 @@
 import 'package:pf2e_core/pf2e_core.dart';
 
 import '../campaign/arc.dart';
+import '../campaign/atlas.dart';
 import '../campaign/campaign.dart';
 import '../campaign/creature.dart';
 import '../campaign/difficulty.dart';
@@ -1128,20 +1129,105 @@ class WorldSession {
   int travelMinutes(String direction) {
     final exit = currentRoom.exit(direction);
     if (exit == null) return 0;
+    return _minutesAlong(currentRoom, exit);
+  }
+
+  /// How long [exit] out of [room] takes, in the weather as it is now.
+  int _minutesAlong(Room room, Exit exit) {
     final limits = campaign.weather.travel;
     final locations = campaign.locations;
     final base = exit.minutes ??
-        (locations.townForRoom(_roomId)?.id !=
+        (locations.townForRoom(room.id)?.id !=
                 locations.townForRoom(exit.to)?.id
             ? limits.newTownMinutes
-            : _zoneOf(_roomId) == _zoneOf(exit.to)
+            : _zoneOf(room.id) == _zoneOf(exit.to)
                 ? limits.sameZoneMinutes
                 : limits.newZoneMinutes);
-    final factor = currentRoom.shelter &&
-            (campaign.locations.roomById(exit.to)?.shelter ?? false)
-        ? 1.0
-        : weatherNow?.travel ?? 1.0;
+    final factor =
+        room.shelter && (locations.roomById(exit.to)?.shelter ?? false)
+            ? 1.0
+            : weatherNow?.travel ?? 1.0;
     return (base * factor).round();
+  }
+
+  // --- the map -------------------------------------------------------------
+
+  /// Whether the party has ever stood in [roomId].
+  bool hasVisited(String roomId) => _flags.contains('enter_$roomId');
+
+  /// The map of the town the party is in, if it has one.
+  TownMap? get mapHere => campaign.atlas.forRoom(_roomId);
+
+  /// Whether the party carries [map], and so has the whole town in hand.
+  bool carriesMap(TownMap map) {
+    final id = map.itemId;
+    return id != null && _inventory.isCarrying(id);
+  }
+
+  /// Whether the party knows [roomId]: they have been there, or they are
+  /// carrying a map with it on.
+  bool knowsRoom(String roomId) {
+    if (hasVisited(roomId)) return true;
+    final map = campaign.atlas.forRoom(roomId);
+    return map != null && map.charts(roomId) && carriesMap(map);
+  }
+
+  /// The ways out of [roomId] the party knows of: every one, where they have
+  /// stood; only the open ones, where all they have is a map. A way that is
+  /// shut, and a map does not say why, is one the party has not found.
+  List<Exit> knownExits(String roomId) {
+    if (!knowsRoom(roomId)) return const [];
+    final exits =
+        campaign.locations.roomById(roomId)?.exits.values ?? const <Exit>[];
+    return [
+      for (final exit in exits)
+        if (hasVisited(roomId) || exit.isOpen(_flags)) exit,
+    ];
+  }
+
+  /// Everywhere the party knows and could walk to now, the quickest way,
+  /// by roads they know of that are open: the directions to take, and how
+  /// long it would take in this weather. Nearest first.
+  ///
+  /// A route only goes through places the party knows. Somewhere glimpsed
+  /// down an exit and never visited is not a road anybody can plan by.
+  List<({String roomId, List<String> directions, int minutes})> routes() {
+    final best = <String, int>{_roomId: 0};
+    final via = <String, ({String from, String direction})>{};
+    final open = <String>{_roomId};
+    final done = <String>{};
+    while (open.isNotEmpty) {
+      final here = open.reduce((a, b) => best[a]! <= best[b]! ? a : b);
+      open.remove(here);
+      done.add(here);
+      final room = campaign.locations.roomById(here);
+      if (room == null) continue;
+      for (final exit in room.exits.values) {
+        if (done.contains(exit.to) || !exit.isOpen(_flags)) continue;
+        if (campaign.locations.roomById(exit.to) == null) continue;
+        if (!knowsRoom(exit.to)) continue;
+        final cost = best[here]! + _minutesAlong(room, exit);
+        if (cost < (best[exit.to] ?? cost + 1)) {
+          best[exit.to] = cost;
+          via[exit.to] = (from: here, direction: exit.direction);
+          open.add(exit.to);
+        }
+      }
+    }
+    final out = <({String roomId, List<String> directions, int minutes})>[];
+    for (final roomId in best.keys) {
+      if (roomId == _roomId) continue;
+      final directions = <String>[];
+      for (var at = roomId; at != _roomId; at = via[at]!.from) {
+        directions.insert(0, via[at]!.direction);
+      }
+      out.add((roomId: roomId, directions: directions, minutes: best[roomId]!));
+    }
+    return out
+      ..sort((a, b) {
+        final byTime = a.minutes.compareTo(b.minutes);
+        return byTime != 0 ? byTime : a.roomId.compareTo(b.roomId);
+      });
   }
 
   String? _zoneOf(String roomId) =>
@@ -1651,7 +1737,12 @@ class WorldSession {
 
     final shop = campaign.economy.shopKeptBy(npc.id);
     if (shop == null || !shop.travels) return;
-    final pool = shop.onSaleFor(_flags);
+    // What the keeper always has does not take up one of the few places.
+    final always = shop.alwaysFor(_flags).toSet();
+    final pool = [
+      for (final id in shop.onSaleFor(_flags))
+        if (!always.contains(id)) id,
+    ];
     final count = (shop.carries ?? pool.length).clamp(0, pool.length);
     // A partial shuffle on the road's dice: the first [count] are the pick.
     for (var i = 0; i < count; i++) {
@@ -1673,7 +1764,7 @@ class WorldSession {
     final known = flags ?? _flags;
     final rows = [
       for (final id in shop.travels
-          ? (_onHand[shop.id] ?? const <String>[])
+          ? {...shop.alwaysFor(known), ...?_onHand[shop.id]}
           : shop.onSaleFor(known))
         if (campaign.gear.byId(id) case final item?)
           (item: item, price: shop.priceFor(item, known)),
