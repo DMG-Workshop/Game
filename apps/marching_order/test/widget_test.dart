@@ -44,6 +44,29 @@ void main() {
       expect(game.log, contains("Tallow's Cart"), reason: 'the wares, listed');
       expect(game.log, contains('Minor Hearth-Water'));
 
+      // At Jory's cart the party can trade, and a purchase is a real one.
+      game.send('0');
+      await pumpEventQueue();
+      expect(game.canTrade, isTrue);
+      expect(
+        game.chips.map((c) => c.command),
+        contains(GameController.tradeCommand),
+      );
+      final potion = game.wares.firstWhere(
+        (r) => r.item.name == 'Minor Hearth-Water',
+      );
+      final coin = game.session.inventory.coin;
+      game.send('buy ${potion.item.name}');
+      await pumpEventQueue();
+      expect(game.session.inventory.coin, coin - potion.price);
+      final sold = game.sellable.firstWhere(
+        (r) => r.item.name == 'Minor Hearth-Water',
+      );
+      expect(sold.inUse, isFalse);
+      game.send('sell ${sold.item.name}');
+      await pumpEventQueue();
+      expect(game.session.inventory.coin, coin - potion.price + sold.price);
+
       final back = await GameController.resume();
       await pumpEventQueue();
       expect(back.log, contains('Picked up where you left off'));

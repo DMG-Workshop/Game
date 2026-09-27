@@ -478,17 +478,19 @@ WEATHER_REMARKS = {
     'ash_storm': 'The mines are breathing out. Get under cover, all of us.',
 }
 
+# Said whatever the hour and whatever the sky, so no line here may assume
+# either: a party can sleep through the afternoon, or on a clear night.
 REST_LINES = {
     'indoors': [
         'The fire burns down to embers. Somewhere a door creaks and settles.',
-        'Rain on the roof, and the roof holds.',
+        'The walls tick as they cool, and hold.',
         'Nobody sleeps well, but everybody sleeps.',
     ],
     'outdoors': [
-        'The night is cold, and the watch is long.',
+        'The watch is long, and nothing comes.',
         'Something moves at the edge of the firelight, and thinks better '
         'of it.',
-        'Stars come out between the clouds, few and far.',
+        'Wind moves through the grass, and nobody minds it.',
     ],
     'pc': [
         'I will take first watch. Get some sleep.',
@@ -496,7 +498,7 @@ REST_LINES = {
         'We have earned this. Sleep.',
     ],
     'wake': [
-        'Morning comes grey and cold, and you are all still here.',
+        'You wake to the same world, and you are all still in it.',
         'You wake stiff, but whole.',
         'Somebody has made tea. It is terrible. It is wonderful.',
     ],

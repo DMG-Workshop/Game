@@ -105,6 +105,11 @@ class GameConsole {
       List.unmodifiable(_choices);
   List<({String command, String label})> _choices = const [];
 
+  /// The fight under way, while there is one: for a client that wants to
+  /// offer its spells or targets as buttons.
+  EncounterSession? get fight => _current;
+  EncounterSession? _current;
+
   /// Options that mean "show me what you sell", when a shopkeeper has them.
   static const _browsing = {'look', 'wares', 'stock', 'browse', 'ask_stock'};
 
@@ -542,6 +547,11 @@ class GameConsole {
     while (!talk.isFinished) {
       final options = talk.availableOptions();
       out.writeln('');
+      // Somebody who has been asked everything says so, rather than
+      // offering a menu that only has the door on it.
+      if (options.isNotEmpty && options.every((o) => _endsTalk(talk, o))) {
+        out.writeln('  (Nothing more to ask ${npc.name} for now.)');
+      }
       for (var i = 0; i < options.length; i++) {
         out.writeln('  ${i + 1}. ${options[i].label}'
             '${_checkHint(talk, options[i], solo: solo)}');
@@ -602,7 +612,7 @@ class GameConsole {
       // Asking a shopkeeper to see the stock shows it, prices and all.
       if (_browsing.contains(option.id) &&
           session.shopHere?.keeperId == npc.id) {
-        _renderWares(session);
+        _renderWares(session, talking: true, flags: talk.flags);
       }
 
       // A new scene is a new beat; returning to the same one is not, and
@@ -619,6 +629,16 @@ class GameConsole {
     }
     _announceArcs(session);
     return keepGoing;
+  }
+
+  /// Whether every way [option] can turn out ends the conversation.
+  bool _endsTalk(GameSession talk, SceneOption option) {
+    final outcomes = [
+      if (option.automatic case final o?) o,
+      ...option.outcomes.values,
+    ];
+    return outcomes.isNotEmpty &&
+        outcomes.every((o) => talk.adventure.scenes[o.goTo]?.isEnding ?? false);
   }
 
   String _checkHint(GameSession talk, SceneOption option,
@@ -653,24 +673,33 @@ class GameConsole {
     out.writeln('\nPurse: ${formatCoin(pack.coin)}');
   }
 
-  void _renderWares(WorldSession session) {
+  void _renderWares(WorldSession session,
+      {bool talking = false, Set<String>? flags}) {
     final shop = session.shopHere;
     if (shop == null) {
       out.writeln('There is nobody here to trade with.');
       return;
     }
     if (session.keeperSays('greet') case final k?) _says(k.keeper, k.line);
-    final percent = shop.percentFor(session.flags);
+    final known = flags ?? session.flags;
+    final percent = shop.percentFor(known);
     out.writeln('\n${shop.name} — ${_keeper(session)}'
         '${percent == 0 ? '' : percent < 0 ? '  (${-percent}% off, for you)' : '  (+$percent%, for you)'}');
-    for (final row in session.wares()) {
+    final wares = session.wares(flags: known);
+    for (final row in wares) {
       final dear = row.price > session.inventory.coin ? '  *' : '';
       out.writeln('  ${row.item.name.padRight(32)} '
           '${'level ${row.item.level}'.padRight(9)} '
           '${formatCoin(row.price).padLeft(12)}$dear');
     }
     out.writeln('\nThe party has ${formatCoin(session.inventory.coin)}.'
-        '${session.wares().any((r) => r.price > session.inventory.coin) ? '  (* more than that)' : ''}');
+        '${wares.any((r) => r.price > session.inventory.coin) ? '  (* more than that)' : ''}');
+    // Nothing else says how to trade, so the list does.
+    out.writeln(talking
+        ? '(When you are done talking: "buy <item>" to buy one, "sell <item>" '
+            'to sell something for half its price.)'
+        : '("buy <item>" to buy one, "sell <item>" to sell something for half '
+            'its price.)');
   }
 
   bool _trade(WorldSession session, String what, {required bool buying}) {
@@ -1224,7 +1253,19 @@ class GameConsole {
       out.writeln(_wrapped(e.message));
       return true;
     }
+    _current = fight;
+    try {
+      return await _fightOut(session, nextCommand, fight);
+    } finally {
+      _current = null;
+    }
+  }
 
+  Future<bool> _fightOut(
+    WorldSession session,
+    Future<String?> Function({String prompt}) nextCommand,
+    EncounterSession fight,
+  ) async {
     out
       ..writeln('\n${'=' * 70}')
       ..writeln(fight.encounter.name.toUpperCase())
@@ -1320,15 +1361,25 @@ class GameConsole {
             }
             _renderUse(fight.use(args.what, targetId: args.who));
           case 'spells':
+            // Where each comes from, so a cantrip known twice (from two
+            // classes) reads as two ways to cast it, not a mistake.
             final options = fight.castOptions();
             out.writeln(options.isEmpty
                 ? '  ${fight.current.name} has no spells the engine can cast.'
-                : '  ${options.join('\n  ')}');
+                : '  ${[
+                    for (final o in options) '$o, ${o.source}',
+                  ].join('\n  ')}');
           case 'status':
             _renderCombatants(fight);
           case 'quit':
           case 'q':
             return false;
+          // A spell's name on its own casts it: "ignition" is as good as
+          // "cast ignition".
+          case _
+              when fight.castOptions().any((o) =>
+                  line.toLowerCase().startsWith(o.spell.name.toLowerCase())):
+            _cast(fight, line, script);
           default:
             out.writeln('In a fight you can: strike <target>, cast <spell> '
                 '[target], spells, use <item> [on <who>], close, back, end, '
