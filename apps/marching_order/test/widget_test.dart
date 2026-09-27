@@ -44,11 +44,37 @@ void main() {
       );
       await pumpEventQueue();
       expect(game.log, contains("Tallow's Cart"), reason: 'the wares, listed');
-      expect(game.log, contains('Minor Hearth-Water'));
+      expect(game.prompt, 'shop> ', reason: 'open across the counter');
+      final stock = game.chips.map((c) => c.label).toList();
+      expect(stock, contains('Minor Hearth-Water · 4 gp'));
+      expect(stock.last, 'Back to Jory Tallow');
 
-      // At Jory's cart the party can trade, and a purchase is a real one.
+      // A sword bought over the counter comes with a question: who takes it.
+      game.send(
+        game.chips
+            .firstWhere((c) => c.label.startsWith('Millhaven Guard Sword'))
+            .command,
+      );
+      await pumpEventQueue();
+      expect(game.prompt, 'equip> ');
+      expect(game.chips.map((c) => c.label), [
+        'Wield it',
+        'Keep it in the pack',
+      ]);
+      game.send('1');
+      await pumpEventQueue();
+      expect(game.log, contains('takes up Millhaven Guard Sword'));
+      expect(game.prompt, 'shop> ', reason: 'and back to the stock');
+
+      // 0 goes back to Jory, and 0 again walks away from him.
       game.send('0');
       await pumpEventQueue();
+      expect(game.prompt, 'say> ');
+      game.send('0');
+      await pumpEventQueue();
+      expect(game.prompt, '> ');
+
+      // Out in the square the party can trade too, and a purchase is real.
       expect(game.canTrade, isTrue);
       expect(game.priceChange, 0, reason: 'nobody has haggled yet');
       expect(
@@ -75,6 +101,49 @@ void main() {
       expect(back.log, contains('Picked up where you left off'));
     },
   );
+
+  test('the pack and a fight are menus of chips', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    // Seeded, so the fight starts the same way every time.
+    final game = await GameController.start([
+      await GameController.demoCharacter(),
+    ], seed: 3);
+    await pumpEventQueue();
+
+    game.send('buy minor hearth-water');
+    await pumpEventQueue();
+    game.send('inventory');
+    await pumpEventQueue();
+    expect(game.prompt, 'pack> ');
+    expect(game.chips.map((c) => c.label), [
+      'Minor Hearth-Water',
+      'Close the pack',
+    ]);
+    game.send('1');
+    await pumpEventQueue();
+    expect(game.chips.map((c) => c.label), [
+      'Drink it',
+      'Drop it',
+      'Back to the pack',
+    ]);
+    game.send('0');
+    await pumpEventQueue();
+    game.send('0');
+    await pumpEventQueue();
+    expect(game.prompt, '> ');
+
+    // Three steps west, something has been keeping pace.
+    for (var i = 0; i < 3; i++) {
+      game.send('west');
+      await pumpEventQueue();
+    }
+    expect(game.prompt, 'fight> ');
+    final orders = game.chips.map((c) => c.label).toList();
+    expect(orders, contains('Strike Hollow Thrall 2'));
+    expect(orders, contains('Cast Ignition'));
+    expect(orders, contains('End turn'));
+    expect(orders.sublist(orders.length - 2), ['Status', 'Flee']);
+  });
 
   test('a won haggle shows on the Trade chip and in the prices', () async {
     TestWidgetsFlutterBinding.ensureInitialized();

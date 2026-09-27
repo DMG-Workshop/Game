@@ -457,6 +457,47 @@ class EncounterSession {
     return castOptionsFor(actor, vitals, _spells);
   }
 
+  /// Who [option] would catch if the current combatant cast it now, at the
+  /// nearest enemy as [cast] does without a target; null when it cannot be
+  /// cast now, for want of actions, a slot, or anything in range.
+  ///
+  /// A burst lands on everyone in that enemy's zone, and a client offering
+  /// the spell should be able to say so before the party is in it.
+  List<Combatant>? wouldCatch(CastOption option) {
+    if (isOver || current.isEnemy || current.isDown) return null;
+    if (!option.isAvailable || option.spell.actions > _actionsLeft) {
+      return null;
+    }
+    final caster = current;
+    final target = _nearestOpponent(caster);
+    if (target == null) return null;
+    final reach = encounter.zones.indexOf(option.spell.range);
+    if (_distance(caster, target) > (reach < 0 ? 0 : reach)) return null;
+    return option.spell.area
+        ? [
+            for (final c in _combatants)
+              if (!c.isDown && c.zoneIndex == target.zoneIndex) c,
+          ]
+        : [target];
+  }
+
+  /// Whether the current combatant has anywhere nearer the enemy to go.
+  bool get canClose {
+    if (isOver || current.isEnemy) return false;
+    final target = _nearestOpponent(current);
+    return target != null && target.zoneIndex != current.zoneIndex;
+  }
+
+  /// Whether the current combatant has anywhere further back to go.
+  bool get canFallBack {
+    if (isOver || current.isEnemy) return false;
+    final actor = current;
+    final target = _nearestOpponent(actor);
+    if (target == null) return false;
+    final to = actor.zoneIndex + (actor.zoneIndex < target.zoneIndex ? -1 : 1);
+    return to >= 0 && to < encounter.zones.length;
+  }
+
   /// Casts [spellName] at [targetId], at its highest rank still available
   /// unless [rank] says which.
   ///
@@ -713,7 +754,10 @@ class EncounterSession {
 
   void _requireActions(int cost) {
     if (_actionsLeft < cost) {
-      throw InvalidActionException('No actions left this turn.');
+      throw InvalidActionException(_actionsLeft == 0
+          ? 'No actions left this turn.'
+          : 'That takes $cost actions, and ${current.name} has '
+              '$_actionsLeft left this turn.');
     }
   }
 

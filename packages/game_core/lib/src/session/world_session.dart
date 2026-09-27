@@ -1682,17 +1682,21 @@ class WorldSession {
   }
 
   /// Buys one of something on the shelf.
-  ({GearItem item, int price}) buy(String what) {
+  ///
+  /// [flags] are a conversation's, as for [wares]: buying across the
+  /// counter while still talking pays the price just talked down to.
+  ({GearItem item, int price}) buy(String what, {Set<String>? flags}) {
     final shop = _requireShop();
+    final known = flags ?? _flags;
     final onSale = [
-      for (final row in wares()) row.item,
+      for (final row in wares(flags: known)) row.item,
     ];
     final item = PartyInventory.findIn(onSale, what);
     if (item == null) {
       throw InvalidMoveException('${_keeperName(shop)} has nothing called '
           '"$what" for sale.');
     }
-    final price = shop.priceFor(item, _flags);
+    final price = shop.priceFor(item, known);
     try {
       _inventory.spend(price);
     } on EquipException catch (e) {
@@ -1731,6 +1735,28 @@ class WorldSession {
     }
     _inventory.earn(quote.price);
     return quote;
+  }
+
+  /// Leaves one of something behind for good.
+  ///
+  /// Like selling, anything may go, and what is being worn has to come off
+  /// first. The flags that say it was found stay set: it was found.
+  GearItem drop(String what) {
+    final item = _inventory.find(what);
+    if (item == null) {
+      throw InvalidMoveException('You are not carrying a "$what".');
+    }
+    final holders = _inventory.holdersOf(item.id);
+    if (holders.length >= _inventory.countOf(item.id)) {
+      throw InvalidMoveException('${_namesOf(holders)} '
+          '${holders.length == 1 ? 'is' : 'are'} using ${item.name}. '
+          'Take it off first.');
+    }
+    try {
+      return _inventory.remove(item.id);
+    } on EquipException catch (e) {
+      throw InvalidMoveException(e.message);
+    }
   }
 
   Shop _requireShop() {

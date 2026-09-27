@@ -260,21 +260,30 @@ class _GameScreenState extends State<GameScreen> {
               ),
             ),
             if (!game.isOver) ...[
-              SizedBox(
-                height: 48,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  children: [
-                    for (final chip in game.chips)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: ActionChip(
-                          label: Text(chip.label),
-                          onPressed: () => _send(chip.command),
-                        ),
-                      ),
-                  ],
+              // Every choice in sight at once, wrapped over as many rows as
+              // it takes: a row that scrolls sideways hides most of them.
+              // Past a few rows it scrolls, so the log keeps its room.
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 168),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        for (final chip in game.chips)
+                          ActionChip(
+                            label: Text(chip.label),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            onPressed: () => _send(chip.command),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               Padding(
@@ -364,7 +373,15 @@ class _TradeSheet extends StatelessWidget {
             ),
             trailing: FilledButton.tonal(
               onPressed: ready && row.price <= coin
-                  ? () => game.send('buy ${row.item.name}')
+                  ? () async {
+                      game.send('buy ${row.item.name}');
+                      // Something to wield or wear comes with a question:
+                      // who takes it up. The sheet steps aside for it.
+                      await Future<void>.delayed(Duration.zero);
+                      if (context.mounted && game.prompt != '> ') {
+                        Navigator.of(context).pop();
+                      }
+                    }
                   : null,
               child: const Text('Buy'),
             ),
