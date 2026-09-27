@@ -1664,14 +1664,19 @@ class WorldSession {
   }
 
   /// What is on the shelf here, cheapest first, at what the party would pay.
-  List<({GearItem item, int price})> wares() {
+  ///
+  /// [flags] stand in for the world's own while a conversation is still
+  /// going: a discount talked out of the keeper a moment ago is already
+  /// the price, though the world only hears of it when the talk is over.
+  List<({GearItem item, int price})> wares({Set<String>? flags}) {
     final shop = _requireShop();
+    final known = flags ?? _flags;
     final rows = [
       for (final id in shop.travels
           ? (_onHand[shop.id] ?? const <String>[])
-          : shop.onSaleFor(_flags))
+          : shop.onSaleFor(known))
         if (campaign.gear.byId(id) case final item?)
-          (item: item, price: shop.priceFor(item, _flags)),
+          (item: item, price: shop.priceFor(item, known)),
     ];
     return rows..sort((a, b) => a.price.compareTo(b.price));
   }

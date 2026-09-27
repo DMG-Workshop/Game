@@ -120,6 +120,46 @@ class GameController extends ChangeNotifier {
     _append('\n(The game is saved. Start it again from the title screen.)\n');
   }
 
+  /// The chip command that opens the trade sheet rather than going to the
+  /// console.
+  static const tradeCommand = ':trade';
+
+  /// Whether the console is free for a command: not mid-way through one.
+  bool get isIdle {
+    final waiting = _waiting;
+    return !_over && waiting != null && !waiting.isCompleted;
+  }
+
+  /// True where there is a shop and the party is walking about, which is
+  /// when buying and selling are commands the console takes.
+  bool get canTrade => _prompt == '> ' && session.shopHere != null && !_over;
+
+  /// Who keeps the shop here, and what it is called.
+  String get shopName {
+    final shop = session.shopHere;
+    if (shop == null) return '';
+    final keeper = session.campaign.npcs.byId(shop.keeperId)?.name;
+    return keeper == null ? shop.name : '${shop.name} — $keeper';
+  }
+
+  /// What is on the shelf here, at what the party would pay.
+  List<({GearItem item, int price})> get wares =>
+      canTrade ? session.wares() : const [];
+
+  /// What the party could sell here, for what, and whether it is being worn
+  /// or wielded (and so cannot be sold until it is taken off).
+  List<({GearItem item, int price, int copies, bool inUse})> get sellable => [
+    for (final item in session.inventory.carried)
+      (
+        item: item,
+        price: item.resalePrice,
+        copies: session.inventory.countOf(item.id),
+        inUse:
+            session.inventory.holdersOf(item.id).length >=
+            session.inventory.countOf(item.id),
+      ),
+  ];
+
   /// Chips for what makes sense right now.
   List<CommandChip> get chips {
     if (_prompt.startsWith('say')) {
@@ -129,15 +169,21 @@ class GameController extends ChangeNotifier {
       ];
     }
     if (_prompt.startsWith('fight')) {
-      return const [
-        (label: 'Strike', command: 'strike'),
-        (label: 'Close in', command: 'close'),
-        (label: 'Fall back', command: 'back'),
-        (label: 'Spells', command: 'spells'),
-        (label: 'Drink', command: 'use hearth-water'),
-        (label: 'End turn', command: 'end'),
-        (label: 'Status', command: 'status'),
-        (label: 'Flee', command: 'flee'),
+      // Every spell that can be cast now, once each by name, whichever
+      // class it comes from.
+      final spells = <String>{
+        for (final o in _console.fight?.castOptions() ?? const <CastOption>[])
+          if (o.isAvailable) o.spell.name,
+      };
+      return [
+        const (label: 'Strike', command: 'strike'),
+        const (label: 'Close in', command: 'close'),
+        const (label: 'Fall back', command: 'back'),
+        for (final name in spells) (label: 'Cast $name', command: 'cast $name'),
+        const (label: 'Drink', command: 'use hearth-water'),
+        const (label: 'End turn', command: 'end'),
+        const (label: 'Status', command: 'status'),
+        const (label: 'Flee', command: 'flee'),
       ];
     }
     final view = session.look();
@@ -148,7 +194,10 @@ class GameController extends ChangeNotifier {
         (label: 'Talk: ${npc.name.split(' ').last}', command: 'talk ${npc.id}'),
       for (final item in view.items)
         (label: 'Take: ${item.name}', command: 'take ${item.name}'),
-      if (session.shopHere != null) (label: 'Wares', command: 'list'),
+      if (session.shopHere != null) ...[
+        (label: 'Trade', command: tradeCommand),
+        (label: 'Wares', command: 'list'),
+      ],
       const (label: 'Look', command: 'look'),
       const (label: 'Pack', command: 'inventory'),
       const (label: 'Status', command: 'status'),

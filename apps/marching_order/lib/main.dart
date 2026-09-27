@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:game_core/game_core.dart';
 import 'package:pf2e_core/pf2e_core.dart';
 
 import 'game_controller.dart';
@@ -190,8 +191,33 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _send(String line) {
+    if (line == GameController.tradeCommand) {
+      _openTrade();
+      return;
+    }
     widget.game.send(line);
     _input.clear();
+  }
+
+  /// The shop, as a sheet: what is for sale with a Buy button each, and
+  /// what the party carries with a Sell button each. Every button is an
+  /// ordinary "buy" or "sell" command, so the log records it as typed.
+  void _openTrade() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.7,
+        maxChildSize: 0.95,
+        builder: (context, scroll) => ListenableBuilder(
+          listenable: widget.game,
+          builder: (context, _) =>
+              _TradeSheet(game: widget.game, scroll: scroll),
+        ),
+      ),
+    );
   }
 
   @override
@@ -275,6 +301,72 @@ class _GameScreenState extends State<GameScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TradeSheet extends StatelessWidget {
+  const _TradeSheet({required this.game, required this.scroll});
+
+  final GameController game;
+  final ScrollController scroll;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final coin = game.session.inventory.coin;
+    final ready = game.isIdle && game.canTrade;
+    final wares = game.wares;
+    final pack = game.sellable;
+    return ListView(
+      controller: scroll,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      children: [
+        Text(game.shopName, style: theme.textTheme.titleLarge),
+        const SizedBox(height: 4),
+        Text('The party has ${formatCoin(coin)}.'),
+        const SizedBox(height: 16),
+        Text('For sale', style: theme.textTheme.titleMedium),
+        if (wares.isEmpty) const Text('Nothing on the shelf.'),
+        for (final row in wares)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(row.item.name),
+            subtitle: Text(
+              'level ${row.item.level} ${row.item.type} · '
+              '${formatCoin(row.price)}',
+            ),
+            trailing: FilledButton.tonal(
+              onPressed: ready && row.price <= coin
+                  ? () => game.send('buy ${row.item.name}')
+                  : null,
+              child: const Text('Buy'),
+            ),
+          ),
+        const SizedBox(height: 16),
+        Text('Your pack', style: theme.textTheme.titleMedium),
+        if (pack.isEmpty) const Text('Nothing to sell.'),
+        for (final row in pack)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              row.copies > 1
+                  ? '${row.item.name} ×${row.copies}'
+                  : row.item.name,
+            ),
+            subtitle: Text(
+              row.inUse
+                  ? 'In use: take it off to sell it'
+                  : 'Sells for ${formatCoin(row.price)}',
+            ),
+            trailing: OutlinedButton(
+              onPressed: ready && !row.inUse
+                  ? () => game.send('sell ${row.item.name}')
+                  : null,
+              child: const Text('Sell'),
+            ),
+          ),
+      ],
     );
   }
 }
