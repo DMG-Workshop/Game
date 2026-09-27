@@ -325,6 +325,10 @@ class _TradeSheet extends StatelessWidget {
         Text(game.shopName, style: theme.textTheme.titleLarge),
         const SizedBox(height: 4),
         Text('The party has ${formatCoin(coin)}.'),
+        if (game.priceChange != 0) ...[
+          const SizedBox(height: 12),
+          _PriceBanner(percent: game.priceChange),
+        ],
         const SizedBox(height: 16),
         Text('For sale', style: theme.textTheme.titleMedium),
         if (wares.isEmpty) const Text('Nothing on the shelf.'),
@@ -332,9 +336,31 @@ class _TradeSheet extends StatelessWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(row.item.name),
-            subtitle: Text(
-              'level ${row.item.level} ${row.item.type} · '
-              '${formatCoin(row.price)}',
+            subtitle: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: 'level ${row.item.level} ${row.item.type} · '),
+                  // A haggled price shows what it was, struck through.
+                  if (row.price != row.item.price) ...[
+                    TextSpan(
+                      text: formatCoin(row.item.price),
+                      style: const TextStyle(
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                    const TextSpan(text: ' '),
+                  ],
+                  TextSpan(
+                    text: formatCoin(row.price),
+                    style: row.price < row.item.price
+                        ? TextStyle(
+                            color: theme.colorScheme.tertiary,
+                            fontWeight: FontWeight.w600,
+                          )
+                        : null,
+                  ),
+                ],
+              ),
             ),
             trailing: FilledButton.tonal(
               onPressed: ready && row.price <= coin
@@ -367,6 +393,41 @@ class _TradeSheet extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// What the keeper has agreed to, said where the prices are.
+class _PriceBanner extends StatelessWidget {
+  const _PriceBanner({required this.percent});
+
+  final int percent;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final discount = percent < 0;
+    final ink = discount ? scheme.onTertiaryContainer : scheme.onErrorContainer;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: discount ? scheme.tertiaryContainer : scheme.errorContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(discount ? Icons.sell_outlined : Icons.trending_up, color: ink),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              discount
+                  ? '${-percent}% off everything, for you.'
+                  : 'Prices are $percent% up, for you.',
+              style: TextStyle(color: ink, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

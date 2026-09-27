@@ -52,6 +52,12 @@ void main() {
     expect(stock, contains('(20% off, for you)'));
     expect(stock, contains('Millhaven Guard Sword'));
     expect(stock, contains('8 sp'), reason: '1 gp less a fifth');
+    expect(stock, contains('(was 1 gp)'), reason: 'the saving shows');
+  });
+
+  test('without a discount, no price says what it was', () async {
+    final log = await _play('MH_001_Square', ['list']);
+    expect(log, isNot(contains('(was ')));
   });
 
   test('the stock list says how to buy and sell', () async {
