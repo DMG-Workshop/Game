@@ -398,7 +398,7 @@ void main() {
       fail('sixty seeds and she was never anywhere');
     });
 
-    test('carries three things, none of them from the town cart', () {
+    test('carries three things and a map, none of them from the town cart', () {
       final jory = _campaign.economy.shopKeptBy('npc_009_jory')!;
       final joryStock = jory.stock.map((l) => l.itemId).toSet();
       final mule = _campaign.economy.shopKeptBy('npc_010_sal')!;
@@ -410,7 +410,10 @@ void main() {
         final where = probe.whereIs('npc_010_sal');
         if (where == null) continue;
         final wares = _world(seed: seed, room: where).wares();
-        expect(wares, hasLength(3), reason: 'seed $seed');
+        // Three picked for this stop, and the valley map she always has.
+        expect(wares, hasLength(4), reason: 'seed $seed');
+        expect(
+            wares.map((w) => w.item.id), contains('g_038_map_of_the_valley'));
         for (final row in wares) {
           expect(joryStock, isNot(contains(row.item.id)));
           expect(row.item.rarity.mustBeFound, isFalse);

@@ -1739,6 +1739,15 @@
               }
             },
             {
+              "id": "wares",
+              "label": "Ask for a plan of the city",
+              "say": "Do you have maps of the city?",
+              "outcome": {
+                "text": "He points, without getting up, to a press by the window where the copies are kept flat. \"The Library's survey of the city, copied fair. The streets, the palace, the mine head, Thornhaven's gates.\" A pause. \"Nothing below the streets. The Crown does not survey below the streets.\"",
+                "goTo": "hale_desk"
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "outcome": { "text": "\"Quietly, please,\" he says, to nobody.", "goTo": "hale_bye" }
@@ -1805,6 +1814,15 @@
               "label": "Speak with him",
               "say": "A word, Master Hale.",
               "outcome": { "text": "He closes the catalogue.", "goTo": "hale_desk" }
+            },
+            {
+              "id": "wares",
+              "label": "Ask for a plan of the city",
+              "say": "Do you have maps of the city?",
+              "outcome": {
+                "text": "He points, without getting up, to a press by the window where the copies are kept flat. \"The Library's survey of the city, copied fair. The streets, the palace, the mine head, Thornhaven's gates.\" A pause. \"Nothing below the streets. The Crown does not survey below the streets.\"",
+                "goTo": "hale_again"
+              }
             },
             {
               "id": "leave",
@@ -2430,12 +2448,21 @@
               "label": "Ask what she is carrying",
               "say": "What's on the mule today?",
               "outcome": {
-                "text": "\"Today? Whatever didn't sell yesterday.\" She slaps a pannier. \"Things a town merchant won't carry and a few he's never heard of. Different every time you find me — if you find me.\"",
+                "text": "\"Today? Whatever didn't sell yesterday.\" She slaps a pannier. \"Things a town merchant won't carry and a few he's never heard of. Different every time you find me — if you find me.\" She taps a bundle of folded paper tied to the saddle. \"Except maps. I always have maps of the valley. It's how people find their way back to me.\"",
                 "goTo": "sal_talk",
                 "setFlags": ["sal_told_of_her_stock"]
               },
               "requires": {
                 "notFlags": ["sal_told_of_her_stock"]
+              }
+            },
+            {
+              "id": "wares",
+              "label": "See what is on the mule",
+              "say": "Show us what you have today.",
+              "outcome": { "text": "\"Go on, then. Don't touch the mule.\"", "goTo": "sal_talk" },
+              "requires": {
+                "flags": ["sal_told_of_her_stock"]
               }
             },
             {

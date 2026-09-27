@@ -6,6 +6,7 @@ import '../scene/adventure_loader.dart';
 import '../party/experience.dart';
 import '../scene/scene.dart';
 import 'arc.dart';
+import 'atlas.dart';
 import 'campaign.dart';
 import 'conversation.dart';
 import 'creature.dart';
@@ -52,6 +53,7 @@ class CampaignLoader {
     String? economyJson,
     String? huntJson,
     String? weatherJson,
+    String? mapsJson,
   }) =>
       Campaign(
         id: id,
@@ -69,6 +71,7 @@ class CampaignLoader {
         economy: economyJson == null ? null : readEconomy(economyJson),
         hunts: huntJson == null ? null : readHunts(huntJson),
         weather: weatherJson == null ? null : readWeather(weatherJson),
+        atlas: mapsJson == null ? null : readAtlas(mapsJson),
       );
 
   // --- world ---------------------------------------------------------------
@@ -527,6 +530,57 @@ class CampaignLoader {
 
   // --- shops and rewards ----------------------------------------------------
 
+  // --- maps ----------------------------------------------------------------
+
+  /// Reads each town's map: its sheets, where every room is drawn on them,
+  /// and the few letters it is drawn with.
+  Atlas readAtlas(String json) {
+    final root = _object(json, 'maps');
+    return Atlas([
+      for (final entry in _list(root['maps']))
+        if (entry is Map) _readTownMap(entry.cast<String, Object?>()),
+    ]);
+  }
+
+  TownMap _readTownMap(Map<String, Object?> raw) {
+    final title = _string(raw['title'], 'map title');
+    final labels = <String, String>{};
+    final sheets = <MapSheet>[];
+    for (final entry in _list(raw['sheets'])) {
+      if (entry is! Map) continue;
+      final sheet = entry.cast<String, Object?>();
+      final sheetTitle = _optional(sheet['title']) ?? title;
+      final places = <String, MapPlace>{};
+      for (final room in _map(sheet['rooms']).entries) {
+        final spec = _map(room.value);
+        final at = _list(spec['at']);
+        if (at.length != 2 || at.any((n) => n is! num)) {
+          throw CampaignFormatException(
+              '${room.key} on "$sheetTitle" needs "at": [column, row].');
+        }
+        places[room.key] =
+            MapPlace((at[0] as num).toInt(), (at[1] as num).toInt());
+        if (_optional(spec['label']) case final label?) {
+          labels[room.key] = label;
+        }
+      }
+      sheets.add(MapSheet(
+        title: sheetTitle,
+        under: _optional(sheet['under']),
+        charted: sheet['charted'] != false,
+        places: places,
+      ));
+    }
+    return TownMap(
+      townId: _string(raw['town'], 'town on map "$title"'),
+      title: title,
+      sheets: sheets,
+      labels: labels,
+      itemId: _optional(raw['item']),
+      hint: _optional(raw['hint']),
+    );
+  }
+
   /// Reads the campaign's shops and the coin it pays for things done.
   ///
   /// Prices and rewards are written in gold, as a Pathfinder player would
@@ -561,6 +615,7 @@ class CampaignLoader {
                 itemId: _string(line.cast<String, Object?>()['item'],
                     'stock item on "$id"'),
                 requiredFlags: _strings(line['requires']),
+                always: line['always'] == true,
               ),
         ],
         modifiers: [

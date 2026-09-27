@@ -1,0 +1,81 @@
+{
+  "maps": [
+    {
+      "town": "town_01_millhaven",
+      "title": "The Millhaven Valley",
+      "item": "g_038_map_of_the_valley",
+      "hint": "Sal Mercy sells maps of the valley off the back of her mule, wherever on its roads she has got to.",
+      "sheets": [
+        {
+          "rooms": {
+            "RF_001_Farm": { "at": [-2, -1], "label": "Farm" },
+            "RF_002_OakGrove": { "at": [-1, -1], "label": "Oaks" },
+            "MH_002_GuardHall": { "at": [0, -1], "label": "Guards" },
+            "WW_003_HollowGrove": { "at": [-4, 0], "label": "Hollow" },
+            "WW_002_Deep": { "at": [-3, 0], "label": "Deep" },
+            "WW_001_Edge": { "at": [-2, 0], "label": "Wood" },
+            "MH_005_Forge": { "at": [-1, 0], "label": "Forge" },
+            "MH_001_Square": { "at": [0, 0], "label": "Square" },
+            "MH_003_Tavern": { "at": [1, 0], "label": "Sparrow" },
+            "MH_004_Temple": { "at": [0, 1], "label": "Temple" },
+            "MR_001_MereRoad": { "at": [0, 2], "label": "Mere Rd" },
+            "MR_002_ReedBeds": { "at": [0, 3], "label": "Reeds" },
+            "MR_003_DrownedMill": { "at": [0, 4], "label": "Mill" }
+          }
+        }
+      ]
+    },
+    {
+      "town": "town_02_valorheim_capital",
+      "title": "Valorheim",
+      "item": "g_039_plan_of_valorheim",
+      "hint": "The Grand Library sells copies of its survey of the city.",
+      "sheets": [
+        {
+          "title": "Valorheim",
+          "rooms": {
+            "TH_002_RitualChamber": { "at": [-1, -1], "label": "Ritual" },
+            "VC_002_ThroneRoom": { "at": [0, -1], "label": "Throne" },
+            "TH_001_Gates": { "at": [-1, 0], "label": "Gates" },
+            "VC_001_Plaza": { "at": [0, 0], "label": "Plaza" },
+            "VC_003_GrandLibrary": { "at": [1, 0], "label": "Library" },
+            "BM_001_Entrance": { "at": [0, 1], "label": "Mine" },
+            "BM_002_DeepMine": { "at": [0, 2], "label": "Deeps" }
+          }
+        },
+        {
+          "title": "The Under-Archive",
+          "under": "below the Grand Library",
+          "charted": false,
+          "rooms": {
+            "UA_001_SealedStacks": { "at": [0, 0], "label": "Stacks" },
+            "UA_002_OssuaryStair": { "at": [0, 1], "label": "Ossuary" },
+            "UA_003_FalseSeal": { "at": [0, 2], "label": "Vault" }
+          }
+        },
+        {
+          "title": "The Sundering",
+          "under": "below the Palace Plaza",
+          "charted": false,
+          "rooms": {
+            "SD_001_Rift": { "at": [0, 0], "label": "Rift" },
+            "SD_004_GuardPost": { "at": [-1, 1], "label": "Post" },
+            "SD_002_BuriedStreet": { "at": [0, 1], "label": "Street" },
+            "SD_003_UnmakingTemple": { "at": [1, 1], "label": "Temple" }
+          }
+        },
+        {
+          "title": "The Quiet Court",
+          "under": "below the Temple of Unmaking",
+          "charted": false,
+          "rooms": {
+            "QK_002_QuietCourt": { "at": [0, 0], "label": "Court" },
+            "QK_003_WellOfSeals": { "at": [1, 0], "label": "Well" },
+            "QK_001_CausewayOfNames": { "at": [0, 1], "label": "Names" },
+            "QK_004_Cradle": { "at": [1, 1], "label": "Cradle" }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -145,6 +145,36 @@ void main() {
     expect(orders.sublist(orders.length - 2), ['Status', 'Flee']);
   });
 
+  test('the map is a chip, and its places are chips to travel by', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    final game = await GameController.start([
+      await GameController.demoCharacter(),
+    ], seed: 3);
+    await pumpEventQueue();
+    expect(game.chips.map((c) => c.label), contains('Map'));
+
+    game.send('map');
+    await pumpEventQueue();
+    expect(game.prompt, 'map> ');
+    expect(game.log, contains('?--[Square]--?'), reason: 'fog, to begin');
+    final ways = game.chips.map((c) => c.label).toList();
+    expect(ways, contains('Explore north'));
+    expect(ways.last, 'Put the map away');
+
+    game.send(game.chips.firstWhere((c) => c.label == 'Explore north').command);
+    await pumpEventQueue();
+    expect(game.prompt, '> ');
+    expect(game.log, contains('## The Guard Hall'));
+
+    game.send('map');
+    await pumpEventQueue();
+    expect(
+      game.chips.map((c) => c.label),
+      contains(startsWith('The Bustling Market Square')),
+      reason: 'somewhere been is somewhere to go back to',
+    );
+  });
+
   test('a won haggle shows on the Trade chip and in the prices', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
     final game = await GameController.start([

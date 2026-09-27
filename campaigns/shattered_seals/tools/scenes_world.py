@@ -461,6 +461,24 @@ SHOP_LINES = {
             'Mercy\'s the name, not charity. Come back with coin.',
         ],
     },
+    's_003_library_copying_desk': {
+        'greet': [
+            'The survey copies are in the press by the window. Please do not '
+            'fold them the wrong way.',
+            'Quietly, please. The copies are kept flat, over there.',
+        ],
+        'buy': [
+            'Sign the ledger. Everyone signs the ledger.',
+            'The Crown thanks you. The copyists would, if they were paid.',
+        ],
+        'sell': [
+            'The Library will take it for the collection. Half, as the '
+            'Crown\'s rules require.',
+        ],
+        'broke': [
+            'The Crown sets the price, not I. Come back when you can pay it.',
+        ],
+    },
 }
 
 WEATHER_REMARKS = {

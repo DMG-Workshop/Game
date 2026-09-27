@@ -3,9 +3,17 @@ import 'npc.dart';
 
 /// One thing a shop sells, and when.
 class StockLine {
-  const StockLine({required this.itemId, this.requiredFlags = const []});
+  const StockLine({
+    required this.itemId,
+    this.requiredFlags = const [],
+    this.always = false,
+  });
 
   final String itemId;
+
+  /// On hand at every stop of a shop that travels, rather than one of the
+  /// few things it happens to be carrying: what its keeper is known for.
+  final bool always;
 
   /// Flags that must be set before it is on the shelf: a wagon has come in,
   /// a road has opened, a debt has been paid.
@@ -65,6 +73,12 @@ class Shop {
   List<String> onSaleFor(Set<String> flags) => [
         for (final line in stock)
           if (line.isOnSale(flags)) line.itemId,
+      ];
+
+  /// What a travelling shop has at every stop, for a party with [flags].
+  List<String> alwaysFor(Set<String> flags) => [
+        for (final line in stock)
+          if (line.always && line.isOnSale(flags)) line.itemId,
       ];
 
   /// The combined percentage the party pays over or under the price.

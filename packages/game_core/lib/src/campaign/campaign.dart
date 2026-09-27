@@ -1,5 +1,6 @@
 import '../party/experience.dart';
 import 'arc.dart';
+import 'atlas.dart';
 import 'conversation.dart';
 import 'creature.dart';
 import 'economy.dart';
@@ -27,12 +28,14 @@ class Campaign {
     Economy? economy,
     HuntTable? hunts,
     WeatherBook? weather,
+    Atlas? atlas,
   })  : bestiary = bestiary ?? Bestiary(),
         items = items ?? ItemPlacements(const []),
         conversations = conversations ?? Conversations(const []),
         economy = economy ?? Economy(),
         hunts = hunts ?? HuntTable(),
-        weather = weather ?? WeatherBook();
+        weather = weather ?? WeatherBook(),
+        atlas = atlas ?? Atlas();
 
   final String id;
   final String title;
@@ -59,6 +62,9 @@ class Campaign {
 
   /// The calendar, the road, and the sky.
   final WeatherBook weather;
+
+  /// Each town drawn as a map, and what it takes to see all of it.
+  final Atlas atlas;
 
   /// What setting [flag] pays: a reward the economy lists, or the reward for
   /// the quest [flag] marks as finished.
@@ -127,6 +133,7 @@ class Campaign {
           bestiary,
           levels: [for (var l = 1; l <= world.metadata.levelCap; l++) l],
         ),
+        mapProblems: atlas.problems(locations: locations, gear: gear),
       );
 
   /// Party levels with no fixed fight worth having: none that is at least a
@@ -391,6 +398,7 @@ class CampaignReport {
     this.weatherProblems = const [],
     this.dialogueGaps = const [],
     this.gearBonusProblems = const [],
+    this.mapProblems = const [],
   });
 
   /// Rooms a zone or an exit names but nobody has written.
@@ -458,6 +466,9 @@ class CampaignReport {
   /// Item bonuses that could never apply.
   final List<String> gearBonusProblems;
 
+  /// Maps that leave rooms out, or draw them where they cannot be joined up.
+  final List<String> mapProblems;
+
   bool get isClean =>
       unwrittenRooms.isEmpty &&
       danglingExits.isEmpty &&
@@ -479,7 +490,8 @@ class CampaignReport {
       sideQuestGaps.isEmpty &&
       weatherProblems.isEmpty &&
       dialogueGaps.isEmpty &&
-      gearBonusProblems.isEmpty;
+      gearBonusProblems.isEmpty &&
+      mapProblems.isEmpty;
 
   /// Problems that would strand a player right now, as opposed to content
   /// that is merely unfinished.
@@ -554,6 +566,7 @@ class CampaignReport {
     section('Weather', weatherProblems);
     section('Scenes and dialogue', dialogueGaps);
     section('Item bonuses', gearBonusProblems);
+    section('Maps', mapProblems);
     section(
       'Conversations for somebody who does not exist',
       orphanedConversations.map((c) => c.npcId),
