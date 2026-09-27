@@ -142,6 +142,10 @@ class GameController extends ChangeNotifier {
     return keeper == null ? shop.name : '${shop.name} — $keeper';
   }
 
+  /// The keeper's price change for this party, in percent: below zero for
+  /// a discount talked out of them, above for one they took offence at.
+  int get priceChange => session.shopHere?.percentFor(session.flags) ?? 0;
+
   /// What is on the shelf here, at what the party would pay.
   List<({GearItem item, int price})> get wares =>
       canTrade ? session.wares() : const [];
@@ -195,7 +199,10 @@ class GameController extends ChangeNotifier {
       for (final item in view.items)
         (label: 'Take: ${item.name}', command: 'take ${item.name}'),
       if (session.shopHere != null) ...[
-        (label: 'Trade', command: tradeCommand),
+        (
+          label: priceChange < 0 ? 'Trade · ${-priceChange}% off' : 'Trade',
+          command: tradeCommand,
+        ),
         (label: 'Wares', command: 'list'),
       ],
       const (label: 'Look', command: 'look'),

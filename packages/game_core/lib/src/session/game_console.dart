@@ -688,9 +688,13 @@ class GameConsole {
     final wares = session.wares(flags: known);
     for (final row in wares) {
       final dear = row.price > session.inventory.coin ? '  *' : '';
+      // With a haggled price, what it would have been, so the saving shows.
+      final was = row.price == row.item.price
+          ? ''
+          : '  (was ${formatCoin(row.item.price)})';
       out.writeln('  ${row.item.name.padRight(32)} '
           '${'level ${row.item.level}'.padRight(9)} '
-          '${formatCoin(row.price).padLeft(12)}$dear');
+          '${formatCoin(row.price).padLeft(12)}$was$dear');
     }
     out.writeln('\nThe party has ${formatCoin(session.inventory.coin)}.'
         '${wares.any((r) => r.price > session.inventory.coin) ? '  (* more than that)' : ''}');

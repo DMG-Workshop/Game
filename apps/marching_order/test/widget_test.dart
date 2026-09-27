@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:marching_order/game_controller.dart';
 import 'package:marching_order/main.dart';
@@ -48,6 +50,7 @@ void main() {
       game.send('0');
       await pumpEventQueue();
       expect(game.canTrade, isTrue);
+      expect(game.priceChange, 0, reason: 'nobody has haggled yet');
       expect(
         game.chips.map((c) => c.command),
         contains(GameController.tradeCommand),
@@ -72,4 +75,31 @@ void main() {
       expect(back.log, contains('Picked up where you left off'));
     },
   );
+
+  test('a won haggle shows on the Trade chip and in the prices', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    final game = await GameController.start([
+      await GameController.demoCharacter(),
+    ]);
+    await pumpEventQueue();
+    await game.save();
+
+    // Whatever the dice would have said, the flag the win sets is what the
+    // shop reads: put it in the save and pick the game up again.
+    final prefs = await SharedPreferences.getInstance();
+    final key = prefs.getKeys().single;
+    final saved = jsonDecode(prefs.getString(key)!) as Map<String, Object?>;
+    final world = saved['world'] as Map<String, Object?>;
+    world['flags'] = [...world['flags'] as List, 'jory_discount'];
+    await prefs.setString(key, jsonEncode(saved));
+
+    final haggled = await GameController.resume();
+    await pumpEventQueue();
+    expect(haggled.priceChange, -10);
+    expect(haggled.chips.map((c) => c.label), contains('Trade · 10% off'));
+    final sword = haggled.wares.firstWhere(
+      (r) => r.item.name == 'Millhaven Guard Sword',
+    );
+    expect(sword.price, lessThan(sword.item.price));
+  });
 }
