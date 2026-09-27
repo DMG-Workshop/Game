@@ -12,7 +12,12 @@ late SpellBook _spells;
 
 /// Plays [commands] through a console from [room], and returns everything
 /// it printed.
-Future<String> _play(String room, List<String> commands, {int seed = 1}) async {
+///
+/// A command written "#words" answers with the number of the latest menu
+/// entry containing those words, so a test says what it picks rather than
+/// where that happens to sit in the list.
+Future<String> _play(String room, List<String> commands,
+    {int seed = 1, int gold = 0}) async {
   final world = WorldSession(
     campaign: _campaign,
     actors: [SessionActor(id: 'korash', character: loadKorash())],
@@ -20,11 +25,21 @@ Future<String> _play(String room, List<String> commands, {int seed = 1}) async {
     roomId: room,
     spells: _spells,
   );
+  if (gold > 0) world.inventory.earn(gold * 100);
   final out = StringBuffer();
   final queue = List.of(commands);
   Future<String?> next({String prompt = '> '}) async {
     if (queue.isEmpty) return null;
-    final line = queue.removeAt(0);
+    var line = queue.removeAt(0);
+    if (line.startsWith('#')) {
+      final needle = line.substring(1);
+      final entry = RegExp(r'^ *(\d+)\. (.*)$', multiLine: true)
+          .allMatches(out.toString())
+          .lastWhere((m) => m.group(2)!.contains(needle),
+              orElse: () =>
+                  throw StateError('no "$needle" on the menu:\n$out'));
+      line = entry.group(1)!;
+    }
     out.writeln('$prompt$line');
     return line;
   }
@@ -60,10 +75,148 @@ void main() {
     expect(log, isNot(contains('(was ')));
   });
 
-  test('the stock list says how to buy and sell', () async {
-    final log = await _play('MH_001_Square', ['list']);
-    expect(log, contains('"buy <item>"'));
-    expect(log, contains('"sell <item>"'));
+  group('the shop', () {
+    test('is a numbered list, and a number buys', () async {
+      final log = await _play('MH_001_Square', ['list', '2', '0', 'purse']);
+      expect(log, contains('1. Millhaven Guard Sword'));
+      expect(log, contains('0. Leave the shop'));
+      expect(log, contains('You buy Minor Hearth-Water for 4 gp'));
+      expect(log, contains('The party has 266 gp'));
+    });
+
+    test('"buy" with a number works from the street', () async {
+      final log = await _play('MH_001_Square', ['buy 2', 'purse']);
+      expect(log, contains('You buy Minor Hearth-Water for 4 gp'));
+    });
+
+    test(
+        'opens across the counter mid-conversation, at the haggled price, '
+        'and 0 goes back to the keeper', () async {
+      // Seed 1 makes the haggle a critical success: two in ten off.
+      final log = await _play('MH_001_Square', [
+        'talk jory', '1', '1', '#stock', //
+        '#Millhaven Guard Sword', '0', '0', '#Leave',
+      ]);
+      expect(log, contains('You buy Millhaven Guard Sword for 8 sp'));
+      expect(log, contains('0. Back to Jory Tallow'));
+      expect(log, contains('Millhaven Guard Sword goes in the pack.'));
+      expect(log, contains('[jory_discount_large]'),
+          reason: 'the conversation went on to its end after the shop');
+    });
+
+    test('a number that is not on the list is asked again', () async {
+      final log = await _play('MH_001_Square', ['list', '42', '0']);
+      expect(log, contains('Pick a number from 0 to 8.'));
+    });
+
+    test('anything else typed there leaves it and is done', () async {
+      final log = await _play('MH_001_Square', ['list', 'north']);
+      expect(log, contains('## The Guard Hall'));
+    });
+
+    test('sells by number, without calling the money found', () async {
+      final log = await _play('MH_001_Square', [
+        'list', '#Minor Hearth-Water', '#Sell something', //
+        '#Minor Hearth-Water', '0', '0',
+      ]);
+      expect(
+          log, contains('Jory Tallow gives you 2 gp for Minor Hearth-Water'));
+      expect(log, isNot(contains('[+2 gp')));
+    });
+  });
+
+  group('buying something to wield', () {
+    test('asks whether to take it up, with what it would change', () async {
+      final log = await _play('MH_001_Square', ['buy guard sword', '1']);
+      expect(log, contains('Korash Blackearth could wield it now:'));
+      expect(
+          log,
+          contains('Wield it  Strike +15 2d10+4 (+1 Striking Scythe) '
+              '-> +14 1d8+4'));
+      expect(log, contains('Korash Blackearth takes up Millhaven Guard Sword'));
+    });
+
+    test('a command instead of an answer leaves it in the pack', () async {
+      final log = await _play('MH_001_Square', ['buy guard sword', 'north']);
+      expect(log, contains('## The Guard Hall'));
+      expect(log, isNot(contains('takes up')));
+    });
+  });
+
+  group('the pack', () {
+    test('equips, puts away and drops by number', () async {
+      final log = await _play('MH_001_Square', [
+        'buy guard sword', '0', //
+        'i', '#Millhaven', '#Wield it', //
+        '#Millhaven', '#Put it away', //
+        '#Millhaven', '#Drop it', '#Drop it', '0',
+      ]);
+      expect(log, contains('1. Millhaven Guard Sword'));
+      expect(log, contains('Korash Blackearth takes up Millhaven Guard Sword'));
+      expect(log, contains('(on Korash Blackearth)'));
+      expect(
+          log, contains('Korash Blackearth puts away Millhaven Guard Sword'));
+      expect(log, contains('It will be gone for good.'));
+      expect(log, contains('You leave Millhaven Guard Sword behind.'));
+      expect(log, contains('The pack is empty'));
+    });
+
+    test('offers a draught to drink, and says who is not hurt', () async {
+      final log =
+          await _play('MH_001_Square', ['buy 2', 'i', '#Minor', '#Drink', '0']);
+      expect(log, contains('Drink it  (HP 70/70)'));
+      expect(log, contains('Korash Blackearth is not hurt.'));
+    });
+  });
+
+  group('a fight', () {
+    test('offers every order as a number', () async {
+      final log = await _play('WW_001_Edge', ['west'], seed: 3);
+      expect(log, contains('Strike Hollow Thrall 2  (35/35 HP)'));
+      expect(log, contains('Strike Hollow Thrall 1  (35/35 HP)'));
+      expect(log,
+          contains('Cast Ignition at Hollow Thrall 2  (2 actions, cantrip)'));
+      expect(log, contains('End turn'));
+      expect(log, contains('0. Flee'));
+    });
+
+    test('warns when a burst would catch the party', () async {
+      final log = await _play('WW_001_Edge', ['west'], seed: 3);
+      expect(
+          log,
+          contains('Cast Fireball  (2 actions, 1 left): catches Hollow Thrall '
+              '2, Hollow Thrall 1 and Korash Blackearth — your own side too'));
+    });
+
+    test('casts a spell by its number', () async {
+      final log =
+          await _play('WW_001_Edge', ['west', '#Cast Ignition'], seed: 3);
+      expect(log, contains('Korash Blackearth casts Ignition'));
+    });
+
+    test('offers a draught once somebody is hurt, and drinks it', () async {
+      final log = await _play(
+          'MH_001_Square',
+          [
+            'buy 2', 'west', 'west', 'west', 'end', 'end', '#Drink', //
+          ],
+          seed: 3);
+      expect(
+          log,
+          contains('Drink Minor Hearth-Water  (1 action; you are at '
+              '26/70 HP)'));
+      expect(log, contains('Korash Blackearth drinks Minor Hearth-Water'));
+    });
+
+    test('says what a spell costs when there are too few actions', () async {
+      final log = await _play('WW_001_Edge',
+          ['west', '#Strike Hollow Thrall 2', '#Strike', 'cast ignition'],
+          seed: 3);
+      expect(
+          log,
+          contains('That takes 2 actions, and Korash Blackearth has '
+              '1 left this turn.'));
+    });
   });
 
   test('a spell named on its own is cast', () async {

@@ -85,8 +85,10 @@ The game was proved in a terminal first: a text log with an input bar *is*
 the product, so proving the loop cost a CLI rather than an app shell. The app
 in `apps/marching_order` is that same loop on a screen. Both clients drive one
 `GameConsole` from `game_core`, so the app and the terminal can never tell the
-game differently; the app adds tappable chips for the exits, people and
-fights in front of you, and saves on the device after every command.
+game differently. Every choice the console offers is a numbered menu with 0
+to go back — a conversation, the shop, the pack, a fight's orders — and the
+app shows the same menu as tappable chips, alongside chips for the exits and
+people in front of you. It saves on the device after every command.
 
 ```
 cd apps/marching_order

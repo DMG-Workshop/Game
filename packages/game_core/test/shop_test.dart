@@ -243,6 +243,34 @@ void main() {
           (list * 1.1).round());
     });
 
+    test('buying mid-conversation pays the price just talked down to', () {
+      // The world has not heard of the discount yet; the conversation has.
+      final world = _world();
+      final bought = world.buy('spade', flags: {'jory_discount_large'});
+      expect(bought.price, _gp(28));
+      expect(world.inventory.coin, _gp(270 - 28));
+      expect(world.buy('spade').price, _gp(35), reason: 'without it, list');
+    });
+
+    test('anything carried can be dropped, once it is taken off', () {
+      final world = _world()
+        ..buy('guard sword')
+        ..buy('guard sword')
+        ..equip('guard sword');
+      expect(world.drop('guard sword').id, 'w_001_guard_sword');
+      expect(world.inventory.countOf('w_001_guard_sword'), 1);
+      expect(
+        () => world.drop('guard sword'),
+        throwsA(isA<InvalidMoveException>().having(
+            (e) => e.message, 'message', contains('Take it off first'))),
+      );
+      world.unequip('weapon');
+      world.drop('guard sword');
+      expect(world.inventory.isCarrying('w_001_guard_sword'), isFalse);
+      expect(() => world.drop('guard sword'),
+          throwsA(isA<InvalidMoveException>()));
+    });
+
     test('a discount does not raise what he pays for things', () {
       final world = _world(flags: {'jory_discount_large'})..buy('spade');
       expect(world.valueOf('spade').price, _gp(17.5));

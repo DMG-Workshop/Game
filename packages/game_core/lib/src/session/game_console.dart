@@ -1,6 +1,7 @@
 import 'package:pf2e_core/pf2e_core.dart';
 
 import '../campaign/arc.dart';
+import '../campaign/gear.dart';
 import '../campaign/hunt.dart';
 import '../campaign/npc.dart';
 import '../campaign/spell.dart';
@@ -14,6 +15,7 @@ import 'fight_script.dart';
 import 'game_event.dart';
 import 'game_session.dart';
 import 'item_use.dart';
+import 'session_actor.dart';
 import 'world_event.dart';
 import 'world_session.dart';
 
@@ -27,10 +29,12 @@ const consoleCommands = '''
   ask <name> about <topic>                        raise a single topic
   quests                                          arc progress
   xp                                              everyone's XP, level 1 to 20
-  inventory (i)                                   what the party is carrying
-  list                                            what a shop here is selling
-  buy <item> / sell <item>                        trade (you get half back)
+  inventory (i)                                   the pack: pick something by
+                                                  number to equip, use or drop
+  list                                            the shop here: a number buys
+  buy <item or number> / sell [item or number]    trade (you get half back)
   value <item>                                    what a shop would pay
+  drop <item>                                     leave something behind
   purse                                           the party's coin
   wealth                                          what you're worth, and who
                                                   that brings after you
@@ -80,6 +84,10 @@ const _directions = {
   'd',
 };
 
+/// One entry in a numbered menu: how it reads in the text, and the shorter
+/// thing a button for it says.
+typedef _Entry = ({String text, String chip});
+
 /// The game as text: a command in, what happens written out.
 ///
 /// Everything a player sees is written to [out], and anything that needs
@@ -88,6 +96,11 @@ const _directions = {
 /// answers when the player taps or types, which is why the asking is
 /// asynchronous. Both clients are this one console, so they never tell the
 /// game differently.
+///
+/// Menus — the shop, the pack, a fight — are numbered, with 0 to go back.
+/// Anything typed at one that is not a number of its own leaves it and is
+/// played as an ordinary command, so a menu never traps a player who
+/// knows what they want to do.
 class GameConsole {
   GameConsole(this.session, this.out, this.nextCommand, {this.width = 70});
 
@@ -113,8 +126,56 @@ class GameConsole {
   /// Options that mean "show me what you sell", when a shopkeeper has them.
   static const _browsing = {'look', 'wares', 'stock', 'browse', 'ask_stock'};
 
+  /// A line a menu read that was not for it, waiting to be played.
+  String? _pending;
+
+  /// Coin that changed hands over a counter during this command: earned
+  /// selling, less what was spent buying. Kept so that selling is not
+  /// announced as money found.
+  int _traded = 0;
+
   String _wrapped(String text, {String indent = ''}) =>
       wrap(text, width: width, indent: indent);
+
+  /// Writes [entries] numbered from 1 and 0 for [back], and offers the same
+  /// to a client as [choices].
+  void _offer(List<_Entry> entries, String back) {
+    final width = '${entries.length}'.length;
+    for (var i = 0; i < entries.length; i++) {
+      out.writeln('  ${'${i + 1}'.padLeft(width)}. ${entries[i].text}');
+    }
+    out.writeln('  ${'0'.padLeft(width)}. $back');
+    _choices = [
+      for (var i = 0; i < entries.length; i++)
+        (command: '${i + 1}', label: entries[i].chip),
+      (command: '0', label: back),
+    ];
+  }
+
+  /// The answer to a menu of [count] entries: a number from it, or the line
+  /// when it is anything else. Null when the input has run out.
+  ///
+  /// A number that is not on the menu is answered here, and asked again,
+  /// rather than taken for a command.
+  Future<({int? pick, String line})?> _read(String prompt, int count) async {
+    while (true) {
+      final pending = _pending;
+      _pending = null;
+      final line = pending ?? await nextCommand(prompt: prompt);
+      if (line == null) {
+        _choices = const [];
+        return null;
+      }
+      final text = line.trim();
+      final number = int.tryParse(text);
+      if (number != null && (number < 0 || number > count)) {
+        out.writeln('Pick a number from 0 to $count.');
+        continue;
+      }
+      _choices = const [];
+      return (pick: number, line: text);
+    }
+  }
 
   /// Describes where the game starts.
   void begin() {
@@ -129,10 +190,19 @@ class GameConsole {
       for (final a in session.actors) a.id: session.experience.xpOf(a.id),
     };
     final tierBefore = session.notoriety.tier;
-    final keepGoing = await _handle(session, line, nextCommand);
+    _traded = 0;
+    var keepGoing = await _handle(session, line, nextCommand);
+    // A menu that was left by typing a command leaves that command to play.
+    while (keepGoing && _pending != null) {
+      final next = _pending!;
+      _pending = null;
+      if (next.isEmpty) continue;
+      keepGoing = await _handle(session, next, nextCommand);
+    }
+    _pending = null;
     _announceEvents(session);
-    final gained = session.inventory.coin - coinBefore;
-    if (gained > 0 && !line.toLowerCase().startsWith('sell')) {
+    final gained = session.inventory.coin - coinBefore - _traded;
+    if (gained > 0) {
       out.writeln('\n  [+${formatCoin(gained)} — the party has '
           '${formatCoin(session.inventory.coin)}]');
     }
@@ -357,20 +427,31 @@ class GameConsole {
       case 'loot':
       case 'inventory':
       case 'inv':
+      case 'pack':
       case 'i':
-        _renderInventory(session);
+        return _pack(session);
+
+      case 'drop':
+        if (rest.isEmpty) {
+          out.writeln('Drop what? ("inventory" shows what you carry.)');
+          return true;
+        }
+        _drop(session, rest);
         return true;
 
       case 'list':
       case 'wares':
-        _renderWares(session);
-        return true;
+      case 'shop':
+        return _shop(session);
 
       case 'buy':
-        return _trade(session, rest, buying: true);
+        if (rest.isEmpty) return _shop(session);
+        return _buy(session, _wareNamed(session, rest));
 
       case 'sell':
-        return _trade(session, rest, buying: false);
+        if (rest.isEmpty) return _sellMenu(session, back: 'Done selling');
+        _sell(session, _carriedNamed(session, rest));
+        return true;
 
       case 'value':
       case 'appraise':
@@ -609,10 +690,16 @@ class GameConsole {
             '${check.wasShiftedByNatural ? ' (natural ${check.dieRoll})' : ''}');
       }
       out.writeln('\n${_wrapped(event.narration)}');
-      // Asking a shopkeeper to see the stock shows it, prices and all.
+      // Asking a shopkeeper to see the stock opens the shop across the
+      // counter, at whatever price has just been talked out of them, and
+      // 0 comes back to the conversation.
       if (_browsing.contains(option.id) &&
           session.shopHere?.keeperId == npc.id) {
-        _renderWares(session, talking: true, flags: talk.flags);
+        if (!await _shop(session, flags: talk.flags, backTo: npc.name)) {
+          out.writeln('\n(script exhausted mid-conversation)');
+          keepGoing = false;
+          break;
+        }
       }
 
       // A new scene is a new beat; returning to the same one is not, and
@@ -651,87 +738,451 @@ class GameConsole {
     return '  ($who${best.stat.formatted} vs DC ${check.dc})';
   }
 
-  void _renderInventory(WorldSession session) {
-    final pack = session.inventory;
-    final carried = pack.carried;
-    if (carried.isEmpty) {
-      out.writeln('The pack is empty. You have what you arrived with.');
-    } else {
-      out.writeln('');
-      for (final item in carried) {
-        final count = pack.countOf(item.id);
-        final holders = pack.holdersOf(item.id);
-        final worn = holders.isEmpty ? '' : '  (on ${holders.join(', ')})';
-        final name = count > 1 ? '${item.name} x$count' : item.name;
-        out.writeln('  ${name.padRight(30)} '
-            'level ${item.level} ${item.rarity.name} ${item.type}$worn');
-        if (item.special != null) {
-          out.writeln(_wrapped(item.special!, indent: '    '));
-        }
+  // --- the pack ------------------------------------------------------------
+
+  /// The pack as a menu: pick something to see what can be done with it.
+  /// False when the input ran out.
+  Future<bool> _pack(WorldSession session) async {
+    while (true) {
+      final pack = session.inventory;
+      final carried = pack.carried;
+      if (carried.isEmpty) {
+        out.writeln('The pack is empty. You have what you arrived with.');
+        out.writeln('\nPurse: ${formatCoin(pack.coin)}');
+        return true;
       }
+      if (_pending == null) {
+        out.writeln('\nThe pack  (purse: ${formatCoin(pack.coin)})');
+        _offer([
+          for (final item in carried)
+            (
+              text: '${_packName(session, item).padRight(30)} '
+                  'level ${item.level} ${item.rarity.name} ${item.type}'
+                  '${_wornBy(session, item)}',
+              chip: _packName(session, item),
+            ),
+        ], 'Close the pack');
+      }
+      final got = await _read('pack> ', carried.length);
+      if (got == null) return false;
+      final pick = got.pick;
+      if (pick == 0) return true;
+      if (pick != null) {
+        if (!await _itemMenu(session, carried[pick - 1])) return false;
+        continue;
+      }
+      if (got.line.isEmpty) continue;
+      _pending = got.line;
+      return true;
     }
-    out.writeln('\nPurse: ${formatCoin(pack.coin)}');
   }
 
-  void _renderWares(WorldSession session,
-      {bool talking = false, Set<String>? flags}) {
+  /// "Minor Hearth-Water x2".
+  String _packName(WorldSession session, GearItem item) {
+    final count = session.inventory.countOf(item.id);
+    return count > 1 ? '${item.name} x$count' : item.name;
+  }
+
+  /// "  (on Korash Blackearth)", for something being worn or wielded.
+  String _wornBy(WorldSession session, GearItem item) {
+    final holders = session.inventory.holdersOf(item.id);
+    return holders.isEmpty
+        ? ''
+        : '  (on ${[
+            for (final id in holders) session.actorFor(id).name,
+          ].join(', ')})';
+  }
+
+  /// One thing from the pack, and what can be done with it: give it to
+  /// somebody to wield or wear, take it off them, drink it, or drop it.
+  Future<bool> _itemMenu(WorldSession session, GearItem item) async {
+    final pack = session.inventory;
+    final solo = session.actors.length == 1;
+    final slot = EquipSlot.forType(item.type);
+    final holders = pack.holdersOf(item.id);
+    final actions = <({_Entry entry, Future<bool> Function() run})>[];
+
+    if (slot != null) {
+      for (final (:actor, :entry) in _equipEntries(session, item, slot)) {
+        actions.add((
+          entry: entry,
+          run: () async {
+            _equipItem(session, item.id, actor.id);
+            return true;
+          },
+        ));
+      }
+      for (final id in holders) {
+        final name = session.actorFor(id).name;
+        actions.add((
+          entry: (
+            text: solo ? 'Put it away' : 'Take it off $name',
+            chip: solo ? 'Put it away' : 'Take off $name',
+          ),
+          run: () async {
+            try {
+              final result = session.unequip(slot.name, who: id);
+              out.writeln('\n${result.actor.name} puts away '
+                  '${result.removed?.name ?? item.name}.');
+            } on InvalidMoveException catch (e) {
+              out.writeln(_wrapped(e.message));
+            }
+            return true;
+          },
+        ));
+      }
+    }
+    if (item.use != null) {
+      for (final actor in session.actors) {
+        final v = session.vitalsOf(actor.id);
+        final hp = 'HP ${v.hp}/${v.maxHp}';
+        actions.add((
+          entry: solo
+              ? (text: 'Drink it  ($hp)', chip: 'Drink it')
+              : (
+                  text: 'Give it to ${actor.name}  ($hp)',
+                  chip: 'Give to ${actor.name.split(' ').first}',
+                ),
+          run: () async {
+            try {
+              _renderUse(session.use(item.id, who: actor.id));
+            } on InvalidMoveException catch (e) {
+              out.writeln(_wrapped(e.message));
+            }
+            return true;
+          },
+        ));
+      }
+    }
+    if (pack.countOf(item.id) > holders.length) {
+      final one = pack.countOf(item.id) > 1;
+      actions.add((
+        entry: (
+          text: one ? 'Drop one' : 'Drop it',
+          chip: one ? 'Drop one' : 'Drop it',
+        ),
+        run: () => _confirmDrop(session, item),
+      ));
+    }
+
+    out.writeln('\n${_packName(session, item)} — level ${item.level} '
+        '${item.rarity.name} ${item.type}, worth ${formatCoin(item.price)}');
+    if (item.description.isNotEmpty) {
+      out.writeln(_wrapped(item.description, indent: '  '));
+    }
+    if (item.special case final special?) {
+      out.writeln(_wrapped(special, indent: '  '));
+    }
+    if (holders.isNotEmpty) {
+      final names = [for (final id in holders) session.actorFor(id).name];
+      out.writeln('  ${names.join(' and ')} '
+          '${names.length == 1 ? 'is' : 'are'} '
+          '${slot == EquipSlot.armor ? 'wearing' : 'holding'} it.');
+    }
+    out.writeln('');
+    _offer([for (final a in actions) a.entry], 'Back to the pack');
+    final got = await _read('item> ', actions.length);
+    if (got == null) return false;
+    final pick = got.pick;
+    if (pick == null) {
+      if (got.line.isNotEmpty) _pending = got.line;
+      return true;
+    }
+    if (pick == 0) return true;
+    return actions[pick - 1].run();
+  }
+
+  /// Asks before leaving something behind for good.
+  Future<bool> _confirmDrop(WorldSession session, GearItem item) async {
+    out.writeln('\nLeave ${item.name} behind? It will be gone for good.');
+    _offer([(text: 'Drop it', chip: 'Drop it')], 'Keep it');
+    final got = await _read('drop> ', 1);
+    if (got == null) return false;
+    if (got.pick == 1) {
+      _drop(session, item.id);
+    } else if (got.pick == null && got.line.isNotEmpty) {
+      _pending = got.line;
+    }
+    return true;
+  }
+
+  void _drop(WorldSession session, String what) {
+    try {
+      final item = session.drop(what);
+      out.writeln('\nYou leave ${item.name} behind.');
+    } on InvalidMoveException catch (e) {
+      out.writeln(_wrapped(e.message));
+    }
+  }
+
+  // --- the shop ------------------------------------------------------------
+
+  /// The shop as a menu, until the party goes back: a number buys it,
+  /// "sell" shows what the keeper would take, and 0 goes back.
+  ///
+  /// Opened from a conversation, [flags] are the conversation's, so a price
+  /// just talked down is the price, and 0 goes back to [backTo]. Anything
+  /// else said there gets told to pick a number. Opened from the street,
+  /// anything else leaves the shop and is done instead.
+  Future<bool> _shop(WorldSession session,
+      {Set<String>? flags, String? backTo}) async {
     final shop = session.shopHere;
     if (shop == null) {
       out.writeln('There is nobody here to trade with.');
-      return;
-    }
-    if (session.keeperSays('greet') case final k?) _says(k.keeper, k.line);
-    final known = flags ?? session.flags;
-    final percent = shop.percentFor(known);
-    out.writeln('\n${shop.name} — ${_keeper(session)}'
-        '${percent == 0 ? '' : percent < 0 ? '  (${-percent}% off, for you)' : '  (+$percent%, for you)'}');
-    final wares = session.wares(flags: known);
-    for (final row in wares) {
-      final dear = row.price > session.inventory.coin ? '  *' : '';
-      // With a haggled price, what it would have been, so the saving shows.
-      final was = row.price == row.item.price
-          ? ''
-          : '  (was ${formatCoin(row.item.price)})';
-      out.writeln('  ${row.item.name.padRight(32)} '
-          '${'level ${row.item.level}'.padRight(9)} '
-          '${formatCoin(row.price).padLeft(12)}$was$dear');
-    }
-    out.writeln('\nThe party has ${formatCoin(session.inventory.coin)}.'
-        '${wares.any((r) => r.price > session.inventory.coin) ? '  (* more than that)' : ''}');
-    // Nothing else says how to trade, so the list does.
-    out.writeln(talking
-        ? '(When you are done talking: "buy <item>" to buy one, "sell <item>" '
-            'to sell something for half its price.)'
-        : '("buy <item>" to buy one, "sell <item>" to sell something for half '
-            'its price.)');
-  }
-
-  bool _trade(WorldSession session, String what, {required bool buying}) {
-    if (what.isEmpty) {
-      out.writeln(buying ? 'Buy what?' : 'Sell what?');
       return true;
     }
-    try {
-      if (buying) {
-        final bought = session.buy(what);
-        out.writeln('\nYou buy ${bought.item.name} for '
-            '${formatCoin(bought.price)}. The party has '
-            '${formatCoin(session.inventory.coin)} left.');
-        if (session.keeperSays('buy') case final k?) _says(k.keeper, k.line);
-      } else {
-        final sold = session.sell(what);
-        out.writeln('\n${_keeper(session)} gives you '
-            '${formatCoin(sold.price)} for ${sold.item.name}. The party has '
-            '${formatCoin(session.inventory.coin)}.');
-        if (session.keeperSays('sell') case final k?) _says(k.keeper, k.line);
+    final talking = backTo != null;
+    if (session.keeperSays('greet') case final k?) _says(k.keeper, k.line);
+    while (true) {
+      final wares = session.wares(flags: flags);
+      final canSell = session.inventory.carried.isNotEmpty;
+      final count = wares.length + (canSell ? 1 : 0);
+      if (_pending == null) {
+        _renderWares(session, wares, flags: flags);
+        _offer([
+          for (final row in wares) _wareEntry(session, row),
+          if (canSell) (text: 'Sell something', chip: 'Sell something'),
+        ], talking ? 'Back to $backTo' : 'Leave the shop');
       }
+      final got = await _read('shop> ', count);
+      if (got == null) return false;
+      final pick = got.pick;
+      if (pick == 0) return true;
+      if (pick != null) {
+        final bought = pick <= wares.length
+            ? await _buy(session, wares[pick - 1].item.id, flags: flags)
+            : await _sellMenu(session, back: 'Back to the stock');
+        if (!bought) return false;
+        continue;
+      }
+
+      final line = got.line;
+      final words = line.split(RegExp(r'\s+'));
+      final verb = words.first.toLowerCase();
+      final rest = words.skip(1).join(' ');
+      switch (verb) {
+        case '':
+        case 'list':
+        case 'wares':
+          continue;
+        case 'buy':
+          if (rest.isEmpty) continue;
+          if (!await _buy(session, _wareNamed(session, rest, flags: flags),
+              flags: flags)) {
+            return false;
+          }
+        case 'sell':
+          if (rest.isEmpty) {
+            if (!await _sellMenu(session, back: 'Back to the stock')) {
+              return false;
+            }
+          } else {
+            _sell(session, _carriedNamed(session, rest));
+          }
+        case 'back':
+        case 'leave':
+        case 'done':
+        case 'bye':
+          return true;
+        default:
+          if (talking) {
+            out.writeln('Pick a number from the list, or 0 to go back to '
+                '$backTo.');
+          } else {
+            _pending = line;
+            return true;
+          }
+      }
+    }
+  }
+
+  /// The stock, as a header over the numbered list.
+  void _renderWares(
+    WorldSession session,
+    List<({GearItem item, int price})> wares, {
+    Set<String>? flags,
+  }) {
+    final shop = session.shopHere!;
+    final percent = shop.percentFor(flags ?? session.flags);
+    out.writeln('\n${shop.name} — ${_keeper(session)}'
+        '${percent == 0 ? '' : percent < 0 ? '  (${-percent}% off, for you)' : '  (+$percent%, for you)'}');
+    final coin = session.inventory.coin;
+    out.writeln('The party has ${formatCoin(coin)}.'
+        '${wares.any((r) => r.price > coin) ? '  (* is more than that)' : ''}\n');
+  }
+
+  /// One row of the stock: its level and price, what it would have cost
+  /// before a haggle, and a star when the party cannot afford it.
+  _Entry _wareEntry(WorldSession session, ({GearItem item, int price}) row) {
+    final dear = row.price > session.inventory.coin ? '  *' : '';
+    final was = row.price == row.item.price
+        ? ''
+        : '  (was ${formatCoin(row.item.price)})';
+    return (
+      text: '${row.item.name.padRight(30)} '
+          '${'level ${row.item.level}'.padRight(9)} '
+          '${formatCoin(row.price).padLeft(12)}$was$dear',
+      chip: '${row.item.name} · ${formatCoin(row.price)}',
+    );
+  }
+
+  /// What the party could sell here, as a menu; a number sells one.
+  Future<bool> _sellMenu(WorldSession session, {required String back}) async {
+    if (session.shopHere == null) {
+      out.writeln('There is nobody here to trade with.');
+      return true;
+    }
+    while (true) {
+      final carried = session.inventory.carried;
+      if (carried.isEmpty) {
+        out.writeln('\nThere is nothing in the pack to sell.');
+        return true;
+      }
+      if (_pending == null) {
+        out.writeln('\n${_keeper(session)} would give you, for one of each '
+            '(half what it cost):\n');
+        _offer([
+          for (final item in carried)
+            (
+              text: '${_packName(session, item).padRight(30)} '
+                  '${formatCoin(item.resalePrice).padLeft(12)}'
+                  '${_inUse(session, item) ? '  (in use: take it off first)' : _wornBy(session, item)}',
+              chip: '${item.name} · ${formatCoin(item.resalePrice)}',
+            ),
+        ], back);
+      }
+      final got = await _read('sell> ', carried.length);
+      if (got == null) return false;
+      final pick = got.pick;
+      if (pick == 0) return true;
+      if (pick != null) {
+        _sell(session, carried[pick - 1].id);
+        continue;
+      }
+      final words = got.line.split(RegExp(r'\s+'));
+      if (words.first.toLowerCase() == 'sell' && words.length > 1) {
+        _sell(session, _carriedNamed(session, words.skip(1).join(' ')));
+        continue;
+      }
+      if (got.line.isNotEmpty) _pending = got.line;
+      return true;
+    }
+  }
+
+  /// Whether every copy of [item] is being worn or wielded.
+  bool _inUse(WorldSession session, GearItem item) =>
+      session.inventory.holdersOf(item.id).length >=
+      session.inventory.countOf(item.id);
+
+  /// A row of the stock by its number, or [what] as it was typed.
+  String _wareNamed(WorldSession session, String what, {Set<String>? flags}) {
+    final number = int.tryParse(what.trim());
+    if (number == null || session.shopHere == null) return what;
+    final wares = session.wares(flags: flags);
+    return number >= 1 && number <= wares.length
+        ? wares[number - 1].item.id
+        : what;
+  }
+
+  /// Something in the pack by its number, or [what] as it was typed.
+  String _carriedNamed(WorldSession session, String what) {
+    final number = int.tryParse(what.trim());
+    final carried = session.inventory.carried;
+    return number != null && number >= 1 && number <= carried.length
+        ? carried[number - 1].id
+        : what;
+  }
+
+  /// Buys one of [what], then asks who is to use it, if it is something to
+  /// wield or wear. False when the input ran out while asking.
+  Future<bool> _buy(WorldSession session, String what,
+      {Set<String>? flags}) async {
+    final ({GearItem item, int price}) bought;
+    try {
+      bought = session.buy(what, flags: flags);
     } on InvalidMoveException catch (e) {
       out.writeln(_wrapped(e.message));
       if (e.message.contains('and the party has')) {
         if (session.keeperSays('broke') case final k?) _says(k.keeper, k.line);
       }
+      return true;
+    }
+    _traded -= bought.price;
+    out.writeln('\nYou buy ${bought.item.name} for '
+        '${formatCoin(bought.price)}. The party has '
+        '${formatCoin(session.inventory.coin)} left.');
+    if (session.keeperSays('buy') case final k?) _says(k.keeper, k.line);
+    return _offerToEquip(session, bought.item);
+  }
+
+  void _sell(WorldSession session, String what) {
+    try {
+      final sold = session.sell(what);
+      _traded += sold.price;
+      out.writeln('\n${_keeper(session)} gives you '
+          '${formatCoin(sold.price)} for ${sold.item.name}. The party has '
+          '${formatCoin(session.inventory.coin)}.');
+      if (session.keeperSays('sell') case final k?) _says(k.keeper, k.line);
+    } on InvalidMoveException catch (e) {
+      out.writeln(_wrapped(e.message));
+    }
+  }
+
+  // --- wielding and wearing ------------------------------------------------
+
+  /// Something just bought to wield or wear: who takes it up, with what it
+  /// would do for each of them, or 0 to leave it in the pack.
+  Future<bool> _offerToEquip(WorldSession session, GearItem item) async {
+    final slot = EquipSlot.forType(item.type);
+    if (slot == null) return true;
+    final entries = _equipEntries(session, item, slot);
+    if (entries.isEmpty) return true;
+    out.writeln(session.actors.length == 1
+        ? '\n${session.primary.name} could '
+            '${slot == EquipSlot.weapon ? 'wield' : 'wear'} it now:'
+        : '\nWho takes ${item.name}?');
+    _offer([for (final e in entries) e.entry], 'Keep it in the pack');
+    final got = await _read('equip> ', entries.length);
+    if (got == null) return false;
+    final pick = got.pick;
+    if (pick == null) {
+      // Something else to do: it waits in the pack meanwhile.
+      if (got.line.isNotEmpty) _pending = got.line;
+    } else if (pick == 0) {
+      out.writeln('\n${item.name} goes in the pack.');
+    } else {
+      _equipItem(session, item.id, entries[pick - 1].actor.id);
     }
     return true;
+  }
+
+  /// Everyone who could take up [item] and is not already using it, each
+  /// with what it would do to their Strike or AC.
+  List<({SessionActor actor, _Entry entry})> _equipEntries(
+      WorldSession session, GearItem item, EquipSlot slot) {
+    final solo = session.actors.length == 1;
+    final verb = slot == EquipSlot.weapon ? 'Wield it' : 'Wear it';
+    return [
+      for (final actor in session.actors)
+        if (session.statsFor(actor.id).loadout.inSlot(slot)?.id != item.id)
+          (
+            actor: actor,
+            entry: (
+              text: '${solo ? verb : actor.name.padRight(24)}  '
+                  '${_change(session.statsFor(actor.id), item, slot)}',
+              chip: solo ? verb : 'Give to ${actor.name.split(' ').first}',
+            ),
+          ),
+    ];
+  }
+
+  /// "Strike +15 2d12+4 (Greataxe) -> +14 1d8+4", or "AC 25 (Leather) -> 26".
+  String _change(EquippedStats now, GearItem item, EquipSlot slot) {
+    final then = EquippedStats(now.base, now.loadout.replacing(slot, item));
+    return slot == EquipSlot.weapon
+        ? 'Strike ${_signed(now.attackBonus)} ${now.damage} '
+            '(${now.weaponLabel}) -> ${_signed(then.attackBonus)} ${then.damage}'
+        : 'AC ${now.armorClass} (${now.armorLabel}) -> ${then.armorClass}';
   }
 
   String _keeper(WorldSession session) {
@@ -770,7 +1221,12 @@ class GameConsole {
       who = words.first;
       what = words.skip(1).join(' ');
     }
+    _equipItem(session, what, who);
+    return true;
+  }
 
+  /// Puts [what] on [who], and says what it changed.
+  void _equipItem(WorldSession session, String what, String? who) {
     try {
       final before = session.statsFor(session.actorFor(who ?? '').id);
       final beforeAc = before.armorClass;
@@ -794,7 +1250,6 @@ class GameConsole {
     } on InvalidMoveException catch (e) {
       out.writeln(_wrapped(e.message));
     }
-    return true;
   }
 
   bool _unequip(WorldSession session, String rest) {
@@ -1311,15 +1766,23 @@ class GameConsole {
       out.writeln('\n-- ${fight.current.name}, round ${fight.round}, '
           '${fight.actionsLeft} action(s) --');
       final targets = fight.targetsInReach();
-      out.writeln(targets.isEmpty
-          ? '   Nothing in reach. Close the distance.'
-          : '   In reach: ${targets.map((t) => '${t.id} (${t.hp}/${t.maxHp})').join(', ')}');
+      if (targets.isEmpty) {
+        out.writeln('   Nothing in reach. Close the distance.');
+      }
+      final menu = _fightMenu(session, fight, targets);
+      _offer([for (final m in menu) m.entry], 'Flee');
 
-      final line = await nextCommand(prompt: 'fight> ');
-      if (line == null) {
+      final got = await _read('fight> ', menu.length);
+      if (got == null) {
         out.writeln('\n(script exhausted mid-fight)');
         return false;
       }
+      final pick = got.pick;
+      final line = switch (pick) {
+        null => got.line,
+        0 => 'flee',
+        _ => menu[pick - 1].command,
+      };
       if (line.isEmpty) continue;
 
       final words = line.split(RegExp(r'\s+'));
@@ -1435,6 +1898,114 @@ class GameConsole {
     return true;
   }
 
+  /// The orders open to whoever's turn it is: strike what is in reach, cast
+  /// what they have the actions and the slots for, drink or hand over what
+  /// the pack holds, move, or end the turn. Fleeing is 0.
+  List<({_Entry entry, String command})> _fightMenu(
+    WorldSession session,
+    EncounterSession fight,
+    List<Combatant> targets,
+  ) {
+    final me = fight.current;
+    final left = fight.actionsLeft;
+    final named = <String>{};
+    return [
+      for (final t in targets)
+        (
+          entry: (
+            text: 'Strike ${_called(fight, t)}  (${t.hp}/${t.maxHp} HP)',
+            chip: 'Strike ${_called(fight, t)}',
+          ),
+          command: 'strike ${t.id}',
+        ),
+      if (fight.canClose)
+        (entry: (text: 'Close in', chip: 'Close in'), command: 'close'),
+      // Once each by name, as the first way of casting it that works now:
+      // a cantrip known from two classes is one spell to the player.
+      for (final o in fight.castOptions())
+        if (fight.wouldCatch(o) case final caught? when named.add(o.spell.name))
+          _castEntry(fight, o, caught),
+      for (final item in session.inventory.carried)
+        if (item.use case final use? when use.actions <= left) ...[
+          if (me.hp < me.maxHp)
+            (
+              entry: (
+                text: 'Drink ${_packName(session, item)}  '
+                    '(${_actions(use.actions)}; you are at '
+                    '${me.hp}/${me.maxHp} HP)',
+                chip: 'Drink ${item.name}',
+              ),
+              command: 'use ${item.id}',
+            ),
+          for (final ally in fight.party)
+            if (ally.id != me.id &&
+                ally.zoneIndex == me.zoneIndex &&
+                ally.hp < ally.maxHp)
+              (
+                entry: (
+                  text: 'Give ${item.name} to ${ally.name}  '
+                      '(${ally.isDown ? 'down' : '${ally.hp}/${ally.maxHp} HP'})',
+                  chip: 'Give ${item.name} to ${ally.name.split(' ').first}',
+                ),
+                command: 'use ${item.id} on ${ally.id}',
+              ),
+        ],
+      if (fight.canFallBack)
+        (entry: (text: 'Fall back', chip: 'Fall back'), command: 'back'),
+      (entry: (text: 'End turn', chip: 'End turn'), command: 'end'),
+    ];
+  }
+
+  /// A spell as a fight offers it: at whom, what it costs, and, for a burst,
+  /// everyone it would catch, the party included.
+  ({_Entry entry, String command}) _castEntry(
+    EncounterSession fight,
+    CastOption o,
+    List<Combatant> caught,
+  ) {
+    final cost = '${_actions(o.spell.actions)}, '
+        '${o.cost == CastCost.cantrip ? 'cantrip' : '${o.left} left'}';
+    if (!o.spell.area) {
+      final target = caught.single;
+      return (
+        entry: (
+          text: 'Cast ${o.spell.name} at ${_called(fight, target)}  ($cost)',
+          chip: 'Cast ${o.spell.name}',
+        ),
+        command: 'cast ${o.spell.name} ${target.id}',
+      );
+    }
+    final ours = caught.where((c) => !c.isEnemy).toList();
+    final names = [for (final c in caught) _called(fight, c)];
+    return (
+      entry: (
+        text: 'Cast ${o.spell.name}  ($cost): catches '
+            '${names.length == 1 ? names.single : '${names.sublist(0, names.length - 1).join(', ')} and ${names.last}'}'
+            '${ours.isEmpty ? '' : ' — your own side too'}',
+        chip: 'Cast ${o.spell.name}${ours.isEmpty ? '' : ' (hits you too)'}',
+      ),
+      command:
+          'cast ${o.spell.name} ${caught.firstWhere((c) => c.isEnemy, orElse: () => caught.first).id}',
+    );
+  }
+
+  String _actions(int n) => n == 1 ? '1 action' : '$n actions';
+
+  /// A combatant as the fight under way calls them.
+  String _nameOf(Combatant c) {
+    final fight = _current;
+    return fight == null ? c.name : _called(fight, c);
+  }
+
+  /// A combatant's name, numbered when there is more than one of them.
+  String _called(EncounterSession fight, Combatant c) {
+    final alike = fight.combatants.where((o) => o.name == c.name).toList();
+    if (alike.length < 2) return c.name;
+    final number = RegExp(r'(\d+)$').firstMatch(c.id)?.group(1) ??
+        '${alike.indexOf(c) + 1}';
+    return '${c.name} $number';
+  }
+
   /// "hearth-water", or "hearth-water on sela": what to use, and on whom.
   ({String what, String? who})? _useArgs(String rest) {
     final text = rest.trim();
@@ -1488,12 +2059,12 @@ class GameConsole {
           ? 'vs AC ${c.dc}'
           : 'vs DC ${c.dc}';
       final natural = c.wasShiftedByNatural ? ', natural ${c.dieRoll}' : '';
-      out.writeln('    ${hit.target.name}: ${c.label} d20(${c.dieRoll}) '
+      out.writeln('    ${_nameOf(hit.target)}: ${c.label} d20(${c.dieRoll}) '
           '${_signed(c.modifier)} = ${c.total} $against$natural — '
           '${c.degree.displayName}');
       final dice = hit.damageRoll;
       out.writeln('      ${dice == null ? '' : 'damage $dice; '}'
-          'takes ${hit.damage}.${hit.dropped ? ' ${hit.target.name} goes down.' : ''}');
+          'takes ${hit.damage}.${hit.dropped ? ' ${_nameOf(hit.target)} goes down.' : ''}');
     }
     _speak(script.afterSpell(result));
   }
@@ -1565,12 +2136,12 @@ class GameConsole {
       DegreeOfSuccess.success => 'hit',
       _ => 'miss',
     };
-    final head = '${r.attacker.name} strikes ${r.target.name}: '
+    final head = '${_nameOf(r.attacker)} strikes ${_nameOf(r.target)}: '
         'd20(${check.dieRoll}) ${_signed(check.modifier)} = ${check.total} '
         'vs AC ${check.dc}$map$natural — $verdict';
     final damage = r.damageRoll;
     if (damage == null) return head;
-    final dropped = r.targetDropped ? ' ${r.target.name} goes down.' : '';
+    final dropped = r.targetDropped ? ' ${_nameOf(r.target)} goes down.' : '';
     return '$head\n    damage $damage.$dropped';
   }
 
@@ -1599,7 +2170,8 @@ class GameConsole {
     for (final c in fight.combatants) {
       final bar = c.isDown ? 'down' : '${c.hp}/${c.maxHp}';
       final where = fight.zones[c.zoneIndex];
-      out.writeln('  ${c.isEnemy ? ' ' : '*'} ${c.id.padRight(28)} '
+      out.writeln(
+          '  ${c.isEnemy ? ' ' : '*'} ${_called(fight, c).padRight(28)} '
           '${bar.padLeft(8)}  $where');
     }
   }

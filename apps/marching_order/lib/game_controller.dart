@@ -166,28 +166,18 @@ class GameController extends ChangeNotifier {
 
   /// Chips for what makes sense right now.
   List<CommandChip> get chips {
-    if (_prompt.startsWith('say')) {
-      // The conversation's own choices, in its words.
-      return [
+    if (_prompt != '> ') {
+      // A conversation, a fight, the shop or the pack: the console's own
+      // numbered menu, in its words, with the way back (0) last.
+      final menu = [
         for (final c in _console.choices) (label: c.label, command: c.command),
       ];
-    }
-    if (_prompt.startsWith('fight')) {
-      // Every spell that can be cast now, once each by name, whichever
-      // class it comes from.
-      final spells = <String>{
-        for (final o in _console.fight?.castOptions() ?? const <CastOption>[])
-          if (o.isAvailable) o.spell.name,
-      };
+      final back = menu.where((c) => c.command == '0');
       return [
-        const (label: 'Strike', command: 'strike'),
-        const (label: 'Close in', command: 'close'),
-        const (label: 'Fall back', command: 'back'),
-        for (final name in spells) (label: 'Cast $name', command: 'cast $name'),
-        const (label: 'Drink', command: 'use hearth-water'),
-        const (label: 'End turn', command: 'end'),
-        const (label: 'Status', command: 'status'),
-        const (label: 'Flee', command: 'flee'),
+        ...menu.where((c) => c.command != '0'),
+        if (_prompt.startsWith('fight'))
+          const (label: 'Status', command: 'status'),
+        ...back,
       ];
     }
     final view = session.look();
@@ -203,7 +193,7 @@ class GameController extends ChangeNotifier {
           label: priceChange < 0 ? 'Trade · ${-priceChange}% off' : 'Trade',
           command: tradeCommand,
         ),
-        (label: 'Wares', command: 'list'),
+        (label: 'Shop', command: 'list'),
       ],
       const (label: 'Look', command: 'look'),
       const (label: 'Pack', command: 'inventory'),
@@ -240,14 +230,20 @@ class GameController extends ChangeNotifier {
   static Future<String> demoCharacter() =>
       rootBundle.loadString(_demoCharacter);
 
-  /// A new game for the party exported as [characters].
-  static Future<GameController> start(List<String> characters) async {
+  /// A new game for the party exported as [characters], on dice seeded by
+  /// the clock unless [seed] says otherwise.
+  static Future<GameController> start(
+    List<String> characters, {
+    int? seed,
+  }) async {
     final loaded = await _load(characters);
     final session = WorldSession(
       campaign: loaded.campaign,
       actors: loaded.actors,
       spells: loaded.spells,
-      roller: DiceRoller(DateTime.now().millisecondsSinceEpoch % 1000000007),
+      roller: DiceRoller(
+        seed ?? DateTime.now().millisecondsSinceEpoch % 1000000007,
+      ),
     );
     return GameController._(session, characters, resumed: false);
   }
