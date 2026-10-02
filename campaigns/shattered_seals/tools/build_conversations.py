@@ -240,18 +240,23 @@ thorne = conversation('npc_001_thorne', [
           'tell me herself, and she brought bread, and I\'ve not the faintest '
           'idea what to do with it.»',
           opt('paid_double', 'Collect the reward',
-              '«A hundred,» he says, and counts it out, and it is a hundred, in '
-              'coin that has been several different people\'s savings.',
+              '«A hundred, I said. The council\'s fifty you\'ll have had '
+              'already; they pay quicker than they raise.» He counts out the '
+              'other fifty himself, in coin that has been several different '
+              'people\'s savings.',
               go='thorne_after', say="The council's gold, Captain.",
               sets=['thorne_paid', 'thorne_paid_hundred'],
               requires=['thorne_reward_doubled'], unless=['thorne_paid']),
           opt('paid_raised', 'Collect the reward',
-              'Seventy-five, counted out twice, the second time more slowly.',
+              '«Seventy-five. The council\'s fifty you\'ll have had.» He '
+              'counts out the other twenty-five from his own purse, twice, the '
+              'second time more slowly.',
               go='thorne_after', say="The council's gold, Captain.",
               sets=['thorne_paid', 'thorne_paid_seventy_five'],
               requires=['thorne_reward_raised'], unless=['thorne_paid']),
-          opt('paid_base', 'Collect the reward',
-              '«Fifty, as promised.» He pushes the purse across. «It\'s not '
+          opt('paid_base', 'Ask about the reward',
+              '«The council\'s paid you its fifty, I hear. As promised.» He '
+              'looks at the desk where a purse would have gone. «It\'s not '
               'enough. It never was.»',
               go='thorne_after', say="The council's gold, Captain.",
               sets=['thorne_paid', 'thorne_paid_fifty'],
@@ -817,10 +822,10 @@ wendel = conversation('npc_007_wendel', [
               unless=['heard_of_the_mere_road']),
           opt('ask_lamp', 'Ask about the lamp on the stair',
               '«For the late ones,» he says easily. «Nobody wants to break '
-              'their neck on the stair in the dark.» It is broad daylight '
-              'through every window in the room.',
-              go='wendel_bar', say="Why's there a lamp lit on the stair at "
-              'noon?',
+              'their neck on the stair in the dark.» The soot on the ceiling '
+              'above it says it burns all day as well, and has for weeks.',
+              go='wendel_bar', say="Why's there a lamp lit on the stair day "
+              'and night?',
               sets=['asked_wendel_lamp'], unless=['asked_wendel_lamp']),
           opt('ask_news', 'Ask for the news',
               '«Tollgate on the capital road\'s shut till the Captain says '
@@ -947,8 +952,8 @@ wendel = conversation('npc_007_wendel', [
           'go after him, the lane behind the Sparrow is empty.',
           ending=True),
     scene('wendel_bye', W,
-          'Wendel goes back to his bar. The lamp on the back stair burns on in '
-          'the daylight.',
+          'Wendel goes back to his bar. The lamp on the back stair burns on, '
+          'whatever the hour.',
           ending=True),
 ])
 

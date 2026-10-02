@@ -167,8 +167,28 @@ void main() {
         penalty: 0,
       );
       final said = script.after([strike]);
-      expect(said.map((l) => l.text), contains(contains('paid enough')));
+      expect(said.map((l) => l.text), contains(contains('paid')));
+      // The fight's line for the first wound, not the creature's own on
+      // top of it: one complaint, not two in a breath.
+      expect(
+          said.where((l) => l.speaker == 'Covenant Cutthroat'), hasLength(1));
       expect(script.after([strike]), isEmpty);
+    });
+
+    test('the second to be badly hurt has its own say', () {
+      final fight = _fight('e_mere_road_cutthroats');
+      final script = FightScript(fight);
+      StrikeResult wound(Combatant who) => StrikeResult(
+            attacker: fight.party.single,
+            target: who..hp = 10,
+            outcome:
+                CheckResolver.outcomeFor(dieRoll: 15, modifier: 15, dc: 18),
+            damage: 20,
+            penalty: 0,
+          );
+      script.after([wound(fight.enemies.first)]);
+      final second = script.after([wound(fight.enemies.last)]);
+      expect(second.map((l) => l.text), contains(contains('paid enough')));
     });
 
     test('a critical from them draws a taunt', () {

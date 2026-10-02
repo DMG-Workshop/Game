@@ -301,10 +301,23 @@ void main() {
       return world;
     }
 
-    test("Thorne pays what was haggled for, in coin", () {
-      expect(paidBy('thorne_offended').inventory.coin, _gp(270 + 50));
-      expect(paidBy('thorne_reward_raised').inventory.coin, _gp(270 + 75));
-      expect(paidBy('thorne_reward_doubled').inventory.coin, _gp(270 + 100));
+    test('Thorne pays what he put in himself, over the council\'s fifty', () {
+      // The council's fifty is the quest's own reward, paid as the Hollow
+      // Avatar falls; Thorne makes up the rest of what was haggled.
+      expect(paidBy('thorne_offended').inventory.coin, _gp(270));
+      expect(paidBy('thorne_reward_raised').inventory.coin, _gp(270 + 25));
+      expect(paidBy('thorne_reward_doubled').inventory.coin, _gp(270 + 50));
+    });
+
+    test('the bounty comes to what was agreed, and never twice', () {
+      final quest = _campaign.arcs.all
+          .firstWhere((a) => a.id == 'tier_1_local_threat')
+          .reward!;
+      int total(String paidFlag) =>
+          quest.copper + (_campaign.economy.rewardFor(paidFlag)?.copper ?? 0);
+      expect(total('thorne_paid_fifty'), _gp(50));
+      expect(total('thorne_paid_seventy_five'), _gp(75));
+      expect(total('thorne_paid_hundred'), _gp(100));
     });
 
     test('a reward is paid once, however it is reached again', () {

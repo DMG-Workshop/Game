@@ -818,8 +818,10 @@ class GameConsole {
       final options = talk.availableOptions();
       out.writeln('');
       // Somebody who has been asked everything says so, rather than
-      // offering a menu that only has the door on it.
-      if (options.isNotEmpty && options.every((o) => _endsTalk(talk, o))) {
+      // offering a menu that only has the door on it. Never beside a roll:
+      // watching a liar tell it again is something more to ask.
+      if (options.isNotEmpty &&
+          options.every((o) => _endsTalk(talk, o) && o.check == null)) {
         out.writeln('  (Nothing more to ask ${npc.name} for now.)');
       }
       for (var i = 0; i < options.length; i++) {
@@ -1796,10 +1798,10 @@ class GameConsole {
       if (view.town != null) view.town!.name,
       '${date.season.name} ${date.dayOfSeason}',
       session.clock + (view.isNight ? ' (night)' : ''),
-      if (now != null)
-        view.room.shelter
-            ? 'indoors; ${now.name.toLowerCase()} outside'
-            : now.name,
+      // A roof here is a place to wait out a storm, which is worth saying;
+      // not that the party is under it, since a farm is mostly its yard.
+      if (now != null) now.name,
+      if (now != null && view.room.shelter) 'shelter here',
     ].join(' · ')}');
     out.writeln();
     if (full) out.writeln(_wrapped(view.room.description));
@@ -2073,7 +2075,10 @@ class GameConsole {
             out.writeln(_wrapped(item.description, indent: '    '));
           }
         }
+        // Which return of a fight was won is the engine's bookkeeping, not
+        // news: the flags worth showing are what the win changed.
         for (final flag in flags) {
+          if (_waveFlag.hasMatch(flag)) continue;
           out.writeln('\n  [$flag]');
         }
         _announceArcs(session);
@@ -2195,6 +2200,9 @@ class GameConsole {
         ),
         command: '$_aimOrder${o.spell.name}',
       );
+
+  /// The flag recording that one return of a fight was won.
+  static final _waveFlag = RegExp(r'^won_.+_wave_\d+$');
 
   /// Marks a fight order that still needs a target picked.
   static const _aimOrder = ':aim ';
