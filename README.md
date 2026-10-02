@@ -43,9 +43,15 @@ Three amendments to the 90s inspiration:
   what the later multiplayer layer becomes, not a launch requirement.
 
 **A party of four.** PF2e is balanced for four PCs, so importing four and
-running them together means published encounter budgets work as written,
-with no invented scaling. Dual Class stays an optional toggle rather than a
-load-bearing fix.
+running them together means published encounter budgets work as written.
+A smaller party meets a fight scaled by Pathfinder's own budget, a quarter
+per character: the lesser foes stay home first, never a boss, and what is
+left comes in with the weak adjustment if it is still too much
+(`--fights-as-written` turns that off). Or the party fills itself out on the
+road: six people in the world will join, for a fee, built as Pathbuilder
+would build their class at the party's level, and rebuilt to keep pace each
+time the imported characters level up. Dual Class stays an optional toggle
+rather than a load-bearing fix.
 
 **Solo first, async-ready.** One device to start, with state modelled so
 asynchronous multiplayer drops in later. Async also keeps a larger group
@@ -208,6 +214,23 @@ walks there, stopping for anything waiting on the road:
   Hollow--Deep--Wood--Forge--[Square]--Sparrow
                                 |
                               Temple
+```
+
+Some of the people met on the way would come along: Bren Cask in the
+tavern, a caravan guard with nothing left to guard; Sister Wren on the temple
+steps, who heals; Tamsin Reed at the wood's edge, with a longbow that reaches
+across the field. Asking one to join shows what they would bring and what
+they want for it, and `party` is where they are looked at closer or parted
+with. A companion goes home when let go, and comes back for nothing:
+
+```
+Bren Cask — Human Fighter, level 6
+  HP 92/92   AC 25   Perception +12   Fort +14  Ref +13  Will +12
+  Strike +17 2d12+4  (+1 Striking Greatsword)
+
+  Asks 20 gp to join. The purse holds 270 gp.
+  1. Take Bren on  (20 gp)
+  0. Not now
 ```
 
 A game saves to a file and picks up where it was left. The save remembers

@@ -187,11 +187,17 @@ class SpellResult {
     required this.option,
     required this.hits,
     this.damageRoll,
+    this.mended = const [],
   });
 
   final Combatant caster;
   final CastOption option;
   final List<SpellHit> hits;
+
+  /// For a healing spell, who it mended, by how much, and whether they were
+  /// back on their feet for it.
+  final List<({Combatant target, DamageRoll roll, int healed, bool revived})>
+      mended;
 
   /// For a save spell, the damage rolled once for everyone it caught.
   final DamageRoll? damageRoll;
@@ -487,6 +493,19 @@ class EncounterSession {
     }
     final caster = current;
     final reach = encounter.zones.indexOf(option.spell.range);
+    if (option.spell.heals) {
+      // The worst hurt first, the fallen before anyone, of those in reach.
+      final hurt = [
+        for (final c in _combatants)
+          if (c.isEnemy == caster.isEnemy &&
+              c.hp < c.maxHp &&
+              _distance(caster, c) <= (reach < 0 ? 0 : reach))
+            c,
+      ]..sort((a, b) => (a.hp / a.maxHp).compareTo(b.hp / b.maxHp));
+      return [
+        for (final c in hurt) (target: c, caught: [c]),
+      ];
+    }
     // Nearest first, and in turn order among the equally near, which is the
     // one cast() picks when it is given no target.
     final inRange = [
@@ -565,6 +584,7 @@ class EncounterSession {
             '${caster.name} has no ${options.first.spell.name} left today.'));
     final spell = option.spell;
     _requireActions(spell.actions);
+    if (spell.heals) return _mend(option, targetId);
 
     final target =
         targetId == null ? _nearestOpponent(caster) : combatantById(targetId);
@@ -644,6 +664,41 @@ class EncounterSession {
       option: option,
       hits: hits,
       damageRoll: shared,
+    );
+  }
+
+  /// A healing spell on [targetId], or on the worst hurt in reach.
+  SpellResult _mend(CastOption option, String? targetId) {
+    final caster = current;
+    final aims = aimsFor(option);
+    final target = targetId == null
+        ? aims.firstOrNull?.target
+        : aims.map((a) => a.target).where((c) => c.id == targetId).firstOrNull;
+    if (target == null) {
+      throw InvalidActionException(targetId == null
+          ? 'Nobody in reach of ${option.spell.name} needs it.'
+          : '${combatantById(targetId)?.name ?? targetId} is not hurt, or '
+              'is out of reach of ${option.spell.name}.');
+    }
+    final roll = option.spell.damageAt(option.rank).rollDetailed(_roller);
+    final wasDown = target.isDown;
+    final before = target.hp;
+    target.hp = (target.hp + roll.total).clamp(0, target.maxHp);
+    _actionsLeft -= option.spell.actions;
+    final vitals = _vitals[caster.id];
+    if (vitals != null) spendCast(option, vitals);
+    return SpellResult(
+      caster: caster,
+      option: option,
+      hits: const [],
+      mended: [
+        (
+          target: target,
+          roll: roll,
+          healed: target.hp - before,
+          revived: wasDown && !target.isDown,
+        ),
+      ],
     );
   }
 
@@ -1002,6 +1057,8 @@ class EncounterSession {
       damage: equipped.damage,
       perception: actor.stats.perception.total,
       zoneIndex: 0,
+      // A bow reaches as far as the field goes; anything else is swung.
+      reachZones: equipped.isRanged ? encounter.zones.length - 1 : 0,
       agile: equipped.isAgile,
       actor: actor,
     );

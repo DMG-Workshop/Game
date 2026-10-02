@@ -8,6 +8,7 @@ import '../campaign/npc.dart';
 import '../campaign/spell.dart';
 import '../party/equipment.dart';
 import '../party/experience.dart';
+import '../party/vitals.dart';
 import '../party/wealth.dart';
 import '../scene/scene.dart';
 import 'casting.dart';
@@ -45,6 +46,11 @@ const consoleCommands = '''
                                                   that brings after you
   ledger                                          everything found, and where
   sheet [who]                                     AC, Strike, HP as equipped
+  party                                           who is with you: pick one
+                                                  to look closer, or part ways
+  recruit [who]                                   take on somebody here who
+                                                  would join (party of 4 at most)
+  dismiss <who>                                   part ways with a companion
   equip [who] <item>                              wield or wear something
   unequip [who] weapon|armour                     put it away again
   save [file]                                     save the game (resume with
@@ -59,6 +65,8 @@ const consoleCommands = '''
   treat [who]                                     Treat Wounds (Medicine)
   use <item> [on <who>]                           drink a draught, or give
                                                   it (1 action in a fight)
+  cast <spell> [on <who>]                         a healing spell, between
+                                                  fights
   refocus                                         10 minutes: 1 focus back
   shelter                                         make shelter from a storm
   quit                                            stop
@@ -130,6 +138,9 @@ class GameConsole {
 
   /// Options that mean "show me what you sell", when a shopkeeper has them.
   static const _browsing = {'look', 'wares', 'stock', 'browse', 'ask_stock'};
+
+  /// Options that mean "come with us", when somebody would.
+  static const _joining = {'join', 'ask_join', 'hire', 'recruit'};
 
   /// A line a menu read that was not for it, waiting to be played.
   String? _pending;
@@ -254,7 +265,8 @@ class GameConsole {
           for (final npc in npcs) {
             final left = session.unraisedTopicsFor(npc);
             out.writeln('  ${npc.name}'
-                '${left.isEmpty ? '' : '  (topics: ${left.join(', ')})'}');
+                '${left.isEmpty ? '' : '  (topics: ${left.join(', ')})'}'
+                '${_joinNote(session, npc)}');
           }
         }
         return true;
@@ -319,8 +331,18 @@ class GameConsole {
 
       case 'status':
       case 'hp':
-      case 'party':
         _renderStatus(session);
+        return true;
+
+      case 'party':
+        return _party(session);
+
+      case 'recruit':
+      case 'hire':
+        return _recruit(session, rest);
+
+      case 'dismiss':
+        _dismiss(session, rest);
         return true;
 
       case 'spells':
@@ -383,6 +405,24 @@ class GameConsole {
         }
         try {
           _renderUse(session.use(args.what, who: args.who));
+        } on InvalidMoveException catch (e) {
+          out.writeln(_wrapped(e.message));
+        }
+        return true;
+
+      case 'cast':
+        // Between fights, only what mends: anything else waits for a fight.
+        final args = _useArgs(rest);
+        if (args == null) {
+          out.writeln('Cast what? ("spells" lists them.)');
+          return true;
+        }
+        try {
+          final c = session.castHealing(args.what, who: args.who);
+          final v = session.vitalsOf(c.patient.id);
+          out.writeln('\n${c.caster.name} casts ${c.option.spell.name} '
+              '(rank ${c.option.rank}) on ${c.patient.name}: ${c.roll}, '
+              '+${c.healed} HP (${v.hp}/${v.maxHp}).');
         } on InvalidMoveException catch (e) {
           out.writeln(_wrapped(e.message));
         }
@@ -894,6 +934,19 @@ class GameConsole {
         }
       }
 
+      // Asking somebody to come along puts the question of terms: what they
+      // would bring, and what they want for it. Once they say yes, they are
+      // walking with the party, and the talk is over.
+      if (_joining.contains(option.id) && npc.recruit != null) {
+        final joined = await _hire(session, npc, talking: true);
+        if (joined == null) {
+          out.writeln('\n(script exhausted mid-conversation)');
+          keepGoing = false;
+          break;
+        }
+        if (joined) break;
+      }
+
       // A new scene is a new beat; returning to the same one is not, and
       // repeating its opening every time would read like a stuck record.
       final movedTo = event.movedTo;
@@ -928,6 +981,234 @@ class GameConsole {
     if (best == null) return '  (nobody can try this)';
     final who = solo ? '' : '${best.actor.name} ';
     return '  ($who${best.stat.formatted} vs DC ${check.dc})';
+  }
+
+  // --- the party -----------------------------------------------------------
+
+  /// The party as a menu: everyone's state, and a number to look closer at
+  /// one of them, or to part ways with a companion. False when the input
+  /// ran out.
+  Future<bool> _party(WorldSession session) async {
+    while (true) {
+      final members = session.actors;
+      if (_pending == null) {
+        out.writeln('\nThe party  (${members.length} of '
+            '${WorldSession.fullParty})');
+        _offer([
+          for (final a in members) _memberEntry(session, a),
+        ], 'Close');
+        if (members.length < WorldSession.fullParty) {
+          final here = session.recruitsHere;
+          out.writeln(here.isEmpty
+              ? '\n  (Room for ${WorldSession.fullParty - members.length} '
+                  'more. Some folk would join you, for a fee.)'
+              : '\n  (${here.map((n) => n.name).join(' and ')} would join '
+                  'you: "recruit".)');
+        }
+      }
+      final got = await _read('party> ', members.length);
+      if (got == null) return false;
+      final pick = got.pick;
+      if (pick == 0) return true;
+      if (pick != null) {
+        if (!await _member(session, members[pick - 1])) return false;
+        continue;
+      }
+      if (got.line.isEmpty) continue;
+      _pending = got.line;
+      return true;
+    }
+  }
+
+  _Entry _memberEntry(WorldSession session, SessionActor actor) {
+    final v = session.vitalsOf(actor.id);
+    final what = '${actor.character.className} ${actor.character.level}';
+    return (
+      text: '${actor.name.padRight(22)} ${what.padRight(12)} '
+          'HP ${v.hp}/${v.maxHp}'
+          '${session.isCompanion(actor.id) ? '  (companion)' : ''}',
+      chip: actor.name,
+    );
+  }
+
+  /// One member of the party up close, and for a companion, the door.
+  Future<bool> _member(WorldSession session, SessionActor actor) async {
+    out.writeln('');
+    _describe(
+      actor,
+      session.statsFor(actor.id),
+      session.vitalsOf(actor.id),
+    );
+    final companion = session.isCompanion(actor.id);
+    final first = _familiar(actor.name);
+    _offer([
+      if (companion)
+        (text: 'Part ways with $first', chip: 'Part ways with $first'),
+    ], 'Back to the party');
+    final got = await _read('member> ', companion ? 1 : 0);
+    if (got == null) return false;
+    if (got.pick == 1) {
+      final home = session.campaign.locations
+          .roomById(session.homeOf(actor.id) ?? '')
+          ?.title;
+      out.writeln('\n${_wrapped('$first would go back to '
+          '${home ?? 'where you found them'}. Whatever $first wears stays '
+          'with the party, and taking $first on again costs nothing.')}');
+      _offer([(text: 'Part ways', chip: 'Part ways')], 'Keep $first');
+      final sure = await _read('dismiss> ', 1);
+      if (sure == null) return false;
+      if (sure.pick == 1) {
+        _dismiss(session, actor.id);
+      } else if (sure.pick == null && sure.line.isNotEmpty) {
+        _pending = sure.line;
+      }
+      return true;
+    }
+    if (got.pick == null && got.line.isNotEmpty) _pending = got.line;
+    return true;
+  }
+
+  /// A character's numbers, as they would fight: AC, saves, the Strike,
+  /// and what they can cast.
+  void _describe(SessionActor actor, EquippedStats stats, ActorVitals vitals) {
+    final c = actor.character;
+    final d = actor.stats;
+    out.writeln('${actor.name} — ${c.ancestry} ${c.className}, level '
+        '${c.level}');
+    out.writeln('  HP ${vitals.hp}/${vitals.maxHp}   AC ${stats.armorClass}'
+        '   Perception ${d.perception.formatted}   '
+        'Fort ${d.fortitude.formatted}  Ref ${d.reflex.formatted}  '
+        'Will ${d.will.formatted}');
+    out.writeln('  Strike ${_signed(stats.attackBonus)} ${stats.damage}  '
+        '(${stats.weaponLabel}${stats.isRanged ? ', ranged' : ''})');
+    final options = castOptionsFor(actor, vitals, session.spells);
+    final casts = <String, int>{};
+    final ranks = <String, int>{};
+    final cantrips = <String>{};
+    for (final o in options) {
+      if (o.cost == CastCost.cantrip) {
+        cantrips.add(o.spell.name);
+        continue;
+      }
+      casts.update(o.spell.name, (n) => n + o.left, ifAbsent: () => o.left);
+      if (o.rank > (ranks[o.spell.name] ?? 0)) ranks[o.spell.name] = o.rank;
+    }
+    if (casts.isNotEmpty) {
+      out.writeln(_wrapped(
+          'Spells: ${[
+            for (final e in casts.entries)
+              '${e.key} x${e.value} (up to ${_ordinal(ranks[e.key]!)} rank)',
+          ].join(', ')}',
+          indent: '  '));
+    }
+    if (cantrips.isNotEmpty) {
+      out.writeln(_wrapped('Cantrips: ${cantrips.join(', ')}', indent: '  '));
+    }
+  }
+
+  /// What a companion is called on the road: "Bren" for Bren Cask, "Wren"
+  /// for Sister Wren.
+  String _familiar(String name) {
+    final words = name.split(' ');
+    const titles = {'sister', 'brother', 'captain', 'foreman', 'master'};
+    if (words.length > 1 && titles.contains(words.first.toLowerCase())) {
+      return words[1];
+    }
+    return words.first;
+  }
+
+  /// "  (would join: Fighter, 20 gp)", for somebody who would.
+  String _joinNote(WorldSession session, Npc npc) {
+    final recruit = npc.recruit;
+    if (recruit == null) return '';
+    final fee = session.feeFor(npc);
+    return '  (would join: ${recruit.className}'
+        '${fee == 0 ? '' : ', ${formatCoin(fee)}'})';
+  }
+
+  /// "recruit" with or without a name: somebody here who would join.
+  Future<bool> _recruit(WorldSession session, String who) async {
+    final here = session.recruitsHere;
+    if (here.isEmpty) {
+      out.writeln('Nobody here is looking to join you.');
+      return true;
+    }
+    final npc = who.isEmpty
+        ? (here.length == 1 ? here.single : null)
+        : NpcDirectory.findAmong(here, who);
+    if (npc == null) {
+      out.writeln(who.isEmpty
+          ? 'Recruit whom? ${here.map((n) => n.name).join(', ')}.'
+          : 'Nobody here called "$who" would join you.');
+      return true;
+    }
+    out.writeln('');
+    return await _hire(session, npc) != null;
+  }
+
+  /// What [npc] would bring to the party at its level, what they want for
+  /// it, and the question. True once they have joined, false if not; null
+  /// when the input ran out.
+  Future<bool?> _hire(WorldSession session, Npc npc,
+      {bool talking = false}) async {
+    final would = session.companionFor(npc);
+    out.writeln('');
+    _describe(
+        would, EquippedStats(would.stats), ActorVitals.fresh(would.stats));
+    final fee = session.feeFor(npc);
+    out.writeln(fee == 0
+        ? '\n  Asks nothing to come along.'
+        : '\n  Asks ${formatCoin(fee)} to join. The purse holds '
+            '${formatCoin(session.inventory.coin)}.');
+    if (session.whyNot(npc) case final reason?) {
+      out.writeln(_wrapped(reason, indent: '  '));
+      return false;
+    }
+    final first = _familiar(npc.name);
+    _offer([
+      (
+        text: 'Take $first on${fee == 0 ? '' : '  (${formatCoin(fee)})'}',
+        chip: 'Take $first on',
+      ),
+    ], 'Not now');
+    final got = await _read('hire> ', 1);
+    if (got == null) return null;
+    if (got.pick == 1) {
+      try {
+        final actor = session.recruit(npc.id);
+        out.writeln('\n${_wrapped('${actor.name} joins the party.')}');
+        return true;
+      } on InvalidMoveException catch (e) {
+        out.writeln(_wrapped(e.message));
+        return false;
+      }
+    }
+    // In a conversation, anything but yes is no; out of one, a command
+    // typed here is played.
+    if (!talking && got.pick == null && got.line.isNotEmpty) {
+      _pending = got.line;
+    }
+    return false;
+  }
+
+  void _dismiss(WorldSession session, String who) {
+    if (who.trim().isEmpty) {
+      final names = session.companions.map((a) => a.name).toList();
+      out.writeln(names.isEmpty
+          ? 'Nobody with you joined on the road.'
+          : 'Part ways with whom? ${names.join(', ')}.');
+      return;
+    }
+    try {
+      final actor = session.dismiss(who);
+      final home = session.campaign.locations
+          .roomById(session.homeOf(actor.id) ?? '')
+          ?.title;
+      out.writeln('\n${_wrapped('${actor.name} leaves the party'
+          '${home == null ? '' : ', back to $home'}.')}');
+    } on InvalidMoveException catch (e) {
+      out.writeln(_wrapped(e.message));
+    }
   }
 
   // --- the pack ------------------------------------------------------------
@@ -1394,7 +1675,9 @@ class GameConsole {
       out.writeln('  HP ${actor.stats.maxHp}  '
           'Perception ${actor.stats.perception.formatted}  '
           'Class DC ${actor.stats.classDc}');
-      out.writeln('  ${_xpLine(session.experience.progressOf(actor.id))}');
+      out.writeln(session.isCompanion(actor.id)
+          ? '  Joined on the road; keeps pace with the party\'s level.'
+          : '  ${_xpLine(session.experience.progressOf(actor.id))}');
     } on InvalidMoveException catch (e) {
       out.writeln(e.message);
     }
@@ -1729,6 +2012,11 @@ class GameConsole {
         '$maxLevel.');
     final numbers = [for (var l = 1; l <= maxLevel; l++) '$l'.padLeft(3)];
     for (final actor in session.actors) {
+      if (session.isCompanion(actor.id)) {
+        out.writeln('\n  ${actor.name} — level ${actor.character.level}, '
+            'keeping pace with the party');
+        continue;
+      }
       final p = session.experience.progressOf(actor.id);
       // Filled to the sheet's level; a + for levels earned but not yet taken
       // in Pathbuilder; a dot for the road still ahead.
@@ -1762,6 +2050,9 @@ class GameConsole {
     if (earned <= 0) return;
     out.writeln('\n  [+$earned XP each]');
     for (final actor in session.actors) {
+      // A companion has no Pathbuilder sheet to level: they keep pace with
+      // the rest of the party on their own.
+      if (session.isCompanion(actor.id)) continue;
       final was = before[actor.id] ?? 0;
       if (was < xpToLevel && xp.readyToLevel(actor.id)) {
         out.writeln('\n  *** ${actor.name} has ${xp.xpOf(actor.id)} XP — '
@@ -2173,6 +2464,17 @@ class GameConsole {
     List<Combatant> caught,
   ) {
     final cost = _cost(o);
+    if (o.spell.heals) {
+      final target = caught.single;
+      return (
+        entry: (
+          text: 'Cast ${o.spell.name} on ${_called(fight, target)}  ($cost; '
+              '${target.isDown ? 'down' : '${target.hp}/${target.maxHp} HP'})',
+          chip: 'Cast ${o.spell.name}',
+        ),
+        command: 'cast ${o.spell.name} ${target.id}',
+      );
+    }
     if (!o.spell.area) {
       final target = caught.single;
       return (
@@ -2199,7 +2501,7 @@ class GameConsole {
   ({_Entry entry, String command}) _aimEntry(CastOption o) => (
         entry: (
           text: 'Cast ${o.spell.name}  (${_cost(o)}): choose '
-              '${o.spell.area ? 'where' : 'a target'}',
+              '${o.spell.heals ? 'who' : o.spell.area ? 'where' : 'a target'}',
           chip: 'Cast ${o.spell.name}…',
         ),
         command: '$_aimOrder${o.spell.name}',
@@ -2222,22 +2524,29 @@ class GameConsole {
     if (option == null) return '';
     final aims = fight.aimsFor(option);
     final area = option.spell.area;
-    out.writeln('\n${option.spell.name}: ${area ? 'where?' : 'at whom?'}');
+    out.writeln('\n${option.spell.name}: '
+        '${option.spell.heals ? 'on whom?' : area ? 'where?' : 'at whom?'}');
     _offer([
       for (final (:target, :caught) in aims)
-        area
+        option.spell.heals
             ? (
-                text: 'At ${_called(fight, target)}, '
-                    '${fight.zones[target.zoneIndex]}: catches '
-                    '${_catches(fight, caught)}',
-                chip: 'At ${_called(fight, target)}'
-                    '${caught.any((c) => !c.isEnemy) ? ' (hits you too)' : ''}',
-              )
-            : (
-                text: '${_called(fight, target)}  (${target.hp}/'
-                    '${target.maxHp} HP, ${fight.zones[target.zoneIndex]})',
+                text: '${_called(fight, target)}  ('
+                    '${target.isDown ? 'down' : '${target.hp}/${target.maxHp} HP'})',
                 chip: _called(fight, target),
-              ),
+              )
+            : area
+                ? (
+                    text: 'At ${_called(fight, target)}, '
+                        '${fight.zones[target.zoneIndex]}: catches '
+                        '${_catches(fight, caught)}',
+                    chip: 'At ${_called(fight, target)}'
+                        '${caught.any((c) => !c.isEnemy) ? ' (hits you too)' : ''}',
+                  )
+                : (
+                    text: '${_called(fight, target)}  (${target.hp}/'
+                        '${target.maxHp} HP, ${fight.zones[target.zoneIndex]})',
+                    chip: _called(fight, target),
+                  ),
     ], 'Back to the fight');
     final got = await _read('aim> ', aims.length);
     if (got == null) return null;
@@ -2346,6 +2655,11 @@ class GameConsole {
     out.writeln('\n  ${result.caster.name} casts ${o.spell.name} '
         '(rank ${o.rank}, $cost)'
         '${result.damageRoll == null ? '' : ': ${result.damageRoll}'}');
+    for (final m in result.mended) {
+      out.writeln('    ${_nameOf(m.target)}: heals ${m.roll}, +${m.healed} HP '
+          '(${m.target.hp}/${m.target.maxHp})'
+          '${m.revived ? '. ${_nameOf(m.target)} is back on their feet.' : '.'}');
+    }
     for (final hit in result.hits) {
       final c = hit.check;
       final against = o.spell.defense == SpellDefense.ac
@@ -2375,9 +2689,11 @@ class GameConsole {
           final uses = o.cost == CastCost.cantrip
               ? 'at will'
               : '${o.left} left (${o.cost.name})';
-          final how = o.spell.defense == SpellDefense.ac
-              ? 'spell attack ${_signed(o.attackBonus)}'
-              : 'basic ${o.spell.defense.name}, DC ${o.dc}';
+          final how = o.spell.heals
+              ? 'heals'
+              : o.spell.defense == SpellDefense.ac
+                  ? 'spell attack ${_signed(o.attackBonus)}'
+                  : 'basic ${o.spell.defense.name}, DC ${o.dc}';
           out.writeln('  ${o.spell.name.padRight(16)} ${o.source.padRight(12)} '
               'rank ${o.rank}  ${o.spell.damageAt(o.rank)}  $how  $uses');
         }

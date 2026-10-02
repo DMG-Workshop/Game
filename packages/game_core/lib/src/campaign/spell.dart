@@ -39,6 +39,7 @@ class Spell {
     this.area = false,
     this.heightenEvery = 1,
     this.heightenDamage,
+    this.heals = false,
   });
 
   final String name;
@@ -64,6 +65,10 @@ class Spell {
 
   /// Added for each [heightenEvery] ranks above [rank].
   final DamageExpression? heightenDamage;
+
+  /// Whether this mends rather than harms: [damage] is then what it heals,
+  /// and it is aimed at the party, who do not save against it.
+  final bool heals;
 
   bool get isCantrip => rank == 0;
 

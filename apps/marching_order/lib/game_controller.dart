@@ -186,6 +186,12 @@ class GameController extends ChangeNotifier {
       if (view.encounters.isNotEmpty) (label: 'Fight', command: 'fight'),
       for (final npc in view.npcs)
         (label: 'Talk: ${npc.name.split(' ').last}', command: 'talk ${npc.id}'),
+      if (session.actors.length < WorldSession.fullParty)
+        for (final npc in session.recruitsHere)
+          (
+            label: 'Recruit: ${npc.name.split(' ').last}',
+            command: 'recruit ${npc.id}',
+          ),
       for (final item in view.items)
         (label: 'Take: ${item.name}', command: 'take ${item.name}'),
       if (session.shopHere != null) ...[
@@ -198,6 +204,7 @@ class GameController extends ChangeNotifier {
       const (label: 'Look', command: 'look'),
       const (label: 'Map', command: 'map'),
       const (label: 'Pack', command: 'inventory'),
+      const (label: 'Party', command: 'party'),
       const (label: 'Status', command: 'status'),
       const (label: 'Quests', command: 'quests'),
       const (label: 'Rest', command: 'rest'),

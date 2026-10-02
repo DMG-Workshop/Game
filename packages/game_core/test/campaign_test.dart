@@ -124,7 +124,7 @@ void main() {
 
   group('npcs', () {
     test('reads the cast and places them', () {
-      expect(campaign.npcs.length, 12);
+      expect(campaign.npcs.length, 18);
       expect(campaign.npcs.byId('npc_001_thorne')!.name,
           'Captain Thorne Ironhelm');
       expect(campaign.npcs.inRoom('VC_002_ThroneRoom').map((n) => n.name),

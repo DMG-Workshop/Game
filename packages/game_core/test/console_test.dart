@@ -339,4 +339,65 @@ void main() {
         ['talk aldus', '1', '1', '1', '1', '1', 'talk aldus', '1', '0']);
     expect(log, contains('(Nothing more to ask Brother Aldus for now.)'));
   });
+
+  group('companions', () {
+    test('asked to join, show their numbers and their fee, then come along',
+        () async {
+      final log = await _play('MH_003_Tavern', [
+        'who',
+        'talk bren',
+        '#Ask her to join you',
+        '#Take Bren on',
+        'party',
+      ]);
+      expect(log, contains('(would join: Fighter, 20 gp)'));
+      expect(log, contains('Bren Cask — Human Fighter, level 6'));
+      expect(log, contains('Strike +17 2d12+4  (+1 Striking Greatsword)'));
+      expect(log, contains('Asks 20 gp to join.'));
+      expect(log, contains('Bren Cask joins the party.'));
+      expect(log, contains('The party  (2 of 4)'));
+      expect(log, contains('(companion)'));
+    });
+
+    test('no is no, and the talk goes on', () async {
+      final log = await _play('MH_003_Tavern', [
+        'talk bren',
+        '#Ask her to join you',
+        '0',
+        '0',
+        'party',
+      ]);
+      expect(log, isNot(contains('joins the party')));
+      expect(log, contains('The party  (1 of 4)'));
+    });
+
+    test('a cleric shows what she can cast before she is hired', () async {
+      final log = await _play('MH_004_Temple', ['recruit wren']);
+      expect(log, contains('Spells: Heal x14 (up to 3rd rank)'));
+      expect(log, contains('Cantrips: Daze, Void Warp'));
+      expect(log, contains('Take Wren on  (15 gp)'));
+    });
+
+    test('are parted with from the party menu, and go home', () async {
+      final log = await _play('MH_003_Tavern', [
+        'recruit',
+        '1',
+        'party',
+        '#Bren Cask',
+        '#Part ways',
+        '1',
+        'who',
+      ]);
+      expect(log, contains('Bren Cask joins the party.'));
+      expect(log, contains('Bren Cask leaves the party, back to'));
+      expect(log, contains('(would join: Fighter)\n'),
+          reason: 'already paid: no fee the second time');
+    });
+
+    test('an imported character has no door on the party menu', () async {
+      final log = await _play('MH_003_Tavern', ['party', '1']);
+      expect(log, contains('Korash Blackearth — Orc Magus, level 6'));
+      expect(log, isNot(contains('Part ways')));
+    });
+  });
 }

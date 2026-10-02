@@ -75,6 +75,13 @@
       "range": "far",
       "area": true,
       "heighten": { "every": 1, "damage": "1d12" }
+    },
+    {
+      "name": "Heal",
+      "rank": 1,
+      "heal": "1d8+8",
+      "range": "near",
+      "heighten": { "every": 1, "heal": "1d8+8" }
     }
   ]
 }

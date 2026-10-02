@@ -643,4 +643,25 @@ NPC_BARKS = {
              requires=['aldric_given_the_roll']),
         bark('Anything from below?', requires=['met_aldric']),
     ],
+    'npc_013_bren': [
+        bark('Hiring yet?', requires=['met_bren']),
+    ],
+    'npc_014_tamsin': [
+        bark('Still nothing in the snares. Still something in the wood.',
+             requires=['met_tamsin']),
+    ],
+    'npc_015_wren': [
+        bark('Ashkyr keep you. The step is dry, today.',
+             requires=['met_wren']),
+    ],
+    'npc_016_ilse': [
+        bark('Back again? Good. I was running out of people to be right at.',
+             requires=['met_ilse']),
+    ],
+    'npc_017_grum': [
+        bark('Still shut.', requires=['met_grum']),
+    ],
+    'npc_018_vey': [
+        bark('Still got everything? Check.', requires=['met_vey']),
+    ],
 }

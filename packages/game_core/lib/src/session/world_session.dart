@@ -14,6 +14,7 @@ import '../campaign/spell.dart';
 import '../campaign/weather.dart';
 import '../campaign/world.dart';
 import '../campaign/world_item.dart';
+import '../party/companion.dart';
 import '../party/equipment.dart';
 import '../party/experience.dart';
 import '../party/vitals.dart';
@@ -832,6 +833,52 @@ class WorldSession {
       healed: healed,
       hp: vitals.hp,
       maxHp: vitals.maxHp,
+    );
+  }
+
+  /// A healing spell cast between fights: on [who], or on whoever is worst
+  /// hurt, by whoever in the party has it to cast, at the highest rank they
+  /// have left.
+  ({
+    SessionActor caster,
+    SessionActor patient,
+    CastOption option,
+    DamageRoll roll,
+    int healed,
+  }) castHealing(String spellName, {String? who}) {
+    final needle = spellName.trim().toLowerCase();
+    CastOption? option;
+    var known = false;
+    for (final actor in _actors) {
+      for (final o in castOptionsFor(actor, _vitals[actor.id]!, spells)) {
+        if (o.spell.name.toLowerCase() != needle) continue;
+        known = true;
+        if (o.isAvailable && o.spell.heals) {
+          option = o;
+          break;
+        }
+      }
+      if (option != null) break;
+    }
+    if (option == null) {
+      throw InvalidMoveException(known
+          ? 'That is a spell for a fight, or there is none of it left today.'
+          : 'Nobody in the party can cast "$spellName".');
+    }
+    final patient = _patient(who);
+    final vitals = _vitals[patient.id]!;
+    if (!vitals.isHurt) {
+      throw InvalidMoveException('${patient.name} is not hurt.');
+    }
+    final roll = option.spell.damageAt(option.rank).rollDetailed(_roller);
+    final healed = vitals.heal(roll.total);
+    spendCast(option, _vitals[option.actor.id]!);
+    return (
+      caster: option.actor,
+      patient: patient,
+      option: option,
+      roll: roll,
+      healed: healed,
     );
   }
 
@@ -1732,12 +1779,129 @@ class WorldSession {
   /// road has brought them here, as long as the story has them about.
   List<Npc> _npcsHere() => [
         for (final npc in campaign.npcs.inRoom(_roomId))
-          if (npc.isPresent(_flags)) npc,
+          if (npc.isPresent(_flags) && !isCompanion(npc.id)) npc,
         for (final npc in campaign.npcs.travellers)
-          if (_whereabouts[npc.id] == _roomId && npc.isPresent(_flags)) npc,
+          if (_whereabouts[npc.id] == _roomId &&
+              npc.isPresent(_flags) &&
+              !isCompanion(npc.id))
+            npc,
       ];
 
   Npc? _findNpcHere(String who) => NpcDirectory.findAmong(_npcsHere(), who);
+
+  // --- companions ----------------------------------------------------------
+
+  /// The party Pathfinder writes its fights for, and as many as will travel
+  /// together: nobody joins a party of four.
+  static const int fullParty = 4;
+
+  /// Those who joined on the road rather than being imported, by NPC id, in
+  /// the order they joined.
+  final List<String> _companionIds = [];
+
+  /// Everyone who has ever been paid to join, so coming back is free.
+  final Set<String> _hired = {};
+
+  /// Companions in the party, in the order they joined.
+  List<SessionActor> get companions => [
+        for (final id in _companionIds) _actors.firstWhere((a) => a.id == id),
+      ];
+
+  bool isCompanion(String actorId) => _companionIds.contains(actorId);
+
+  /// The level a companion is built at: the party's, as the imported
+  /// characters have it, so they keep pace with every level-up.
+  int get _companionLevel => partyLevel([
+        for (final a in _actors)
+          if (!isCompanion(a.id)) a.character.level,
+      ]);
+
+  /// Everyone here who would join the party.
+  List<Npc> get recruitsHere => [
+        for (final npc in _npcsHere())
+          if (npc.recruit != null) npc,
+      ];
+
+  /// Who [npc] would be in the party, at the party's level.
+  SessionActor companionFor(Npc npc) {
+    final recruit = npc.recruit;
+    if (recruit == null) {
+      throw InvalidMoveException('${npc.name} is not looking to join anyone.');
+    }
+    return SessionActor(
+      id: npc.id,
+      character: buildCompanion(
+        name: npc.name,
+        recruit: recruit,
+        level: _companionLevel,
+      ),
+    );
+  }
+
+  /// What [npc] asks to join: their fee the first time, nothing after.
+  int feeFor(Npc npc) => _hired.contains(npc.id) ? 0 : npc.recruit?.fee ?? 0;
+
+  /// Why [npc] cannot join now, or null if they can.
+  String? whyNot(Npc npc) {
+    if (npc.recruit == null) {
+      return '${npc.name} is not looking to join anyone.';
+    }
+    if (_actors.length >= fullParty) {
+      return 'There are $fullParty of you already. Somebody would have to go '
+          'before ${npc.name} could come.';
+    }
+    final fee = feeFor(npc);
+    if (fee > _inventory.coin) {
+      return '${npc.name} wants ${formatCoin(fee)}, and the purse holds '
+          '${formatCoin(_inventory.coin)}.';
+    }
+    return null;
+  }
+
+  /// Takes on [who], somebody here who would join: they are paid, and walk
+  /// with the party from now on, at its level, rested and whole.
+  SessionActor recruit(String who) {
+    final npc = _findNpcHere(who);
+    if (npc == null) {
+      throw InvalidMoveException('There is nobody called "$who" here.');
+    }
+    if (whyNot(npc) case final reason?) throw InvalidMoveException(reason);
+    final fee = feeFor(npc);
+    if (fee > 0) _inventory.spend(fee);
+    _hired.add(npc.id);
+    return _join(npc);
+  }
+
+  SessionActor _join(Npc npc) {
+    final actor = companionFor(npc);
+    _actors.add(actor);
+    _companionIds.add(actor.id);
+    _vitals[actor.id] = ActorVitals.fresh(actor.stats);
+    _experience.reconcile([
+      (id: actor.id, level: actor.character.level, sheetXp: 0),
+    ]);
+    return actor;
+  }
+
+  /// Parts ways with companion [who], who goes back to where they were
+  /// found. Whatever they were wearing or wielding stays with the party.
+  SessionActor dismiss(String who) {
+    final actor = actorFor(who);
+    if (!isCompanion(actor.id)) {
+      throw InvalidMoveException('${actor.name} is one of you, not somebody '
+          'met on the road.');
+    }
+    for (final slot in EquipSlot.values) {
+      _inventory.unequip(actor.id, slot);
+    }
+    _actors.remove(actor);
+    _companionIds.remove(actor.id);
+    _vitals.remove(actor.id);
+    return actor;
+  }
+
+  /// Where a companion who left would be found again.
+  String? homeOf(String npcId) => campaign.npcs.byId(npcId)?.location;
 
   /// Where a traveller is now, or null while they are on the road.
   String? whereIs(String npcId) => _whereabouts[npcId];
@@ -1983,6 +2147,8 @@ class WorldSession {
             },
         },
         'flags': (_flags.toList()..sort()),
+        if (_companionIds.isNotEmpty) 'companions': List.of(_companionIds),
+        if (_hired.isNotEmpty) 'hired': (_hired.toList()..sort()),
         if (!scaleFights) 'scaleFights': false,
         'inventory': _inventory.toJson(),
         'ledger': _ledger.toJson(),
@@ -2086,9 +2252,19 @@ class WorldSession {
     final minute = (snapshot['minute'] as num?)?.toInt();
     if (minute != null) session._minute = minute % _minutesInDay;
     session._restoreSky(snapshot['sky']);
+    // Companions are built again rather than saved: at the party's level as
+    // it is now, so a level-up re-imported in Pathbuilder takes them along.
+    session._hired.addAll(
+        [for (final id in (snapshot['hired'] as List? ?? const [])) '$id']);
+    for (final id in (snapshot['companions'] as List? ?? const [])) {
+      final npc = campaign.npcs.byId('$id');
+      if (npc?.recruit == null || session.isCompanion('$id')) continue;
+      if (session._actors.length >= fullParty) break;
+      session._join(npc!);
+    }
     final vitals = snapshot['vitals'];
     if (vitals is Map) {
-      for (final actor in actors) {
+      for (final actor in session._actors) {
         session._vitals[actor.id] = ActorVitals.restore(
             ActorVitals.fresh(actor.stats), vitals[actor.id]);
       }

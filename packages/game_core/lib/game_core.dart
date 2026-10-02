@@ -23,6 +23,7 @@ export 'src/campaign/world.dart';
 export 'src/campaign/world_item.dart';
 export 'src/party/character_revision.dart';
 export 'src/party/character_store.dart';
+export 'src/party/companion.dart';
 export 'src/party/equipment.dart';
 export 'src/party/experience.dart';
 export 'src/party/party.dart';

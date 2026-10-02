@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:pf2e_core/pf2e_core.dart';
 
 import '../scene/adventure_loader.dart';
+import '../party/companion.dart';
 import '../party/experience.dart';
 import '../scene/scene.dart';
 import 'arc.dart';
@@ -211,6 +212,7 @@ class CampaignLoader {
             e.key.trim().toLowerCase(): e.value.toString(),
         },
         route: _readRoute(raw['route'], id),
+        recruit: _readRecruit(raw['recruit'], id),
         barks: [
           for (final b in _list(raw['barks']))
             if (b is Map)
@@ -223,6 +225,26 @@ class CampaignLoader {
       ));
     }
     return NpcDirectory(npcs);
+  }
+
+  /// Who an NPC would be in the party. The class has to be one a companion
+  /// can be built as, since the build is all the engine has to go on.
+  Recruit? _readRecruit(Object? raw, String npcId) {
+    if (raw is! Map) return null;
+    final m = raw.cast<String, Object?>();
+    final className = _string(m['class'], 'recruit class of $npcId');
+    if (CompanionKit.forClass(className) == null) {
+      throw CampaignFormatException('$npcId would join as a "$className", '
+          'and a companion can only be '
+          '${CompanionKit.classes.map((k) => k.className).join(', ')}.');
+    }
+    return Recruit(
+      className: className,
+      ancestry: _string(m['ancestry'], 'recruit ancestry of $npcId'),
+      heritage: _optional(m['heritage']) ?? '',
+      background: _optional(m['background']) ?? '',
+      fee: _readPrice(m['fee_gp'], 'hiring $npcId') ?? 0,
+    );
   }
 
   NpcRoute? _readRoute(Object? raw, String npcId) {
@@ -768,20 +790,25 @@ class CampaignLoader {
       if (!seen.add(name.toLowerCase())) {
         throw CampaignFormatException('"$name" is in the spell table twice.');
       }
-      final defenseName = _string(raw['defense'], 'defense of "$name"');
+      // A healing spell says what it heals instead of what it does and what
+      // stops it: nobody saves against being mended.
+      final heals = raw.containsKey('heal');
+      final defenseName =
+          heals ? 'will' : _string(raw['defense'], 'defense of "$name"');
       final defense = SpellDefense.tryParse(defenseName);
       if (defense == null) {
         throw CampaignFormatException('"$name" is rolled against '
             '"$defenseName", which is not ac, fortitude, reflex or will.');
       }
-      final damage = DamageExpression.tryParse(
-          _string(raw['damage'], 'damage of "$name"'));
+      final amount = heals ? 'heal' : 'damage';
+      final damage =
+          DamageExpression.tryParse(_string(raw[amount], '$amount of "$name"'));
       if (damage == null) {
-        throw CampaignFormatException('"$name" has damage "${raw['damage']}", '
-            'which is not dice.');
+        throw CampaignFormatException('"$name" has $amount '
+            '"${raw[amount]}", which is not dice.');
       }
       final heighten = _map(raw['heighten']);
-      final extraRaw = _optional(heighten['damage']);
+      final extraRaw = _optional(heighten[amount]);
       final extra =
           extraRaw == null ? null : DamageExpression.tryParse(extraRaw);
       if (extraRaw != null &&
@@ -804,6 +831,7 @@ class CampaignLoader {
         area: raw['area'] == true,
         heightenEvery: _int(heighten['every'], fallback: 1).clamp(1, 10),
         heightenDamage: extra,
+        heals: heals,
       ));
     }
     return SpellBook(spells);

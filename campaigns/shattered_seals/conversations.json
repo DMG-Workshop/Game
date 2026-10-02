@@ -2843,6 +2843,696 @@
           "isEnding": true
         }
       ]
+    },
+    {
+      "npc": "npc_013_bren",
+      "entries": [
+        {
+          "scene": "bren_again",
+          "requires": ["met_bren"]
+        },
+        { "scene": "bren_open" }
+      ],
+      "scenes": [
+        {
+          "id": "bren_open",
+          "title": "Bren Cask",
+          "body": "The guard looks up from her ale and takes the measure of you in one long look: weapons first, boots second, faces last. \"If you're selling, I'm skint. If you're hiring, sit down.\"",
+          "options": [
+            {
+              "id": "ask_about",
+              "label": "Ask what she is doing here",
+              "say": "You look like you're waiting for something.",
+              "outcome": {
+                "text": "\"For the road to open, same as everybody. I came in off it.\" She turns the cup. \"Three wagons out of Valorheim, and me to guard them. I'm what's left of the job.\"",
+                "goTo": "bren_talk",
+                "setFlags": ["met_bren"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "We could use a sword. Would you come?",
+              "outcome": {
+                "text": "\"Would I.\" She is already reaching for the greatsword. \"I'd rather be paid to go looking for whatever took my wagons than sit here waiting for it to come and finish the job.\"",
+                "goTo": "bren_talk",
+                "setFlags": ["met_bren"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "She goes back to making the ale last.",
+                "goTo": "bren_bye",
+                "setFlags": ["met_bren"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "bren_talk",
+          "title": "Bren Cask",
+          "body": "Bren waits, cup in hand.",
+          "options": [
+            {
+              "id": "ask_rumour",
+              "label": "Ask what happened to the caravan",
+              "say": "What took the wagons?",
+              "outcome": {
+                "text": "\"Something came out of the trees at dusk. Thin, grey, moving like puppets with half the strings cut.\" She drinks. \"I cut one in half. It kept coming. Both halves.\"",
+                "goTo": "bren_talk",
+                "setFlags": ["bren_shared_rumour"]
+              },
+              "requires": {
+                "notFlags": ["bren_shared_rumour"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "We could use a sword. Would you come?",
+              "outcome": {
+                "text": "\"Would I.\" She is already reaching for the greatsword. \"I'd rather be paid to go looking for whatever took my wagons than sit here waiting for it to come and finish the job.\"",
+                "goTo": "bren_talk"
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "She goes back to making the ale last.", "goTo": "bren_bye" }
+            }
+          ]
+        },
+        {
+          "id": "bren_again",
+          "title": "Bren Cask",
+          "body": "Bren raises her cup an inch, which seems to be hello.",
+          "options": [
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "We could use a sword. Would you come?",
+              "outcome": {
+                "text": "\"Would I.\" She is already reaching for the greatsword. \"I'd rather be paid to go looking for whatever took my wagons than sit here waiting for it to come and finish the job.\"",
+                "goTo": "bren_talk"
+              }
+            },
+            {
+              "id": "talk",
+              "label": "Talk",
+              "outcome": { "text": "They wait for you to go on.", "goTo": "bren_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "She goes back to making the ale last.", "goTo": "bren_bye" }
+            }
+          ]
+        },
+        {
+          "id": "bren_bye",
+          "title": "Bren Cask",
+          "body": "She goes back to making the ale last.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_014_tamsin",
+      "entries": [
+        {
+          "scene": "tamsin_again",
+          "requires": ["met_tamsin"]
+        },
+        { "scene": "tamsin_open" }
+      ],
+      "scenes": [
+        {
+          "id": "tamsin_open",
+          "title": "Tamsin Reed",
+          "body": "The elf does not look up from her snare. \"Quietly,\" she says. \"Not that there's anything left in there to scare.\"",
+          "options": [
+            {
+              "id": "ask_about",
+              "label": "Ask what she hunts",
+              "say": "What are you setting snares for?",
+              "outcome": {
+                "text": "\"Deer, once. Hare. Anything that ate.\" She holds up the snare: leaves, and a twig. \"A month of this. I've started setting them for whatever is eating the deer.\"",
+                "goTo": "tamsin_talk",
+                "setFlags": ["met_tamsin"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "You know the wood. Would you walk it with us?",
+              "outcome": {
+                "text": "\"Every deer path from here to the Hollow Grove.\" She strings the bow in one movement. \"And I can put an arrow through a thrall's eye at sixty paces. Which is more use than a snare, this month.\"",
+                "goTo": "tamsin_talk",
+                "setFlags": ["met_tamsin"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "She goes back to the snare.",
+                "goTo": "tamsin_bye",
+                "setFlags": ["met_tamsin"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "tamsin_talk",
+          "title": "Tamsin Reed",
+          "body": "Tamsin waits, eyes on the treeline.",
+          "options": [
+            {
+              "id": "ask_rumour",
+              "label": "Ask what has happened to the game",
+              "say": "Where have the deer gone?",
+              "outcome": {
+                "text": "\"Gone. Not hunted out: gone.\" She looks at the trees. \"Everything in that wood with the sense to run from something has run. Which tells you what the ones left in there have the sense for.\"",
+                "goTo": "tamsin_talk",
+                "setFlags": ["tamsin_shared_rumour"]
+              },
+              "requires": {
+                "notFlags": ["tamsin_shared_rumour"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "You know the wood. Would you walk it with us?",
+              "outcome": {
+                "text": "\"Every deer path from here to the Hollow Grove.\" She strings the bow in one movement. \"And I can put an arrow through a thrall's eye at sixty paces. Which is more use than a snare, this month.\"",
+                "goTo": "tamsin_talk"
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "She goes back to the snare.", "goTo": "tamsin_bye" }
+            }
+          ]
+        },
+        {
+          "id": "tamsin_again",
+          "title": "Tamsin Reed",
+          "body": "Tamsin lifts two fingers from the bow. You are seen.",
+          "options": [
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "You know the wood. Would you walk it with us?",
+              "outcome": {
+                "text": "\"Every deer path from here to the Hollow Grove.\" She strings the bow in one movement. \"And I can put an arrow through a thrall's eye at sixty paces. Which is more use than a snare, this month.\"",
+                "goTo": "tamsin_talk"
+              }
+            },
+            {
+              "id": "talk",
+              "label": "Talk",
+              "outcome": { "text": "They wait for you to go on.", "goTo": "tamsin_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "She goes back to the snare.", "goTo": "tamsin_bye" }
+            }
+          ]
+        },
+        {
+          "id": "tamsin_bye",
+          "title": "Tamsin Reed",
+          "body": "She goes back to the snare.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_015_wren",
+      "entries": [
+        {
+          "scene": "wren_again",
+          "requires": ["met_wren"]
+        },
+        { "scene": "wren_open" }
+      ],
+      "scenes": [
+        {
+          "id": "wren_open",
+          "title": "Sister Wren",
+          "body": "The young sister sits back on her heels and pushes her hair out of her eyes with a wet wrist. \"Ashkyr keep you. Mind the wet step. I've scrubbed it three times this morning; it is the cleanest step in the valley and nobody is coming up it.\"",
+          "options": [
+            {
+              "id": "ask_about",
+              "label": "Ask why nobody comes",
+              "say": "Nobody comes to the temple?",
+              "outcome": {
+                "text": "\"The hurt come to the temple. That's what Brother Aldus says.\" She wrings the cloth out. \"They're not coming. They're lying out on the roads, and I'm in here scrubbing.\"",
+                "goTo": "wren_talk",
+                "setFlags": ["met_wren"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "Then come where the hurt are. Come with us.",
+              "outcome": {
+                "text": "\"Fifteen gold for the poor box,\" she says at once, as if she had the sum ready, \"and I'll come and keep you standing. I can mend most things that bleed.\" She looks at the step. \"Somebody else can scrub it.\"",
+                "goTo": "wren_talk",
+                "setFlags": ["met_wren"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "She goes back to the cleanest step in the valley.",
+                "goTo": "wren_bye",
+                "setFlags": ["met_wren"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "wren_talk",
+          "title": "Sister Wren",
+          "body": "Wren waits, cloth in hand.",
+          "options": [
+            {
+              "id": "ask_rumour",
+              "label": "Ask about Brother Aldus",
+              "say": "How is Brother Aldus?",
+              "outcome": {
+                "text": "\"Tired.\" She lowers her voice. \"He hasn't slept properly since the Whitmore girl went missing. He sits up with the old books, the ones about seals, and he doesn't like me asking which.\"",
+                "goTo": "wren_talk",
+                "setFlags": ["wren_shared_rumour"]
+              },
+              "requires": {
+                "notFlags": ["wren_shared_rumour"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "Then come where the hurt are. Come with us.",
+              "outcome": {
+                "text": "\"Fifteen gold for the poor box,\" she says at once, as if she had the sum ready, \"and I'll come and keep you standing. I can mend most things that bleed.\" She looks at the step. \"Somebody else can scrub it.\"",
+                "goTo": "wren_talk"
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "She goes back to the cleanest step in the valley.", "goTo": "wren_bye" }
+            }
+          ]
+        },
+        {
+          "id": "wren_again",
+          "title": "Sister Wren",
+          "body": "Sister Wren looks up from the step with something like hope.",
+          "options": [
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "Then come where the hurt are. Come with us.",
+              "outcome": {
+                "text": "\"Fifteen gold for the poor box,\" she says at once, as if she had the sum ready, \"and I'll come and keep you standing. I can mend most things that bleed.\" She looks at the step. \"Somebody else can scrub it.\"",
+                "goTo": "wren_talk"
+              }
+            },
+            {
+              "id": "talk",
+              "label": "Talk",
+              "outcome": { "text": "They wait for you to go on.", "goTo": "wren_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "She goes back to the cleanest step in the valley.", "goTo": "wren_bye" }
+            }
+          ]
+        },
+        {
+          "id": "wren_bye",
+          "title": "Sister Wren",
+          "body": "She goes back to the cleanest step in the valley.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_016_ilse",
+      "entries": [
+        {
+          "scene": "ilse_again",
+          "requires": ["met_ilse"]
+        },
+        { "scene": "ilse_open" }
+      ],
+      "scenes": [
+        {
+          "id": "ilse_open",
+          "title": "Ilse Marrow",
+          "body": "The woman at the copying desk finishes her sentence before she looks up, and it is clearly a sentence she has enjoyed. \"If you want a book, ask the Keeper. If you want an argument, I'm free.\"",
+          "options": [
+            {
+              "id": "ask_about",
+              "label": "Ask what she is writing",
+              "say": "What are you writing?",
+              "outcome": {
+                "text": "\"A letter to the Academy explaining why they should have me back.\" She blots it. \"They threw me out for setting fire to a lecturer. In fairness to me, he asked what the spell did.\"",
+                "goTo": "ilse_talk",
+                "setFlags": ["met_ilse"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "Copying is wasted on you. Come with us.",
+              "outcome": {
+                "text": "\"Finally, somebody with sense.\" She caps the ink. \"Sixty gold, and you'll have somebody along who has actually read what you are about to get yourselves killed over. I also do fireballs.\"",
+                "goTo": "ilse_talk",
+                "setFlags": ["met_ilse"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "She goes back to the letter, and the letter gets ruder.",
+                "goTo": "ilse_bye",
+                "setFlags": ["met_ilse"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "ilse_talk",
+          "title": "Ilse Marrow",
+          "body": "Ilse taps her pen, waiting.",
+          "options": [
+            {
+              "id": "ask_rumour",
+              "label": "Ask about the library",
+              "say": "Anything strange in the stacks lately?",
+              "outcome": {
+                "text": "\"Somebody has been borrowing the books on the old seals and bringing them back with pages cut out. Cleanly. With a knife that knew what it was doing.\" She sniffs. \"I told the Keeper. The Keeper told me to mind my own copying.\"",
+                "goTo": "ilse_talk",
+                "setFlags": ["ilse_shared_rumour"]
+              },
+              "requires": {
+                "notFlags": ["ilse_shared_rumour"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "Copying is wasted on you. Come with us.",
+              "outcome": {
+                "text": "\"Finally, somebody with sense.\" She caps the ink. \"Sixty gold, and you'll have somebody along who has actually read what you are about to get yourselves killed over. I also do fireballs.\"",
+                "goTo": "ilse_talk"
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "She goes back to the letter, and the letter gets ruder.",
+                "goTo": "ilse_bye"
+              }
+            }
+          ]
+        },
+        {
+          "id": "ilse_again",
+          "title": "Ilse Marrow",
+          "body": "Ilse looks up from her letter. \"Oh, good. You.\"",
+          "options": [
+            {
+              "id": "join",
+              "label": "Ask her to join you",
+              "say": "Copying is wasted on you. Come with us.",
+              "outcome": {
+                "text": "\"Finally, somebody with sense.\" She caps the ink. \"Sixty gold, and you'll have somebody along who has actually read what you are about to get yourselves killed over. I also do fireballs.\"",
+                "goTo": "ilse_talk"
+              }
+            },
+            {
+              "id": "talk",
+              "label": "Talk",
+              "outcome": { "text": "They wait for you to go on.", "goTo": "ilse_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "She goes back to the letter, and the letter gets ruder.",
+                "goTo": "ilse_bye"
+              }
+            }
+          ]
+        },
+        {
+          "id": "ilse_bye",
+          "title": "Ilse Marrow",
+          "body": "She goes back to the letter, and the letter gets ruder.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_017_grum",
+      "entries": [
+        {
+          "scene": "grum_again",
+          "requires": ["met_grum"]
+        },
+        { "scene": "grum_open" }
+      ],
+      "scenes": [
+        {
+          "id": "grum_open",
+          "title": "Grum",
+          "body": "The dwarf does not get up. He does not look as if he gets up for anybody. \"Shaft's shut,\" he says. \"Foreman's orders. Foreman's wrong.\"",
+          "options": [
+            {
+              "id": "ask_about",
+              "label": "Ask why the shaft is shut",
+              "say": "Why did they shut it?",
+              "outcome": {
+                "text": "\"They put a guard on the deep workings. Then the guard stopped coming up. Now they just shut it, and pay us to sit here.\" He spits. \"Badly.\"",
+                "goTo": "grum_talk",
+                "setFlags": ["met_grum"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask him to join you",
+              "say": "We're going down there, sooner or later. Come with us.",
+              "outcome": {
+                "text": "\"Forty gold.\" He stands, and keeps standing for longer than seems possible. \"I want to hit something that deserves it.\"",
+                "goTo": "grum_talk",
+                "setFlags": ["met_grum"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "He goes back to glaring at the shaft.",
+                "goTo": "grum_bye",
+                "setFlags": ["met_grum"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "grum_talk",
+          "title": "Grum",
+          "body": "Grum waits, the axe across his knees.",
+          "options": [
+            {
+              "id": "ask_rumour",
+              "label": "Ask about the token round his neck",
+              "say": "Whose token is that?",
+              "outcome": {
+                "text": "\"My brother's.\" His thumb goes over it. \"Something down there broke his pick in half. With my brother still holding it. I'm keeping his token till I can put it back on the board.\"",
+                "goTo": "grum_talk",
+                "setFlags": ["grum_shared_rumour"]
+              },
+              "requires": {
+                "notFlags": ["grum_shared_rumour"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask him to join you",
+              "say": "We're going down there, sooner or later. Come with us.",
+              "outcome": {
+                "text": "\"Forty gold.\" He stands, and keeps standing for longer than seems possible. \"I want to hit something that deserves it.\"",
+                "goTo": "grum_talk"
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "He goes back to glaring at the shaft.", "goTo": "grum_bye" }
+            }
+          ]
+        },
+        {
+          "id": "grum_again",
+          "title": "Grum",
+          "body": "Grum grunts. It might be a greeting.",
+          "options": [
+            {
+              "id": "join",
+              "label": "Ask him to join you",
+              "say": "We're going down there, sooner or later. Come with us.",
+              "outcome": {
+                "text": "\"Forty gold.\" He stands, and keeps standing for longer than seems possible. \"I want to hit something that deserves it.\"",
+                "goTo": "grum_talk"
+              }
+            },
+            {
+              "id": "talk",
+              "label": "Talk",
+              "outcome": { "text": "They wait for you to go on.", "goTo": "grum_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "He goes back to glaring at the shaft.", "goTo": "grum_bye" }
+            }
+          ]
+        },
+        {
+          "id": "grum_bye",
+          "title": "Grum",
+          "body": "He goes back to glaring at the shaft.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_018_vey",
+      "entries": [
+        {
+          "scene": "vey_again",
+          "requires": ["met_vey"]
+        },
+        { "scene": "vey_open" }
+      ],
+      "scenes": [
+        {
+          "id": "vey_open",
+          "title": "Vey",
+          "body": "The halfling at the fountain smiles at you with all of a great many teeth. \"Lost something? No?\" A glance at your belts. \"Give it a minute.\"",
+          "options": [
+            {
+              "id": "ask_about",
+              "label": "Ask what he does",
+              "say": "What is it you do, exactly?",
+              "outcome": {
+                "text": "\"Doors.\" He spreads his hands. \"Locks, mostly, and what's behind them. There's no lock in Valorheim I haven't opened, and a few I've opened twice, to be sure.\"",
+                "goTo": "vey_talk",
+                "setFlags": ["met_vey"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask him to join you",
+              "say": "We could use somebody who opens doors.",
+              "outcome": {
+                "text": "\"Fifty gold, and you'll have every door between here and the palace.\" He straightens his coat, and something in one of the pockets clinks. \"Pockets too, if you're not fussy.\"",
+                "goTo": "vey_talk",
+                "setFlags": ["met_vey"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "He melts back into the crowd round the fountain.",
+                "goTo": "vey_bye",
+                "setFlags": ["met_vey"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "vey_talk",
+          "title": "Vey",
+          "body": "Vey waits, watching the crowd over your shoulder.",
+          "options": [
+            {
+              "id": "ask_rumour",
+              "label": "Ask what he has heard",
+              "say": "You hear things. What are you hearing?",
+              "outcome": {
+                "text": "\"The palace kitchens order twice the bread they used to.\" He holds up two fingers. \"Twice. And nobody new has been seen going in. So who is eating it?\"",
+                "goTo": "vey_talk",
+                "setFlags": ["vey_shared_rumour"]
+              },
+              "requires": {
+                "notFlags": ["vey_shared_rumour"]
+              }
+            },
+            {
+              "id": "join",
+              "label": "Ask him to join you",
+              "say": "We could use somebody who opens doors.",
+              "outcome": {
+                "text": "\"Fifty gold, and you'll have every door between here and the palace.\" He straightens his coat, and something in one of the pockets clinks. \"Pockets too, if you're not fussy.\"",
+                "goTo": "vey_talk"
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "He melts back into the crowd round the fountain.", "goTo": "vey_bye" }
+            }
+          ]
+        },
+        {
+          "id": "vey_again",
+          "title": "Vey",
+          "body": "Vey tips an imaginary hat. \"My favourite customers.\"",
+          "options": [
+            {
+              "id": "join",
+              "label": "Ask him to join you",
+              "say": "We could use somebody who opens doors.",
+              "outcome": {
+                "text": "\"Fifty gold, and you'll have every door between here and the palace.\" He straightens his coat, and something in one of the pockets clinks. \"Pockets too, if you're not fussy.\"",
+                "goTo": "vey_talk"
+              }
+            },
+            {
+              "id": "talk",
+              "label": "Talk",
+              "outcome": { "text": "They wait for you to go on.", "goTo": "vey_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "He melts back into the crowd round the fountain.", "goTo": "vey_bye" }
+            }
+          ]
+        },
+        {
+          "id": "vey_bye",
+          "title": "Vey",
+          "body": "He melts back into the crowd round the fountain.",
+          "isEnding": true
+        }
+      ]
     }
   ]
 }
