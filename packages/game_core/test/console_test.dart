@@ -309,8 +309,15 @@ void main() {
     });
 
     test('Hale will sell a plan of the city across his desk', () async {
-      final log = await _play('VC_003_GrandLibrary',
-          ['talk hale', '#empty sections', '#plan of the city', '1', '0'],
+      final log = await _play(
+          'VC_003_GrandLibrary',
+          [
+            'talk hale',
+            '#empty sections',
+            '#plan of the city',
+            '#A Plan of Valorheim',
+            '0',
+          ],
           gold: 20);
       expect(log, contains("The Library's Copying Desk"));
       expect(log, contains('You buy A Plan of Valorheim for 12 gp'));

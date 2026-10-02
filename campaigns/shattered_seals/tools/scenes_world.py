@@ -509,6 +509,74 @@ SHOP_LINES = {
             'The Crown sets the price, not I. Come back when you can pay it.',
         ],
     },
+    's_004_harrows_forge': {
+        'greet': [
+            'Everything on the rack is sound. If it was not, it would be on '
+            'the scrap pile.',
+            'Look. Do not touch the one cooling on the anvil.',
+        ],
+        'buy': [
+            'Keep it oiled. Bring it back if it chips, not if you do.',
+            'Good steel. Try not to leave it in anything.',
+        ],
+        'sell': [
+            'I can take the iron back. Half, which is fair for iron.',
+            'I will melt it down for something better. Half.',
+        ],
+        'broke': [
+            'Steel costs what it costs. Come back with the rest.',
+        ],
+    },
+    's_005_temple_alms_table': {
+        'greet': [
+            'What the temple has, it shares, for what keeps the roof on.',
+            'Take what you need. Leave what you can.',
+        ],
+        'buy': [
+            'Ashkyr keep you, and keep that safe until you need it.',
+            'Use it on somebody who needs it. That is all I ask.',
+        ],
+        'sell': [
+            'The temple will find a use for it. Half, for the roof.',
+        ],
+        'broke': [
+            'I would give it you if I could. The roof would not.',
+        ],
+    },
+    's_006_watch_stores': {
+        'greet': [
+            'Watch stores. Sign for what you take, and pay for it, both.',
+            'Mind the crates. Mind them a lot.',
+        ],
+        'buy': [
+            'Throw it at them, not at me. Away from the thatch.',
+            'Signed for. Do not drop it on the stairs.',
+        ],
+        'sell': [
+            'Back into stores it goes. Half, as per regulations.',
+        ],
+        'broke': [
+            'Regulations say coin first. I did not write them. I enforce them.',
+        ],
+    },
+    's_007_crown_armoury': {
+        'greet': [
+            'Crown surplus, and Crown prices. Both negotiable, neither by '
+            'much.',
+            'Everything here has the royal stamp, and most of it has the royal '
+            'edge.',
+        ],
+        'buy': [
+            'Struck off the inventory. You were never here.',
+            'A sound purchase. The Crown thanks you for your custom.',
+        ],
+        'sell': [
+            'The Crown will take it back into stores. At half.',
+        ],
+        'broke': [
+            'The Crown does not extend credit. Not to you, not to the King.',
+        ],
+    },
 }
 
 WEATHER_REMARKS = {
@@ -663,5 +731,12 @@ NPC_BARKS = {
     ],
     'npc_018_vey': [
         bark('Still got everything? Check.', requires=['met_vey']),
+    ],
+    'npc_019_rook': [
+        bark('Stores are open. Mind the crates.', requires=['met_rook']),
+    ],
+    'npc_020_venn': [
+        bark('Back for more Crown surplus? It is not getting any cheaper.',
+             requires=['met_venn']),
     ],
 }

@@ -22,6 +22,7 @@ CAMPAIGN = os.path.dirname(HERE)
 ORDER = [
     'build_hunt.py',
     'build_weather.py',
+    'build_arms.py',
     'build_scenes.py',
     'build_conversations.py',
 ]

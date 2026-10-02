@@ -244,6 +244,35 @@ class StrikeResult {
   }
 }
 
+/// The record of a bomb thrown.
+class ThrowResult {
+  const ThrowResult({
+    required this.item,
+    required this.thrower,
+    required this.target,
+    required this.check,
+    required this.damage,
+    this.damageRoll,
+    this.splash = 0,
+    this.dropped = false,
+  });
+
+  final GearItem item;
+  final Combatant thrower;
+  final Combatant target;
+  final CheckOutcome check;
+
+  /// The bomb's dice on a hit, doubled on a critical; null on a miss.
+  final DamageRoll? damageRoll;
+
+  /// Splash that landed: on a hit and on a miss, not on a critical miss.
+  final int splash;
+
+  /// Everything the target took.
+  final int damage;
+  final bool dropped;
+}
+
 /// A fight, run a turn at a time.
 ///
 /// Positions are zones rather than squares: ordered bands of distance that
@@ -265,8 +294,10 @@ class EncounterSession {
     SpellBook? spells,
     Map<String, ActorVitals> vitals = const {},
     PartyInventory? inventory,
+    Map<String, int>? itemUses,
     this.scaling,
   })  : _spells = spells ?? SpellBook(),
+        _itemUses = itemUses ?? {},
         _vitals = vitals,
         _inventory = inventory,
         _roller = roller,
@@ -330,6 +361,9 @@ class EncounterSession {
   /// What the party carries, shared with the world, so something used up
   /// here is gone afterwards. Null when the caller brought no pack.
   final PartyInventory? _inventory;
+
+  /// What each wand and staff has given today, shared with the world.
+  final Map<String, int> _itemUses;
 
   /// The campaign's loot tables, when the caller wants drops rolled.
   final GearTable? _gear;
@@ -465,7 +499,23 @@ class EncounterSession {
     final actor = current.actor;
     final vitals = actor == null ? null : _vitals[actor.id];
     if (actor == null || vitals == null) return const [];
-    return castOptionsFor(actor, vitals, _spells);
+    final inventory = _inventory;
+    return [
+      ...castOptionsFor(actor, vitals, _spells),
+      if (inventory != null)
+        ...itemCastOptions(actor, inventory, _itemUses, _spells),
+    ];
+  }
+
+  /// Pays for [option]: from the caster, or from the item it came off.
+  void _spend(CastOption option, Combatant caster) {
+    final inventory = _inventory;
+    if (option.item != null) {
+      if (inventory != null) spendItemCast(option, inventory, _itemUses);
+      return;
+    }
+    final vitals = _vitals[caster.id];
+    if (vitals != null) spendCast(option, vitals);
   }
 
   /// Who [option] would catch if the current combatant cast it now, at the
@@ -566,14 +616,23 @@ class EncounterSession {
   /// on a critical success, half on a success, double on a critical failure.
   /// A burst catches everyone standing in the target's zone, the party
   /// included.
-  SpellResult cast(String spellName, {String? targetId, int? rank}) {
+  ///
+  /// [source] picks where it comes from, `item:<id>` for something carried;
+  /// without it, the caster's own magic comes before anything in the pack.
+  SpellResult cast(
+    String spellName, {
+    String? targetId,
+    int? rank,
+    String? source,
+  }) {
     _requirePartyTurn();
     final caster = current;
     final needle = spellName.trim().toLowerCase();
     final options = castOptions()
         .where((o) =>
             o.spell.name.toLowerCase() == needle &&
-            (rank == null || o.rank == rank))
+            (rank == null || o.rank == rank) &&
+            (source == null || o.source == source))
         .toList();
     if (options.isEmpty) {
       throw InvalidActionException(
@@ -656,8 +715,7 @@ class EncounterSession {
     }
 
     _actionsLeft -= spell.actions;
-    final vitals = _vitals[caster.id];
-    if (vitals != null) spendCast(option, vitals);
+    _spend(option, caster);
     _checkOutcome();
     return SpellResult(
       caster: caster,
@@ -685,8 +743,7 @@ class EncounterSession {
     final before = target.hp;
     target.hp = (target.hp + roll.total).clamp(0, target.maxHp);
     _actionsLeft -= option.spell.actions;
-    final vitals = _vitals[caster.id];
-    if (vitals != null) spendCast(option, vitals);
+    _spend(option, caster);
     return SpellResult(
       caster: caster,
       option: option,
@@ -715,7 +772,17 @@ class EncounterSession {
       throw InvalidActionException('You are not carrying a "$what".');
     }
     final effect = item.use;
+    final heal = effect?.heal;
     if (effect == null) throw InvalidActionException(cannotUseByHand(item));
+    if (effect.isBomb) {
+      throw InvalidActionException('${item.name} is thrown: '
+          '"throw ${item.name} at <enemy>".');
+    }
+    if (heal == null) {
+      throw InvalidActionException('${item.name} casts '
+          '${effect.spells.first.name}: "cast ${effect.spells.first.name} '
+          'from ${item.name}".');
+    }
     _requireActions(effect.actions);
 
     final user = current;
@@ -733,7 +800,7 @@ class EncounterSession {
     }
 
     inventory.remove(item.id);
-    final roll = effect.heal.rollDetailed(_roller);
+    final roll = heal.rollDetailed(_roller);
     final wasDown = target.isDown;
     final before = target.hp;
     target.hp = (target.hp + roll.total).clamp(0, target.maxHp);
@@ -747,6 +814,98 @@ class EncounterSession {
       hp: target.hp,
       maxHp: target.maxHp,
       revived: wasDown && !target.isDown,
+    );
+  }
+
+  /// Enemies the current combatant could throw a bomb at: standing, and no
+  /// further than near.
+  List<Combatant> throwTargets() {
+    final near = encounter.zones.indexOf('near');
+    final me = current;
+    return [
+      for (final c in _combatants)
+        if (c.isEnemy && !c.isDown && _distance(me, c) <= (near < 0 ? 1 : near))
+          c,
+    ]..sort((a, b) => _distance(me, a).compareTo(_distance(me, b)));
+  }
+
+  /// Throws [what], a bomb from the pack, at [targetId], or at the nearest
+  /// enemy in reach.
+  ///
+  /// A bomb is a thrown weapon, so it is a Strike in all but name: Dexterity
+  /// and the thrower's weapon proficiency, the bomb's own item bonus, and
+  /// the multiple attack penalty, against AC, as far as near. A hit does the
+  /// bomb's damage and its splash, a critical hit double the damage; a miss
+  /// still splashes, and only a critical miss does nothing at all.
+  ThrowResult throwBomb(String what, {String? targetId}) {
+    _requirePartyTurn();
+    final inventory = _inventory;
+    final item = inventory?.find(what);
+    if (inventory == null || item == null) {
+      throw InvalidActionException('You are not carrying a "$what".');
+    }
+    final effect = item.use;
+    final bomb = effect?.bomb;
+    if (effect == null || bomb == null) {
+      throw InvalidActionException('${item.name} is not something to throw.');
+    }
+    _requireActions(effect.actions);
+
+    final thrower = current;
+    final target =
+        targetId == null ? _nearestOpponent(thrower) : combatantById(targetId);
+    if (target == null || !target.isEnemy || target.isDown) {
+      throw InvalidActionException('There is nothing there to throw it at.');
+    }
+    final near = encounter.zones.indexOf('near');
+    if (_distance(thrower, target) > (near < 0 ? 1 : near)) {
+      throw InvalidActionException('${target.name} is too far to throw at. '
+          'Close the distance first.');
+    }
+
+    final actor = thrower.actor;
+    final level = actor?.character.level ?? 1;
+    final proficiency = actor == null
+        ? 0
+        : [
+            for (final category in const ['simple', 'martial'])
+              actor.character.proficiencyFor(category).totalBonusAtLevel(level),
+          ].reduce((a, b) => a > b ? a : b);
+    final dexterity =
+        actor?.character.abilities.modifier(Ability.dexterity) ?? 0;
+    final weather = _distance(thrower, target) > 0 ? -rangedPenalty : 0;
+    final check = _resolver.resolve(
+      modifier: dexterity +
+          proficiency +
+          effect.attackBonus +
+          thrower.nextAttackPenalty +
+          weather,
+      dc: target.armorClass,
+      label: '${item.name} (thrown)',
+    );
+    thrower.attacksThisTurn++;
+    inventory.remove(item.id);
+
+    final roll = check.degree.isSuccess
+        ? bomb.rollDetailed(_roller,
+            critical: check.degree == DegreeOfSuccess.criticalSuccess)
+        : null;
+    final splash =
+        check.degree == DegreeOfSuccess.criticalFailure ? 0 : effect.splash;
+    final damage = (roll?.total ?? 0) + splash;
+    final standing = !target.isDown;
+    target.takeDamage(damage);
+    _actionsLeft -= effect.actions;
+    _checkOutcome();
+    return ThrowResult(
+      item: item,
+      thrower: thrower,
+      target: target,
+      check: check,
+      damageRoll: roll,
+      splash: splash,
+      damage: damage,
+      dropped: standing && target.isDown,
     );
   }
 

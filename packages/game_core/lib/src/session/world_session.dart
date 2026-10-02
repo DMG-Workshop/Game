@@ -715,6 +715,8 @@ class WorldSession {
       healed[actor.id] = vitals.heal(restHealing(actor.character));
       vitals.prepare();
     }
+    // Wands and staffs are ready again with the morning's preparations.
+    _itemUses.clear();
     _endurance.rested();
     return healed;
   }
@@ -817,13 +819,24 @@ class WorldSession {
     }
     final effect = item.use;
     if (effect == null) throw InvalidMoveException(cannotUseByHand(item));
+    if (effect.isBomb) {
+      throw InvalidMoveException('${item.name} is for throwing, in a fight.');
+    }
+    final heal = effect.heal;
+    if (heal == null) {
+      final held = effect.spells.first.name;
+      throw InvalidMoveException(
+          effect.spells.any((s) => spells.byName(s.name)?.heals ?? false)
+              ? '${item.name} casts $held: "cast $held from ${item.name}".'
+              : '${item.name} casts $held, which is a spell for a fight.');
+    }
     final patient = _patient(who);
     final vitals = _vitals[patient.id]!;
     if (!vitals.isHurt) {
       throw InvalidMoveException('${patient.name} is not hurt.');
     }
     _inventory.remove(item.id);
-    final roll = effect.heal.rollDetailed(_roller);
+    final roll = heal.rollDetailed(_roller);
     final healed = vitals.heal(roll.total);
     return UseResult(
       item: item,
@@ -845,20 +858,30 @@ class WorldSession {
     CastOption option,
     DamageRoll roll,
     int healed,
-  }) castHealing(String spellName, {String? who}) {
+  }) castHealing(String spellName, {String? who, String? from}) {
     final needle = spellName.trim().toLowerCase();
+    final item = from == null ? null : _inventory.find(from);
+    if (from != null && item == null) {
+      throw InvalidMoveException('You are not carrying a "$from".');
+    }
+    // Anyone's own magic before anything in the pack, unless the pack is
+    // where it was asked for.
+    final candidates = [
+      if (item == null)
+        for (final actor in _actors)
+          ...castOptionsFor(actor, _vitals[actor.id]!, spells),
+      for (final o in itemCastOptions(primary, _inventory, _itemUses, spells))
+        if (item == null || o.item?.id == item.id) o,
+    ];
     CastOption? option;
     var known = false;
-    for (final actor in _actors) {
-      for (final o in castOptionsFor(actor, _vitals[actor.id]!, spells)) {
-        if (o.spell.name.toLowerCase() != needle) continue;
-        known = true;
-        if (o.isAvailable && o.spell.heals) {
-          option = o;
-          break;
-        }
+    for (final o in candidates) {
+      if (o.spell.name.toLowerCase() != needle) continue;
+      known = true;
+      if (o.isAvailable && o.spell.heals) {
+        option = o;
+        break;
       }
-      if (option != null) break;
     }
     if (option == null) {
       throw InvalidMoveException(known
@@ -872,7 +895,11 @@ class WorldSession {
     }
     final roll = option.spell.damageAt(option.rank).rollDetailed(_roller);
     final healed = vitals.heal(roll.total);
-    spendCast(option, _vitals[option.actor.id]!);
+    if (option.item != null) {
+      spendItemCast(option, _inventory, _itemUses);
+    } else {
+      spendCast(option, _vitals[option.actor.id]!);
+    }
     return (
       caster: option.actor,
       patient: patient,
@@ -1326,6 +1353,7 @@ class WorldSession {
   /// abbreviate: `enter_MH_001` means `MH_001_Square`. Writing both means an
   /// arc can use either and neither convention has to win.
   List<String> _enter(String roomId) {
+    _counter = null;
     final set = <String>[];
     for (final flag in {'enter_$roomId', 'enter_${_shortId(roomId)}'}) {
       if (_set(flag)) set.add(flag);
@@ -1613,8 +1641,10 @@ class WorldSession {
       hp: {for (final a in _actors) a.id: _vitals[a.id]!.hp},
       fatigued: _fatiguedIds,
       spells: spells,
-      // What the party carries, so a draught drunk in a fight is gone.
+      // What the party carries, so a draught drunk in a fight is gone, and
+      // what its wands and staffs have given today.
       inventory: _inventory,
+      itemUses: _itemUses,
       vitals: _vitals,
       rangedPenalty: currentRoom.shelter ? 0 : weatherNow?.rangedPenalty ?? 0,
     );
@@ -1762,15 +1792,42 @@ class WorldSession {
 
   // --- trade ---------------------------------------------------------------
 
-  /// The shop kept in this room, if there is one.
+  /// The shop the party is trading at: whichever counter they last stepped
+  /// up to here, or else the first of [shopsHere].
   Shop? get shopHere {
-    final fixed = campaign.economy.shopIn(_roomId);
-    if (fixed != null) return fixed;
-    for (final npc in _npcsHere()) {
-      final shop = campaign.economy.shopKeptBy(npc.id);
-      if (shop != null && shop.travels) return shop;
+    final here = shopsHere;
+    return here.where((s) => s.keeperId == _counter).firstOrNull ??
+        here.firstOrNull;
+  }
+
+  /// Every shop in this room: a traveller's, while they are here, before
+  /// the ones that never move, since the traveller will not be here long.
+  List<Shop> get shopsHere => [
+        for (final npc in _npcsHere())
+          if (campaign.economy.shopKeptBy(npc.id) case final shop?
+              when shop.travels)
+            shop,
+        for (final shop in campaign.economy.shops)
+          if (shop.location == _roomId) shop,
+      ];
+
+  /// The keeper whose counter the party stepped up to in this room.
+  String? _counter;
+
+  /// Steps up to [who]'s counter, somebody here who keeps a shop, so the
+  /// wares and the prices are theirs.
+  Shop tradeWith(String who) {
+    final npc = _findNpcHere(who);
+    final shop = shopsHere
+        .where((s) => s.keeperId == npc?.id || s.keeperId == who)
+        .firstOrNull;
+    if (shop == null) {
+      throw InvalidMoveException(npc == null
+          ? 'There is nobody called "$who" here.'
+          : '${npc.name} has nothing to sell.');
     }
-    return null;
+    _counter = shop.keeperId;
+    return shop;
   }
 
   // --- travellers ----------------------------------------------------------
@@ -1798,6 +1855,16 @@ class WorldSession {
   /// Those who joined on the road rather than being imported, by NPC id, in
   /// the order they joined.
   final List<String> _companionIds = [];
+
+  /// What each wand and staff has given since the party last rested.
+  final Map<String, int> _itemUses = {};
+
+  /// What the wand or staff [itemId] has given since the party last rested.
+  int itemUsesOf(String itemId) => _itemUses[itemId] ?? 0;
+
+  /// The spells [actorId] could cast from what the party carries.
+  List<CastOption> itemSpells(String actorId) =>
+      itemCastOptions(actorFor(actorId), _inventory, _itemUses, spells);
 
   /// Everyone who has ever been paid to join, so coming back is free.
   final Set<String> _hired = {};
@@ -2149,6 +2216,7 @@ class WorldSession {
         'flags': (_flags.toList()..sort()),
         if (_companionIds.isNotEmpty) 'companions': List.of(_companionIds),
         if (_hired.isNotEmpty) 'hired': (_hired.toList()..sort()),
+        if (_itemUses.isNotEmpty) 'itemUses': Map.of(_itemUses),
         if (!scaleFights) 'scaleFights': false,
         'inventory': _inventory.toJson(),
         'ledger': _ledger.toJson(),
@@ -2254,6 +2322,9 @@ class WorldSession {
     session._restoreSky(snapshot['sky']);
     // Companions are built again rather than saved: at the party's level as
     // it is now, so a level-up re-imported in Pathbuilder takes them along.
+    for (final e in (snapshot['itemUses'] as Map? ?? const {}).entries) {
+      session._itemUses['${e.key}'] = (e.value as num).toInt();
+    }
     session._hired.addAll(
         [for (final id in (snapshot['hired'] as List? ?? const [])) '$id']);
     for (final id in (snapshot['companions'] as List? ?? const [])) {

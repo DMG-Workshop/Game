@@ -1,4 +1,6 @@
+import '../campaign/gear.dart';
 import '../campaign/spell.dart';
+import '../party/equipment.dart';
 import '../party/vitals.dart';
 import 'session_actor.dart';
 
@@ -15,6 +17,10 @@ enum CastCost {
 
   /// A focus point.
   focus,
+
+  /// Something carried: a scroll used up, a wand's cast for the day, or a
+  /// staff's charges.
+  item,
 }
 
 /// One spell a character could cast, where from, and at what.
@@ -28,6 +34,7 @@ class CastOption {
     required this.dc,
     required this.cost,
     required this.left,
+    this.item,
   });
 
   final SessionActor actor;
@@ -48,6 +55,9 @@ class CastOption {
   /// Casts left today; ignored for a cantrip.
   final int left;
 
+  /// The scroll, wand or staff it is cast from, when it is.
+  final GearItem? item;
+
   bool get isAvailable => cost == CastCost.cantrip || left > 0;
 
   /// How a prepared spell is counted in [ActorVitals.expended].
@@ -55,7 +65,8 @@ class CastOption {
 
   @override
   String toString() => '${spell.name} (${spell.isCantrip ? 'cantrip, ' : ''}'
-      'rank $rank, ${cost == CastCost.cantrip ? 'at will' : '$left left'})';
+      'rank $rank, ${cost == CastCost.cantrip ? 'at will' : '$left left'}'
+      '${item == null ? '' : ', from ${item!.name}'})';
 }
 
 /// Every spell [actor] could cast that [book] has numbers for, and how many
@@ -161,5 +172,86 @@ void spendCast(CastOption option, ActorVitals vitals) {
       if (left > 0) vitals.slotsLeft[option.rank] = left - 1;
     case CastCost.focus:
       if (vitals.focus > 0) vitals.focus--;
+    case CastCost.item:
+      // Spent from the item, by [spendItemCast].
+      return;
+  }
+}
+
+/// Pathfinder's DC for a challenge of [level], which is also what a magic
+/// item of that level casts at for somebody with no magic of their own.
+int levelDc(int level) => const [
+      14, 15, 16, 18, 19, 20, 22, 23, 24, 26, //
+      27, 28, 30, 31, 32, 34, 35, 36, 38, 39, 40,
+    ][level.clamp(0, 20)];
+
+/// What [actor] could cast from what the party carries: every spell on a
+/// scroll, a wand or a staff that [book] has numbers for.
+///
+/// Anyone can use them. Pathfinder asks for the spell on your own list, or a
+/// check to fake it; here a caster casts with their own spell attack and DC
+/// and anybody else with the item's, from its level, whichever is better.
+/// [used] is what each wand and staff has given today.
+List<CastOption> itemCastOptions(
+  SessionActor actor,
+  PartyInventory inventory,
+  Map<String, int> used,
+  SpellBook book,
+) {
+  var attack = -100;
+  var dc = 0;
+  for (final value in actor.stats.spellcasting) {
+    if (value.attackBonus > attack) attack = value.attackBonus;
+    if (value.dc > dc) dc = value.dc;
+  }
+  final out = <CastOption>[];
+  for (final item in inventory.carried) {
+    final use = item.use;
+    if (use == null || !use.castsSpells) continue;
+    final itemDc = levelDc(item.level);
+    final copies = inventory.countOf(item.id);
+    final spent = used[item.id] ?? 0;
+    for (final held in use.spells) {
+      final spell = book.byName(held.name);
+      if (spell == null) continue;
+      final cantrip = held.rank == 0 || spell.isCantrip;
+      final left = use.isStaff
+          ? (cantrip ? 0 : (use.charges - spent) ~/ held.rank)
+          : use.isWand
+              ? copies * use.perDay - spent
+              : copies;
+      out.add(CastOption(
+        actor: actor,
+        spell: spell,
+        rank: cantrip ? cantripRank(actor.character.level) : held.rank,
+        source: 'item:${item.id}',
+        attackBonus: attack > itemDc - 10 ? attack : itemDc - 10,
+        dc: dc > itemDc ? dc : itemDc,
+        cost: cantrip && use.isStaff ? CastCost.cantrip : CastCost.item,
+        left: left < 0 ? 0 : left,
+        item: item,
+      ));
+    }
+  }
+  return out;
+}
+
+/// Uses up what casting [option] from an item costs: the scroll itself, the
+/// wand's cast for the day, or as many of the staff's charges as the
+/// spell's rank.
+void spendItemCast(
+  CastOption option,
+  PartyInventory inventory,
+  Map<String, int> used,
+) {
+  final item = option.item;
+  final use = item?.use;
+  if (item == null || use == null || option.cost == CastCost.cantrip) return;
+  if (use.isStaff) {
+    used.update(item.id, (n) => n + option.rank, ifAbsent: () => option.rank);
+  } else if (use.isWand) {
+    used.update(item.id, (n) => n + 1, ifAbsent: () => 1);
+  } else {
+    inventory.remove(item.id);
   }
 }

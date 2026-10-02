@@ -65,8 +65,9 @@ const consoleCommands = '''
   treat [who]                                     Treat Wounds (Medicine)
   use <item> [on <who>]                           drink a draught, or give
                                                   it (1 action in a fight)
-  cast <spell> [on <who>]                         a healing spell, between
-                                                  fights
+  cast <spell> [on <who>] [from <item>]           a healing spell, between
+                                                  fights; or from a scroll,
+                                                  wand or staff
   refocus                                         10 minutes: 1 focus back
   shelter                                         make shelter from a storm
   quit                                            stop
@@ -417,8 +418,10 @@ class GameConsole {
           out.writeln('Cast what? ("spells" lists them.)');
           return true;
         }
+        final from = _fromArgs(args.what);
         try {
-          final c = session.castHealing(args.what, who: args.who);
+          final c =
+              session.castHealing(from.spell, who: args.who, from: from.item);
           final v = session.vitalsOf(c.patient.id);
           out.writeln('\n${c.caster.name} casts ${c.option.spell.name} '
               '(rank ${c.option.rank}) on ${c.patient.name}: ${c.roll}, '
@@ -490,6 +493,16 @@ class GameConsole {
       case 'list':
       case 'wares':
       case 'shop':
+        // "list aldus" steps up to Aldus's counter, when there is more than
+        // one shop in the room.
+        if (rest.isNotEmpty) {
+          try {
+            session.tradeWith(rest);
+          } on InvalidMoveException catch (e) {
+            out.writeln(_wrapped(e.message));
+            return true;
+          }
+        }
         return _shop(session);
 
       case 'buy':
@@ -926,7 +939,8 @@ class GameConsole {
       // counter, at whatever price has just been talked out of them, and
       // 0 comes back to the conversation.
       if (_browsing.contains(option.id) &&
-          session.shopHere?.keeperId == npc.id) {
+          session.shopsHere.any((s) => s.keeperId == npc.id)) {
+        session.tradeWith(npc.id);
         if (!await _shop(session, flags: talk.flags, backTo: npc.name)) {
           out.writeln('\n(script exhausted mid-conversation)');
           keepGoing = false;
@@ -1305,7 +1319,35 @@ class GameConsole {
         ));
       }
     }
-    if (item.use != null) {
+    final healing = item.use?.spells
+        .where((h) => session.spells.byName(h.name)?.heals ?? false)
+        .firstOrNull;
+    if (healing != null) {
+      for (final actor in session.actors) {
+        final v = session.vitalsOf(actor.id);
+        final first = actor.name.split(' ').first;
+        actions.add((
+          entry: (
+            text: 'Cast ${healing.name} from it on ${actor.name}  '
+                '(HP ${v.hp}/${v.maxHp})',
+            chip: 'Cast on $first',
+          ),
+          run: () async {
+            try {
+              final c = session.castHealing(healing.name,
+                  who: actor.id, from: item.id);
+              out.writeln('\n${c.caster.name} casts ${c.option.spell.name} '
+                  'from ${item.name} on ${c.patient.name}: ${c.roll}, '
+                  '+${c.healed} HP (${v.hp}/${v.maxHp}).');
+            } on InvalidMoveException catch (e) {
+              out.writeln(_wrapped(e.message));
+            }
+            return true;
+          },
+        ));
+      }
+    }
+    if (item.use?.heals ?? false) {
       for (final actor in session.actors) {
         final v = session.vitalsOf(actor.id);
         final hp = 'HP ${v.hp}/${v.maxHp}';
@@ -1345,6 +1387,9 @@ class GameConsole {
     }
     if (item.special case final special?) {
       out.writeln(_wrapped(special, indent: '  '));
+    }
+    if (item.use case final use? when !use.heals) {
+      out.writeln(_wrapped(_useNote(session, item, use), indent: '  '));
     }
     if (holders.isNotEmpty) {
       final names = [for (final id in holders) session.actorFor(id).name];
@@ -1406,6 +1451,17 @@ class GameConsole {
     }
     final talking = backTo != null;
     if (session.keeperSays('greet') case final k?) _says(k.keeper, k.line);
+    // Somebody else selling in the same room is worth knowing about.
+    final others = [
+      for (final s in session.shopsHere)
+        if (s.id != shop.id)
+          session.campaign.npcs.byId(s.keeperId)?.name ?? s.name,
+    ];
+    if (others.isNotEmpty && !talking) {
+      out.writeln(_wrapped(
+          '(${others.join(' and ')} ${others.length == 1 ? 'is' : 'are'} '
+          'selling here too: "list ${others.first.split(' ').last.toLowerCase()}".)'));
+    }
     while (true) {
       final wares = session.wares(flags: flags);
       final canSell = session.inventory.carried.isNotEmpty;
@@ -2269,8 +2325,10 @@ class GameConsole {
         0 => 'flee',
         _ => menu[pick - 1].command,
       };
-      if (line.startsWith(_aimOrder)) {
-        final aimed = await _aim(fight, line.substring(_aimOrder.length));
+      if (line.startsWith(_aimOrder) || line.startsWith(_throwOrder)) {
+        final aimed = line.startsWith(_aimOrder)
+            ? await _aim(fight, line.substring(_aimOrder.length))
+            : await _throwAt(fight, line.substring(_throwOrder.length));
         if (aimed == null) {
           out.writeln('\n(script exhausted mid-fight)');
           return false;
@@ -2321,6 +2379,17 @@ class GameConsole {
               break;
             }
             _renderUse(fight.use(args.what, targetId: args.who));
+          case 'throw':
+            final at = rest.toLowerCase().lastIndexOf(' at ');
+            final what = at < 0 ? rest : rest.substring(0, at).trim();
+            if (what.isEmpty) {
+              out.writeln('Throw what?');
+              break;
+            }
+            _renderThrow(
+                fight,
+                fight.throwBomb(what,
+                    targetId: at < 0 ? null : rest.substring(at + 4).trim()));
           case 'spells':
             // Where each comes from, so a cantrip known twice (from two
             // classes) reads as two ways to cast it, not a mistake.
@@ -2343,8 +2412,8 @@ class GameConsole {
             _cast(fight, line, script);
           default:
             out.writeln('In a fight you can: strike <target>, cast <spell> '
-                '[target], spells, use <item> [on <who>], close, back, end, '
-                'status, flee.');
+                '[target] [from <item>], spells, use <item> [on <who>], '
+                'throw <bomb> [at <target>], close, back, end, status, flee.');
         }
       } on InvalidActionException catch (e) {
         out.writeln('  ${e.message}');
@@ -2418,15 +2487,38 @@ class GameConsole {
       if (fight.canClose)
         (entry: (text: 'Close in', chip: 'Close in'), command: 'close'),
       // Once each by name, as the first way of casting it that works now:
-      // a cantrip known from two classes is one spell to the player.
+      // a cantrip known from two classes is one spell to the player. A
+      // scroll, a wand or a staff is a way of its own.
       for (final o in fight.castOptions())
         if (fight.aimsFor(o) case final aims
-            when aims.isNotEmpty && named.add(o.spell.name))
+            when aims.isNotEmpty &&
+                named.add('${o.spell.name}|${o.item?.id ?? ''}'))
           aims.length == 1
               ? _castEntry(fight, o, aims.single.caught)
               : _aimEntry(o),
+      if (fight.throwTargets() case final marks when marks.isNotEmpty)
+        for (final item in session.inventory.carried)
+          if (item.use case final use? when use.isBomb && use.actions <= left)
+            marks.length == 1
+                ? (
+                    entry: (
+                      text: 'Throw ${_packName(session, item)} at '
+                          '${_called(fight, marks.single)}  '
+                          '(${_bombCost(use)})',
+                      chip: 'Throw ${item.name}',
+                    ),
+                    command: 'throw ${item.id} at ${marks.single.id}',
+                  )
+                : (
+                    entry: (
+                      text: 'Throw ${_packName(session, item)}  '
+                          '(${_bombCost(use)}): choose a target',
+                      chip: 'Throw ${item.name}…',
+                    ),
+                    command: '$_throwOrder${item.id}',
+                  ),
       for (final item in session.inventory.carried)
-        if (item.use case final use? when use.actions <= left) ...[
+        if (item.use case final use? when use.heals && use.actions <= left) ...[
           if (me.hp < me.maxHp)
             (
               entry: (
@@ -2464,15 +2556,18 @@ class GameConsole {
     List<Combatant> caught,
   ) {
     final cost = _cost(o);
+    final from = o.item == null ? '' : ' from ${o.item!.id}';
+    final chip = 'Cast ${o.spell.name}'
+        '${o.item == null ? '' : ' (${o.item!.name})'}';
     if (o.spell.heals) {
       final target = caught.single;
       return (
         entry: (
           text: 'Cast ${o.spell.name} on ${_called(fight, target)}  ($cost; '
               '${target.isDown ? 'down' : '${target.hp}/${target.maxHp} HP'})',
-          chip: 'Cast ${o.spell.name}',
+          chip: chip,
         ),
-        command: 'cast ${o.spell.name} ${target.id}',
+        command: 'cast ${o.spell.name} ${target.id}$from',
       );
     }
     if (!o.spell.area) {
@@ -2480,9 +2575,9 @@ class GameConsole {
       return (
         entry: (
           text: 'Cast ${o.spell.name} at ${_called(fight, target)}  ($cost)',
-          chip: 'Cast ${o.spell.name}',
+          chip: chip,
         ),
-        command: 'cast ${o.spell.name} ${target.id}',
+        command: 'cast ${o.spell.name} ${target.id}$from',
       );
     }
     final ours = caught.any((c) => !c.isEnemy);
@@ -2490,10 +2585,11 @@ class GameConsole {
       entry: (
         text: 'Cast ${o.spell.name}  ($cost): catches '
             '${_catches(fight, caught)}',
-        chip: 'Cast ${o.spell.name}${ours ? ' (hits you too)' : ''}',
+        chip: '$chip${ours ? ' (hits you too)' : ''}',
       ),
-      command:
-          'cast ${o.spell.name} ${caught.firstWhere((c) => c.isEnemy, orElse: () => caught.first).id}',
+      command: 'cast ${o.spell.name} '
+          '${caught.firstWhere((c) => c.isEnemy, orElse: () => caught.first).id}'
+          '$from',
     );
   }
 
@@ -2502,10 +2598,65 @@ class GameConsole {
         entry: (
           text: 'Cast ${o.spell.name}  (${_cost(o)}): choose '
               '${o.spell.heals ? 'who' : o.spell.area ? 'where' : 'a target'}',
-          chip: 'Cast ${o.spell.name}…',
+          chip: 'Cast ${o.spell.name}'
+              '${o.item == null ? '' : ' (${o.item!.name})'}…',
         ),
-        command: '$_aimOrder${o.spell.name}',
+        command: '$_aimOrder${o.spell.name}'
+            '${o.item == null ? '' : ' from ${o.item!.id}'}',
       );
+
+  /// "1 action; 2d6, 1 splash".
+  String _bombCost(ItemUse use) => '${_actions(use.actions)}; ${use.bomb}'
+      '${use.splash > 0 ? ', ${use.splash} splash' : ''}';
+
+  /// Marks a bomb that still needs a target picked.
+  static const _throwOrder = ':throw ';
+
+  /// Who to throw [itemId] at: each enemy close enough. The order to give,
+  /// empty to go back, or null when the input ran out.
+  Future<String?> _throwAt(EncounterSession fight, String itemId) async {
+    final marks = fight.throwTargets();
+    final item = session.inventory.find(itemId);
+    if (marks.isEmpty || item == null) return '';
+    out.writeln('\n${item.name}: at whom?');
+    _offer([
+      for (final t in marks)
+        (
+          text: '${_called(fight, t)}  (${t.hp}/${t.maxHp} HP, '
+              '${fight.zones[t.zoneIndex]})',
+          chip: _called(fight, t),
+        ),
+    ], 'Back to the fight');
+    final got = await _read('aim> ', marks.length);
+    if (got == null) return null;
+    return switch (got.pick) {
+      null => got.line,
+      0 => '',
+      final pick => 'throw ${item.id} at ${marks[pick - 1].id}',
+    };
+  }
+
+  /// A bomb thrown, the dice included.
+  void _renderThrow(EncounterSession fight, ThrowResult r) {
+    final c = r.check;
+    final natural = c.wasShiftedByNatural ? ', natural ${c.dieRoll}' : '';
+    out.writeln('\n  ${_nameOf(r.thrower)} throws ${r.item.name} at '
+        '${_nameOf(r.target)}: d20(${c.dieRoll}) ${_signed(c.modifier)} = '
+        '${c.total} vs AC ${c.dc}$natural — ${switch (c.degree) {
+      DegreeOfSuccess.criticalSuccess => 'critical hit',
+      DegreeOfSuccess.success => 'hit',
+      DegreeOfSuccess.failure => 'miss',
+      DegreeOfSuccess.criticalFailure => 'critical miss',
+    }}');
+    final parts = [
+      if (r.damageRoll case final roll?) 'damage $roll',
+      if (r.splash > 0) 'splash ${r.splash}',
+    ];
+    out.writeln(
+        '    ${parts.isEmpty ? 'It goes wide.' : '${parts.join(', ')}; '}'
+        '${parts.isEmpty ? '' : 'takes ${r.damage}.'}'
+        '${r.dropped ? ' ${_nameOf(r.target)} goes down.' : ''}');
+  }
 
   /// The flag recording that one return of a fight was won.
   static final _waveFlag = RegExp(r'^won_.+_wave_\d+$');
@@ -2516,10 +2667,15 @@ class GameConsole {
   /// Where to aim [spellName]: each enemy in range, or for a burst each
   /// place it could land and everyone standing there. The order to give,
   /// empty to go back to the others, or null when the input ran out.
-  Future<String?> _aim(EncounterSession fight, String spellName) async {
+  Future<String?> _aim(EncounterSession fight, String order) async {
+    final from = _fromArgs(order);
+    final spellName = from.spell;
     final option = fight
         .castOptions()
-        .where((o) => o.spell.name == spellName && fight.aimsFor(o).isNotEmpty)
+        .where((o) =>
+            o.spell.name == spellName &&
+            o.item?.id == from.item &&
+            fight.aimsFor(o).isNotEmpty)
         .firstOrNull;
     if (option == null) return '';
     final aims = fight.aimsFor(option);
@@ -2553,7 +2709,8 @@ class GameConsole {
     return switch (got.pick) {
       null => got.line,
       0 => '',
-      final pick => 'cast ${option.spell.name} ${aims[pick - 1].target.id}',
+      final pick => 'cast ${option.spell.name} ${aims[pick - 1].target.id}'
+          '${from.item == null ? '' : ' from ${from.item}'}',
     };
   }
 
@@ -2567,7 +2724,18 @@ class GameConsole {
   }
 
   String _cost(CastOption o) => '${_actions(o.spell.actions)}, '
-      '${o.cost == CastCost.cantrip ? 'cantrip' : '${o.left} left'}';
+      '${o.cost == CastCost.item ? _itemCost(o) : o.cost == CastCost.cantrip ? o.item == null ? 'cantrip' : 'from ${o.item!.name}' : '${o.left} left'}';
+
+  /// "from Wand of Heal, 1 left today" before a cast, or "0 left" after.
+  String _itemCost(CastOption o, {bool spent = false}) {
+    final item = o.item!;
+    final use = item.use!;
+    final left = spent ? o.left - 1 : o.left;
+    if (!use.isStaff && !use.isWand) {
+      return 'from ${item.name}${spent ? ', used up' : ''}';
+    }
+    return 'from ${item.name}, $left left today';
+  }
 
   String _actions(int n) => n == 1 ? '1 action' : '$n actions';
 
@@ -2609,6 +2777,36 @@ class GameConsole {
   }
 
   /// "hearth-water", or "hearth-water on sela": what to use, and on whom.
+  /// What a bomb, a scroll, a wand or a staff does, and what it has left.
+  String _useNote(WorldSession session, GearItem item, ItemUse use) {
+    if (use.bomb case final bomb?) {
+      return 'Thrown in a fight: $bomb on a hit'
+          '${use.splash > 0 ? ', ${use.splash} splash even on a miss' : ''}'
+          '${use.attackBonus > 0 ? ', +${use.attackBonus} to hit' : ''}.';
+    }
+    final held = use.spells.join(', ');
+    final used = session.itemUsesOf(item.id);
+    if (use.isStaff) {
+      return 'Casts $held. ${use.charges - used} of ${use.charges} charges '
+          'left today; a spell costs its rank, a cantrip nothing.';
+    }
+    if (use.isWand) {
+      final most = use.perDay * session.inventory.countOf(item.id);
+      return 'Casts $held, ${use.perDay} a day: ${most - used} left today.';
+    }
+    return 'Casts $held once, and is gone.';
+  }
+
+  /// "heal from wand of heal" as the spell and the item it comes from.
+  ({String spell, String? item}) _fromArgs(String text) {
+    final from = text.toLowerCase().lastIndexOf(' from ');
+    if (from < 0) return (spell: text.trim(), item: null);
+    return (
+      spell: text.substring(0, from).trim(),
+      item: text.substring(from + 6).trim(),
+    );
+  }
+
   ({String what, String? who})? _useArgs(String rest) {
     final text = rest.trim();
     if (text.isEmpty) return null;
@@ -2639,18 +2837,26 @@ class GameConsole {
       out.writeln('Cast what? ("spells" lists them.)');
       return;
     }
-    final words = rest.split(RegExp(r'\s+'));
+    final from = _fromArgs(rest);
+    final item = from.item == null ? null : session.inventory.find(from.item!);
+    if (from.item != null && item == null) {
+      out.writeln('You are not carrying a "${from.item}".');
+      return;
+    }
+    final words = from.spell.split(RegExp(r'\s+'));
     String? target;
     if (words.length > 1 && fight.combatantById(words.last) != null) {
       target = words.removeLast();
     }
-    final result = fight.cast(words.join(' '), targetId: target);
+    final result = fight.cast(words.join(' '),
+        targetId: target, source: item == null ? null : 'item:${item.id}');
     final o = result.option;
     final cost = switch (o.cost) {
-      CastCost.cantrip => 'cantrip',
+      CastCost.cantrip => o.item == null ? 'cantrip' : 'from ${o.item!.name}',
       CastCost.prepared => 'prepared, ${o.left - 1} left',
       CastCost.slot => 'rank ${o.rank} slot, ${o.left - 1} left',
       CastCost.focus => 'focus point, ${o.left - 1} left',
+      CastCost.item => _itemCost(o, spent: true),
     };
     out.writeln('\n  ${result.caster.name} casts ${o.spell.name} '
         '(rank ${o.rank}, $cost)'
@@ -2702,6 +2908,15 @@ class GameConsole {
           out.writeln(_wrapped(
               'Not in the spell table yet: ${missing.join(', ')}.',
               indent: '  '));
+        }
+      }
+      // Anyone can use them, so they are listed once, for the party.
+      final carried = session.itemSpells(actors.first.id);
+      if (carried.isNotEmpty) {
+        out.writeln('\nFrom the pack:');
+        for (final o in carried) {
+          out.writeln('  ${o.spell.name.padRight(16)} rank ${o.rank}  '
+              '${o.spell.damageAt(o.rank)}  ${_itemCost(o)}');
         }
       }
     } on InvalidMoveException catch (e) {

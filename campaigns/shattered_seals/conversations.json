@@ -763,6 +763,15 @@
               "outcome": { "text": "\"Ask.\"", "goTo": "aldus_ask" }
             },
             {
+              "id": "look",
+              "label": "Ask what the temple can spare",
+              "say": "Can the temple spare anything for the road?",
+              "outcome": {
+                "text": "\"Elixirs from the infirmary, the healing scrolls, and the crook, if you will bring it back.\" He lifts the cloth off the alms-table. \"For what keeps the roof on.\"",
+                "goTo": "aldus_again"
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave him to his work",
               "outcome": { "text": "He nods, and kneels.", "goTo": "aldus_bye" }
@@ -827,6 +836,15 @@
               "requires": {
                 "flags": ["hale_read_the_rubbing"],
                 "notFlags": ["aldus_took_back_the_name"]
+              }
+            },
+            {
+              "id": "look",
+              "label": "Ask what the temple can spare",
+              "say": "Can the temple spare anything?",
+              "outcome": {
+                "text": "\"More than it could, these days.\" He lifts the cloth off the alms-table.",
+                "goTo": "aldus_after"
               }
             },
             {
@@ -1014,6 +1032,15 @@
               "outcome": { "text": "\"Go on.\"", "goTo": "harrow_ask" }
             },
             {
+              "id": "look",
+              "label": "Ask what she has for sale",
+              "say": "What have you got on the rack?",
+              "outcome": {
+                "text": "\"The rack by the door. Swords, axes, a few hammers that are not for nails.\" She points with the tongs. \"And whatever the Watch leaves to be re-edged and forgets to collect.\"",
+                "goTo": "harrow_again"
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "outcome": { "text": "The hammer starts again.", "goTo": "harrow_bye" }
@@ -1045,6 +1072,15 @@
               },
               "requires": {
                 "notFlags": ["loot_w_009_thrall_breaker"]
+              }
+            },
+            {
+              "id": "look",
+              "label": "Ask what she has for sale",
+              "say": "Anything new on the rack?",
+              "outcome": {
+                "text": "\"Same rack. More on it, now people are buying again.\"",
+                "goTo": "harrow_after"
               }
             },
             {
@@ -3530,6 +3566,234 @@
           "id": "vey_bye",
           "title": "Vey",
           "body": "He melts back into the crowd round the fountain.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_019_rook",
+      "entries": [
+        {
+          "scene": "rook_again",
+          "requires": ["met_rook"]
+        },
+        { "scene": "rook_open" }
+      ],
+      "scenes": [
+        {
+          "id": "rook_open",
+          "title": "Sergeant Ada Rook",
+          "body": "A sergeant of the Watch with a ledger under one arm and a scar across both knuckles looks up from a stack of straw-packed crates. \"Stores. If you're not Watch, you're paying.\"",
+          "options": [
+            {
+              "id": "ask_about",
+              "label": "Ask what is in the crates",
+              "say": "What's in the crates, Sergeant?",
+              "outcome": {
+                "text": "\"Alchemy. Fire, frost, acid, the lot.\" She pats a crate, gently. \"The Captain ordered it for the wood. Then the Captain worked out what it would do to the wood. So now it's for sale.\"",
+                "goTo": "rook_talk",
+                "setFlags": ["met_rook"]
+              }
+            },
+            {
+              "id": "look",
+              "label": "Ask to see the stores",
+              "say": "Show us what you've got.",
+              "outcome": {
+                "text": "\"Sign here. And here.\" She opens the nearest crate and stands well back from it.",
+                "goTo": "rook_talk",
+                "setFlags": ["met_rook"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "She goes back to counting crates.",
+                "goTo": "rook_bye",
+                "setFlags": ["met_rook"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "rook_talk",
+          "title": "Sergeant Ada Rook",
+          "body": "Rook waits.",
+          "options": [
+            {
+              "id": "ask_rumour",
+              "label": "Ask about the Watch",
+              "say": "How is the Watch holding up?",
+              "outcome": {
+                "text": "\"Twelve of us for a town and a wood. Nine, since the Whitmore girl.\" She does not say what happened to the other three, and you do not ask.",
+                "goTo": "rook_talk",
+                "setFlags": ["rook_shared_rumour"]
+              },
+              "requires": {
+                "notFlags": ["rook_shared_rumour"]
+              }
+            },
+            {
+              "id": "look",
+              "label": "Ask to see the stores",
+              "say": "Show us what you've got.",
+              "outcome": {
+                "text": "\"Sign here. And here.\" She opens the nearest crate and stands well back from it.",
+                "goTo": "rook_talk"
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "She goes back to counting crates.", "goTo": "rook_bye" }
+            }
+          ]
+        },
+        {
+          "id": "rook_again",
+          "title": "Sergeant Ada Rook",
+          "body": "Sergeant Rook looks up from the ledger. \"Back for more?\"",
+          "options": [
+            {
+              "id": "look",
+              "label": "Ask to see the stores",
+              "say": "Show us what you've got.",
+              "outcome": {
+                "text": "\"Sign here. And here.\" She opens the nearest crate and stands well back from it.",
+                "goTo": "rook_talk"
+              }
+            },
+            {
+              "id": "talk",
+              "label": "Talk",
+              "outcome": { "text": "A nod: go on.", "goTo": "rook_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "She goes back to counting crates.", "goTo": "rook_bye" }
+            }
+          ]
+        },
+        {
+          "id": "rook_bye",
+          "title": "Sergeant Ada Rook",
+          "body": "She goes back to counting crates.",
+          "isEnding": true
+        }
+      ]
+    },
+    {
+      "npc": "npc_020_venn",
+      "entries": [
+        {
+          "scene": "venn_again",
+          "requires": ["met_venn"]
+        },
+        { "scene": "venn_open" }
+      ],
+      "scenes": [
+        {
+          "id": "venn_open",
+          "title": "Quartermaster Odile Venn",
+          "body": "Behind a trestle of oiled steel under a Crown awning, a grey-haired quartermaster in a buttoned blue coat is writing prices on slates with great care. \"Crown surplus,\" she says, without looking up. \"Every piece stamped and every price fixed.\"",
+          "options": [
+            {
+              "id": "ask_about",
+              "label": "Ask why the Crown is selling",
+              "say": "Why is the Crown selling its own arms?",
+              "outcome": {
+                "text": "\"Because the Crown is short of coin and long on swords.\" She chalks a number, rubs it out, chalks a bigger one. \"And because half the armoury's officers stopped coming to work, and somebody has to.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["met_venn"]
+              }
+            },
+            {
+              "id": "look",
+              "label": "Ask to see the stock",
+              "say": "Show us what the Crown is selling.",
+              "outcome": {
+                "text": "\"Blades on the left, wands and staffs on the right. Do not wave the wands.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["met_venn"]
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": {
+                "text": "She goes back to the slates.",
+                "goTo": "venn_bye",
+                "setFlags": ["met_venn"]
+              }
+            }
+          ]
+        },
+        {
+          "id": "venn_talk",
+          "title": "Quartermaster Odile Venn",
+          "body": "Venn waits.",
+          "options": [
+            {
+              "id": "ask_rumour",
+              "label": "Ask about the palace",
+              "say": "What's the talk at the palace?",
+              "outcome": {
+                "text": "\"That the Queen orders nothing through my stores any more. Nothing.\" Her mouth goes thin. \"Thirty years I have kept the palace in steel. Somebody else is keeping it in something now.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["venn_shared_rumour"]
+              },
+              "requires": {
+                "notFlags": ["venn_shared_rumour"]
+              }
+            },
+            {
+              "id": "look",
+              "label": "Ask to see the stock",
+              "say": "Show us what the Crown is selling.",
+              "outcome": {
+                "text": "\"Blades on the left, wands and staffs on the right. Do not wave the wands.\"",
+                "goTo": "venn_talk"
+              }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "She goes back to the slates.", "goTo": "venn_bye" }
+            }
+          ]
+        },
+        {
+          "id": "venn_again",
+          "title": "Quartermaster Odile Venn",
+          "body": "Quartermaster Venn looks up from her slates. \"Again? Good.\"",
+          "options": [
+            {
+              "id": "look",
+              "label": "Ask to see the stock",
+              "say": "Show us what the Crown is selling.",
+              "outcome": {
+                "text": "\"Blades on the left, wands and staffs on the right. Do not wave the wands.\"",
+                "goTo": "venn_talk"
+              }
+            },
+            {
+              "id": "talk",
+              "label": "Talk",
+              "outcome": { "text": "A nod: go on.", "goTo": "venn_talk" }
+            },
+            {
+              "id": "leave",
+              "label": "Leave",
+              "outcome": { "text": "She goes back to the slates.", "goTo": "venn_bye" }
+            }
+          ]
+        },
+        {
+          "id": "venn_bye",
+          "title": "Quartermaster Odile Venn",
+          "body": "She goes back to the slates.",
           "isEnding": true
         }
       ]

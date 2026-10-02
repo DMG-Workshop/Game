@@ -471,6 +471,42 @@
           "line": "Still got everything? Check."
         }
       ]
+    },
+    {
+      "npc_id": "npc_019_rook",
+      "name": "Sergeant Ada Rook",
+      "location": "MH_002_GuardHall",
+      "tier": 1,
+      "appearance": "A Watch sergeant with a ledger under one arm and scarred knuckles is counting straw-packed crates stacked against the back wall, very carefully.",
+      "greeting": "Stores. If you're not Watch, you're paying.",
+      "keywords": {
+        "crates": "Alchemy. The Captain ordered it for the wood, then worked out what it would do to the wood.",
+        "watch": "Twelve of us for a town and a wood. Nine, since the Whitmore girl."
+      },
+      "barks": [
+        {
+          "requires": ["met_rook"],
+          "line": "Stores are open. Mind the crates."
+        }
+      ]
+    },
+    {
+      "npc_id": "npc_020_venn",
+      "name": "Quartermaster Odile Venn",
+      "location": "VC_001_Plaza",
+      "tier": 2,
+      "appearance": "Under a Crown awning by the fountain, a grey-haired quartermaster in a buttoned blue coat is chalking prices onto slates beside a trestle of oiled steel.",
+      "greeting": "Crown surplus. Every piece stamped and every price fixed.",
+      "keywords": {
+        "surplus": "The Crown is short of coin and long on swords.",
+        "palace": "The Queen orders nothing through my stores any more. Somebody else is keeping the palace in something now."
+      },
+      "barks": [
+        {
+          "requires": ["met_venn"],
+          "line": "Back for more Crown surplus? It is not getting any cheaper."
+        }
+      ]
     }
   ]
 }

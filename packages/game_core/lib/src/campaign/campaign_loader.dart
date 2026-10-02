@@ -307,25 +307,68 @@ class CampaignLoader {
     return GearTable(items);
   }
 
-  /// Reads what using an item up does.
+  /// Reads what using an item does.
   ///
-  /// Only a consumable is used up, and a healing roll the engine cannot read
-  /// is a typo worth hearing about now rather than the first time somebody
-  /// is bleeding and reaches for it.
+  /// A draught heals and a bomb is thrown, and either is used up, so it has
+  /// to be consumable. A scroll is used up too; a wand (`per_day`) and a
+  /// staff (`charges`) are not. A roll the engine cannot read is a typo worth
+  /// hearing about now rather than the first time somebody is bleeding and
+  /// reaches for it.
   ItemUse? _readUse(Object? raw, String itemId, List<String> traits) {
     if (raw == null) return null;
     if (raw is! Map) {
       throw CampaignFormatException(
           'Item "$itemId" has a "use" that is not an object.');
     }
-    if (!traits.any((t) => t.trim().toLowerCase() == 'consumable')) {
-      throw CampaignFormatException('Item "$itemId" can be used up, but is not '
+    final consumable =
+        traits.any((t) => t.trim().toLowerCase() == 'consumable');
+    DamageExpression? roll(String key) {
+      final written = raw[key];
+      if (written == null) return null;
+      return DamageExpression.tryParse(written.toString()) ??
+          (throw CampaignFormatException('Item "$itemId" has a $key of '
+              '"$written", which is not a roll the engine can read.'));
+    }
+
+    final heal = roll('heal');
+    final bomb = roll('bomb');
+    final spells = [
+      if (raw['spell'] != null)
+        HeldSpell(_string(raw['spell'], 'spell of $itemId'),
+            _int(raw['rank'], fallback: 1)),
+      for (final s in _list(raw['spells']))
+        if (s is Map)
+          HeldSpell(_string(s['spell'], 'spell of $itemId'),
+              _int(s['rank'], fallback: 1)),
+    ];
+    final perDay = _int(raw['per_day'], fallback: 0);
+    final charges = _int(raw['charges'], fallback: 0);
+
+    final kinds = [heal, bomb, if (spells.isNotEmpty) spells]
+        .where((k) => k != null)
+        .length;
+    if (kinds != 1) {
+      throw CampaignFormatException('Item "$itemId" has to heal, be thrown, '
+          'or cast a spell: one of them.');
+    }
+    final usedUp = spells.isEmpty || (perDay == 0 && charges == 0);
+    if (usedUp && !consumable) {
+      throw CampaignFormatException('Item "$itemId" is used up, but is not '
           'consumable.');
     }
-    final heal = DamageExpression.tryParse(_optional(raw['heal']) ?? '');
-    if (heal == null) {
-      throw CampaignFormatException('Item "$itemId" heals "${raw['heal']}", '
-          'which is not a roll the engine can read.');
+    if (!usedUp && consumable) {
+      throw CampaignFormatException('Item "$itemId" comes back each day, so '
+          'it is not consumable.');
+    }
+    for (final s in spells) {
+      if (s.rank < 0 || s.rank > 10) {
+        throw CampaignFormatException('Item "$itemId" casts ${s.name} at '
+            'rank ${s.rank}, which is not 0 to 10.');
+      }
+      if (charges > 0 && s.rank > charges) {
+        throw CampaignFormatException('Item "$itemId" casts ${s.name} at '
+            'rank ${s.rank}, more than its $charges charges.');
+      }
     }
     // A turn is three actions, so nothing can take more.
     final actions = _int(raw['actions'], fallback: 1);
@@ -333,7 +376,16 @@ class CampaignLoader {
       throw CampaignFormatException('Item "$itemId" takes $actions actions to '
           'use, which is not 1 to 3.');
     }
-    return ItemUse(heal: heal, actions: actions);
+    return ItemUse(
+      heal: heal,
+      bomb: bomb,
+      splash: _int(raw['splash'], fallback: 0),
+      attackBonus: _int(raw['bonus'], fallback: 0),
+      spells: spells,
+      perDay: perDay,
+      charges: charges,
+      actions: actions,
+    );
   }
 
   /// Reads an item's rarity, defaulting to common where it says nothing.

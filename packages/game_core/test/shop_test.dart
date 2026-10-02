@@ -127,9 +127,9 @@ void main() {
   group("Tallow's Cart", () {
     test('is in the market square, and nowhere else', () {
       expect(_world().shopHere?.name, "Tallow's Cart");
-      expect(_world(room: 'MH_002_GuardHall').shopHere, isNull);
+      expect(_world(room: 'MH_003_Tavern').shopHere, isNull);
       expect(
-          () => _world(room: 'MH_002_GuardHall').wares(),
+          () => _world(room: 'MH_003_Tavern').wares(),
           throwsA(isA<InvalidMoveException>()
               .having((e) => e.message, 'message', contains('nobody'))));
     });

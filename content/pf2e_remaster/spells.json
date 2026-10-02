@@ -82,6 +82,57 @@
       "heal": "1d8+8",
       "range": "near",
       "heighten": { "every": 1, "heal": "1d8+8" }
+    },
+    {
+      "name": "Chilling Spray",
+      "rank": 1,
+      "defense": "reflex",
+      "damage": "2d4",
+      "range": "near",
+      "area": true,
+      "heighten": { "every": 1, "damage": "2d4" }
+    },
+    {
+      "name": "Acid Grip",
+      "rank": 2,
+      "defense": "reflex",
+      "damage": "2d8",
+      "range": "far",
+      "heighten": { "every": 2, "damage": "2d8" }
+    },
+    {
+      "name": "Horizon Thunder Sphere",
+      "rank": 2,
+      "defense": "ac",
+      "damage": "3d6",
+      "range": "near",
+      "heighten": { "every": 1, "damage": "1d6" }
+    },
+    {
+      "name": "Cone of Cold",
+      "rank": 5,
+      "defense": "reflex",
+      "damage": "12d6",
+      "range": "near",
+      "area": true,
+      "heighten": { "every": 1, "damage": "2d6" }
+    },
+    {
+      "name": "Eclipse Burst",
+      "rank": 7,
+      "defense": "reflex",
+      "damage": "8d10",
+      "range": "far",
+      "area": true,
+      "heighten": { "every": 1, "damage": "1d10" }
+    },
+    {
+      "name": "Polar Ray",
+      "rank": 8,
+      "defense": "ac",
+      "damage": "10d8",
+      "range": "far",
+      "heighten": { "every": 1, "damage": "2d8" }
     }
   ]
 }

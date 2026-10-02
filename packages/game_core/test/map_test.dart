@@ -198,7 +198,7 @@ void main() {
     test('the Grand Library sells the plan of the city', () {
       final world = _world(room: 'VC_003_GrandLibrary');
       expect(world.shopHere?.keeperId, 'npc_008_hale');
-      final plan = world.wares().single;
+      final plan = world.wares().singleWhere((w) => w.item.id == _cityPlan);
       expect(plan.item.id, _cityPlan);
       expect(plan.price, 1200);
     });

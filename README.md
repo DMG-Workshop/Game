@@ -233,6 +233,16 @@ Bren Cask — Human Fighter, level 6
   0. Not now
 ```
 
+Harrow's forge sells every plain weapon in Pathfinder's book that a valley
+smith would, and the fletcher's bows besides; the Watch sells bombs out of
+its stores; the temple shares elixirs of life and healing scrolls, wands and
+staffs; and in the capital the library sells scrolls and the Crown's
+quartermaster its surplus magic. A bomb is thrown for an action, a Strike in
+all but name, and still splashes on a miss. A scroll casts once, a wand once
+a day, and a staff from charges that come back with rest; a caster uses
+their own spell attack and DC, anybody else the item's. The best of it is
+only found, on whatever guards the end of the story.
+
 A game saves to a file and picks up where it was left. The save remembers
 its campaign and characters, so resuming needs nothing else; pass
 `--characters` to bring a sheet re-exported from Pathbuilder, and a level

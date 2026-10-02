@@ -577,6 +577,12 @@ aldus = conversation('npc_003_aldus', [
     scene('aldus_again', A, 'Aldus looks up from the altar. «Back again?»',
           opt('ask', 'Ask him something', '«Ask.»',
               go='aldus_ask', say='A few more questions, Brother.'),
+          opt('look', 'Ask what the temple can spare',
+              '«Elixirs from the infirmary, the healing scrolls, and the '
+              'crook, if you will bring it back.» He lifts the cloth off the '
+              'alms-table. «For what keeps the roof on.»',
+              go='aldus_again', say='Can the temple spare anything for the '
+              'road?'),
           opt('leave', 'Leave him to his work', 'He nods, and kneels.',
               go='aldus_bye')),
 
@@ -593,6 +599,10 @@ aldus = conversation('npc_003_aldus', [
               sets=['aldus_warned_of_teacher'],
               unless=['aldus_warned_of_teacher']),
           *_aldus_errands('aldus_after'),
+          opt('look', 'Ask what the temple can spare',
+              '«More than it could, these days.» He lifts the cloth off the '
+              'alms-table.',
+              go='aldus_after', say='Can the temple spare anything?'),
           opt('leave', 'Leave', 'He goes back to his altar, humming.',
               go='aldus_bye')),
 
@@ -712,6 +722,11 @@ harrow = conversation('npc_004_harrow', [
     scene('harrow_again', H, 'The hammer stops. «You again.»',
           opt('talk', 'Talk', '«Go on.»', go='harrow_ask',
               say='A word, if you can spare it.'),
+          opt('look', 'Ask what she has for sale',
+              '«The rack by the door. Swords, axes, a few hammers that are '
+              'not for nails.» She points with the tongs. «And whatever the '
+              'Watch leaves to be re-edged and forgets to collect.»',
+              go='harrow_again', say='What have you got on the rack?'),
           opt('leave', 'Leave', 'The hammer starts again.', go='harrow_bye')),
 
     scene('harrow_after', H,
@@ -732,6 +747,9 @@ harrow = conversation('npc_004_harrow', [
               say='The maul on the wall. Is it still spoken for?',
               sets=['loot_w_009_thrall_breaker'],
               unless=['loot_w_009_thrall_breaker']),
+          opt('look', 'Ask what she has for sale',
+              '«Same rack. More on it, now people are buying again.»',
+              go='harrow_after', say='Anything new on the rack?'),
           opt('leave', 'Leave her to it', 'She lifts a hand without turning.',
               go='harrow_bye')),
 
@@ -1825,6 +1843,82 @@ aldric = conversation('npc_012_aldric', [
 ])
 
 
+# --- those who keep stores --------------------------------------------------
+
+def keeper_talk(npc, key, title, opening, about, rumour, look, again, bye):
+    """[about], [rumour] and [look] are (label, said, reply)."""
+    met = f'met_{key}'
+    heard = f'{key}_shared_rumour'
+    browse = opt('look', look[0], look[2], go=f'{key}_talk', say=look[1])
+    return conversation(npc, [
+        entry(f'{key}_again', requires=[met]),
+        entry(f'{key}_open'),
+    ], [
+        scene(f'{key}_open', title, opening,
+              opt('ask_about', about[0], about[2], go=f'{key}_talk',
+                  say=about[1], sets=[met]),
+              opt('look', look[0], look[2], go=f'{key}_talk', say=look[1],
+                  sets=[met]),
+              opt('leave', 'Leave', bye, go=f'{key}_bye', sets=[met])),
+        scene(f'{key}_talk', title, f'{title.split()[-1]} waits.',
+              opt('ask_rumour', rumour[0], rumour[2], go=f'{key}_talk',
+                  say=rumour[1], sets=[heard], unless=[heard]),
+              browse,
+              opt('leave', 'Leave', bye, go=f'{key}_bye')),
+        scene(f'{key}_again', title, again,
+              browse,
+              opt('talk', 'Talk', 'A nod: go on.', go=f'{key}_talk'),
+              opt('leave', 'Leave', bye, go=f'{key}_bye')),
+        scene(f'{key}_bye', title, bye, ending=True),
+    ])
+
+
+rook = keeper_talk(
+    'npc_019_rook', 'rook', 'Sergeant Ada Rook',
+    'A sergeant of the Watch with a ledger under one arm and a scar across '
+    'both knuckles looks up from a stack of straw-packed crates. «Stores. '
+    'If you\'re not Watch, you\'re paying.»',
+    ('Ask what is in the crates',
+     'What\'s in the crates, Sergeant?',
+     '«Alchemy. Fire, frost, acid, the lot.» She pats a crate, gently. «The '
+     'Captain ordered it for the wood. Then the Captain worked out what it '
+     'would do to the wood. So now it\'s for sale.»'),
+    ('Ask about the Watch',
+     'How is the Watch holding up?',
+     '«Twelve of us for a town and a wood. Nine, since the Whitmore girl.» '
+     'She does not say what happened to the other three, and you do not '
+     'ask.'),
+    ('Ask to see the stores',
+     'Show us what you\'ve got.',
+     '«Sign here. And here.» She opens the nearest crate and stands well '
+     'back from it.'),
+    'Sergeant Rook looks up from the ledger. «Back for more?»',
+    'She goes back to counting crates.')
+
+venn = keeper_talk(
+    'npc_020_venn', 'venn', 'Quartermaster Odile Venn',
+    'Behind a trestle of oiled steel under a Crown awning, a grey-haired '
+    'quartermaster in a buttoned blue coat is writing prices on slates '
+    'with great care. «Crown surplus,» she says, without looking up. «Every '
+    'piece stamped and every price fixed.»',
+    ('Ask why the Crown is selling',
+     'Why is the Crown selling its own arms?',
+     '«Because the Crown is short of coin and long on swords.» She chalks a '
+     'number, rubs it out, chalks a bigger one. «And because half the '
+     'armoury\'s officers stopped coming to work, and somebody has to.»'),
+    ('Ask about the palace',
+     'What\'s the talk at the palace?',
+     '«That the Queen orders nothing through my stores any more. Nothing.» '
+     'Her mouth goes thin. «Thirty years I have kept the palace in steel. '
+     'Somebody else is keeping it in something now.»'),
+    ('Ask to see the stock',
+     'Show us what the Crown is selling.',
+     '«Blades on the left, wands and staffs on the right. Do not wave the '
+     'wands.»'),
+    'Quartermaster Venn looks up from her slates. «Again? Good.»',
+    'She goes back to the slates.')
+
+
 # --- those who would join --------------------------------------------------
 #
 # Each has the same shape: an opening, a little about themselves, something
@@ -2038,7 +2132,7 @@ def derive(value):
 
 document = {'conversations': [
     thorne, marta, aldus, harrow, wendel, liora, hale, malachai, jory,
-    sal, brask, aldric, bren, tamsin, wren, ilse, grum, vey,
+    sal, brask, aldric, bren, tamsin, wren, ilse, grum, vey, rook, venn,
 ]}
 derive(document)
 h.save('conversations.json', quoted(document))

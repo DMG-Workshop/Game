@@ -124,7 +124,7 @@ void main() {
 
   group('npcs', () {
     test('reads the cast and places them', () {
-      expect(campaign.npcs.length, 18);
+      expect(campaign.npcs.length, 20);
       expect(campaign.npcs.byId('npc_001_thorne')!.name,
           'Captain Thorne Ironhelm');
       expect(campaign.npcs.inRoom('VC_002_ThroneRoom').map((n) => n.name),
@@ -184,7 +184,12 @@ void main() {
 
     test('filters by type', () {
       expect(campaign.gear.ofType('armor'), hasLength(7));
-      expect(campaign.gear.ofType('weapon'), hasLength(19));
+      expect(campaign.gear.ofType('weapon'), hasLength(69));
+      expect(campaign.gear.ofType('bomb'), hasLength(24));
+      expect(campaign.gear.ofType('elixir'), hasLength(6));
+      expect(campaign.gear.ofType('scroll'), hasLength(20));
+      expect(campaign.gear.ofType('wand'), hasLength(17));
+      expect(campaign.gear.ofType('staff'), hasLength(10));
       // Every item lands in exactly one category, so nothing is invisible to
       // a table that asks by type.
       final byType = {
@@ -199,7 +204,7 @@ void main() {
       // tables have nothing to offer.
       expect(
           campaign.gear.levelGaps(campaign.world.metadata.levelCap), isEmpty);
-      expect(campaign.gear.length, 39);
+      expect(campaign.gear.length, 166);
       for (var level = 1; level <= 20; level++) {
         expect(campaign.gear.forLevel(level), isNotEmpty,
             reason: 'nothing within two levels of $level');
@@ -213,7 +218,8 @@ void main() {
         expect(item.name.trim(), isNotEmpty);
         expect(item.description.trim(), isNotEmpty, reason: item.name);
         expect(item.traits, isNotEmpty, reason: item.name);
-        expect(item.level, inInclusiveRange(1, 20), reason: item.name);
+        // Level 0 is Pathfinder's for plain kit: anyone can buy a sword.
+        expect(item.level, inInclusiveRange(0, 20), reason: item.name);
       }
     });
 
@@ -221,15 +227,17 @@ void main() {
       for (final item in campaign.gear.all.where((i) => i.isMagical)) {
         expect(item.special?.trim(), isNotEmpty, reason: item.name);
       }
-      // The only mundane items are the militia sword a first-level
-      // character starts with, and the maps.
-      expect(
-          campaign.gear.all.where((i) => !i.isMagical).map((i) => i.id),
-          unorderedEquals([
-            'w_001_guard_sword',
-            'g_038_map_of_the_valley',
-            'g_039_plan_of_valorheim',
-          ]));
+      // The mundane items are plain weapons, alchemy, the maps, and the
+      // militia sword a first-level character starts with.
+      for (final item in campaign.gear.all.where((i) => !i.isMagical)) {
+        expect(
+            item.id == 'w_001_guard_sword' ||
+                item.hasTrait('map') ||
+                item.hasTrait('alchemical') ||
+                (item.type == 'weapon' && item.level == 0),
+            isTrue,
+            reason: item.name);
+      }
     });
 
     test('every weapon rolls damage the engine can read', () {

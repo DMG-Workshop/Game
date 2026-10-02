@@ -389,7 +389,7 @@ void main() {
 
         final elsewhere = _world(
             seed: seed,
-            room: where == 'RF_001_Farm' ? 'MH_002_GuardHall' : 'RF_001_Farm');
+            room: where == 'RF_001_Farm' ? 'MH_003_Tavern' : 'RF_001_Farm');
         expect(elsewhere.shopHere, isNull);
         expect(() => elsewhere.beginConversation('sal'),
             throwsA(isA<InvalidMoveException>()));
