@@ -177,8 +177,11 @@ void main() {
       final log = await _play('WW_001_Edge', ['west'], seed: 3);
       expect(log, contains('Strike Hollow Thrall 2  (35/35 HP)'));
       expect(log, contains('Strike Hollow Thrall 1  (35/35 HP)'));
-      expect(log,
-          contains('Cast Ignition at Hollow Thrall 2  (2 actions, cantrip)'));
+      // Both thralls are in reach, so there is a choice to make.
+      expect(
+          log,
+          contains('Cast Ignition  (2 actions, cantrip): choose a '
+              'target'));
       expect(log, contains('End turn'));
       expect(log, contains('0. Flee'));
     });
@@ -191,10 +194,40 @@ void main() {
               '2, Hollow Thrall 1 and Korash Blackearth — your own side too'));
     });
 
-    test('casts a spell by its number', () async {
-      final log =
-          await _play('WW_001_Edge', ['west', '#Cast Ignition'], seed: 3);
+    test('casts a spell by its number, at whoever is picked', () async {
+      final log = await _play(
+          'WW_001_Edge', ['west', '#Cast Ignition', '#Hollow Thrall 1'],
+          seed: 3);
+      expect(log, contains('Ignition: at whom?'));
+      expect(log, contains('Hollow Thrall 2  (35/35 HP, engaged)'));
       expect(log, contains('Korash Blackearth casts Ignition'));
+      expect(log, contains('Hollow Thrall 1: Ignition (spell attack)'));
+    });
+
+    test('0 at "at whom?" goes back to the orders', () async {
+      final log = await _play(
+          'WW_001_Edge', ['west', '#Cast Ignition', '0', '#End turn'],
+          seed: 3);
+      expect(log, contains('0. Back to the fight'));
+      expect(log, isNot(contains('casts Ignition')));
+      expect('-- Korash Blackearth, round 1, 3 action(s) --'.allMatches(log),
+          hasLength(2),
+          reason: 'the same turn offered again, with nothing spent');
+    });
+
+    test('a burst can be dropped where it spares the party', () async {
+      // Seed 5: one thrall at Korash's elbow, the other hanging back.
+      final log = await _play(
+          'WW_001_Edge', ['west', '#Cast Fireball', '#At Hollow Thrall 2'],
+          seed: 5);
+      expect(
+          log,
+          contains('At Hollow Thrall 1, engaged: catches Hollow Thrall 1 and '
+              'Korash Blackearth — your own side too'));
+      expect(
+          log, contains('At Hollow Thrall 2, near: catches Hollow Thrall 2'));
+      expect(log, contains('Hollow Thrall 2: Reflex against Fireball'));
+      expect(log, isNot(contains('Korash Blackearth: Reflex against')));
     });
 
     test('offers a draught once somebody is hurt, and drinks it', () async {

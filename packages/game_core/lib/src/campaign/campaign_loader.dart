@@ -148,6 +148,8 @@ class CampaignLoader {
         description: _optional(raw['description']) ?? '',
         shelter: raw['shelter'] == true,
         ambiance: _strings(raw['ambiance']),
+        dayAmbiance: _strings(raw['ambiance_day']),
+        nightAmbiance: _strings(raw['ambiance_night']),
         exits: {
           for (final e in _map(raw['exits']).entries)
             e.key.trim().toLowerCase():

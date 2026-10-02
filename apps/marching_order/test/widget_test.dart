@@ -140,9 +140,24 @@ void main() {
     expect(game.prompt, 'fight> ');
     final orders = game.chips.map((c) => c.label).toList();
     expect(orders, contains('Strike Hollow Thrall 2'));
-    expect(orders, contains('Cast Ignition'));
+    expect(orders, contains('Cast Ignition…'), reason: 'two thralls to aim at');
     expect(orders, contains('End turn'));
     expect(orders.sublist(orders.length - 2), ['Status', 'Flee']);
+
+    // Two thralls in reach: a spell asks which, and the answer is a chip.
+    game.send(
+      game.chips.firstWhere((c) => c.label == 'Cast Ignition…').command,
+    );
+    await pumpEventQueue();
+    expect(game.prompt, 'aim> ');
+    expect(game.chips.map((c) => c.label), [
+      'Hollow Thrall 2',
+      'Hollow Thrall 1',
+      'Back to the fight',
+    ]);
+    game.send('2');
+    await pumpEventQueue();
+    expect(game.log, contains('Hollow Thrall 1: Ignition (spell attack)'));
   });
 
   test('the map is a chip, and its places are chips to travel by', () async {

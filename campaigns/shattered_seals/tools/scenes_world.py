@@ -224,11 +224,7 @@ HUNTER_SCENES = {
 }
 
 ROOM_AMBIANCE = {
-    'MH_001_Square': [
-        'A bread seller calls out a price, then lowers it without being asked.',
-        'Pigeons settle on the fountain\'s rim and will not drink from it.',
-        'Two women stop talking as you pass, and start again when you have.',
-    ],
+    'MH_001_Square': [],
     'MH_002_GuardHall': [
         'A guard oils a blade that is already oiled.',
         'The duty roster by the door has names crossed out in a newer ink.',
@@ -246,7 +242,6 @@ ROOM_AMBIANCE = {
     ],
     'MH_005_Forge': [
         'The coals tick as they settle.',
-        'A horseshoe cools in the trough with a long hiss.',
         'The hammer rests on the anvil, waiting.',
     ],
     'WW_001_Edge': [
@@ -280,13 +275,11 @@ ROOM_AMBIANCE = {
         'A patrol in red cloaks marches past without looking at anyone.',
     ],
     'VC_002_ThroneRoom': [
-        'A courtier laughs at something, too loudly.',
         'The perfume in the air cannot quite cover what is under it.',
         'Somewhere behind a curtain, the King is coughing.',
     ],
     'VC_003_GrandLibrary': [
         'A page turns, very loudly, three floors up.',
-        'Dust hangs in the light from the high windows.',
         'Somebody coughs, and is shushed by nobody you can see.',
     ],
     'BM_001_Entrance': [
@@ -422,6 +415,43 @@ ITEM_LINES = {
                            'here.'},
     'i_quiet_charter': {'say_on_take': 'Read it. All of it. Then read the last '
                         'part again.'},
+}
+
+# Only by day: a market calling its prices should not be doing it at two
+# in the morning.
+ROOM_AMBIANCE_DAY = {
+    'MH_001_Square': [
+        'A bread seller calls out a price, then lowers it without being asked.',
+        'Pigeons settle on the fountain\'s rim and will not drink from it.',
+        'Two women stop talking as you pass, and start again when you have.',
+    ],
+    'MH_005_Forge': [
+        'A horseshoe cools in the trough with a long hiss.',
+    ],
+    'VC_003_GrandLibrary': [
+        'Dust hangs in the light from the high windows.',
+    ],
+    'VC_002_ThroneRoom': [
+        'A courtier laughs at something, too loudly.',
+    ],
+}
+
+# Only at night.
+ROOM_AMBIANCE_NIGHT = {
+    'MH_001_Square': [
+        'The fountain is loud at night, with nothing in the square to drown it out.',
+        "The Watch's lantern crosses the far side of the square, and does not come any closer.",
+        "A lamp is still burning in the pedlar's cart, behind the shutter.",
+    ],
+    'MH_005_Forge': [
+        'The forge has been banked for the night. The shop smells of cold iron.',
+    ],
+    'VC_003_GrandLibrary': [
+        'Lamps burn in a single row down the reading room, for nobody.',
+    ],
+    'VC_002_ThroneRoom': [
+        'A servant snuffs the candles one by one, and leaves the last.',
+    ],
 }
 
 SHOP_LINES = {

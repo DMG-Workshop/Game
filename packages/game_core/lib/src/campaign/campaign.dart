@@ -254,9 +254,11 @@ class Campaign {
       }
     }
     for (final room in locations.rooms.values) {
-      if (room.ambiance.length < 2) {
-        out.add('${room.title} (${room.id}) has fewer than two lines of '
-            'ambiance');
+      for (final night in [false, true]) {
+        if (room.ambianceAt(night: night).length < 2) {
+          out.add('${room.title} (${room.id}) has fewer than two lines of '
+              'ambiance ${night ? 'at night' : 'by day'}');
+        }
       }
     }
     for (final item in items.all) {

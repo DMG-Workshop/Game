@@ -464,21 +464,55 @@ class EncounterSession {
   /// A burst lands on everyone in that enemy's zone, and a client offering
   /// the spell should be able to say so before the party is in it.
   List<Combatant>? wouldCatch(CastOption option) {
-    if (isOver || current.isEnemy || current.isDown) return null;
+    final aims = aimsFor(option);
+    return aims.isEmpty ? null : aims.first.caught;
+  }
+
+  /// Every way the current combatant could aim [option] now, nearest first:
+  /// each enemy in range, or for a burst each zone with an enemy in range,
+  /// with everyone it would catch there. Empty when it cannot be cast now.
+  ///
+  /// A burst can be dropped on the enemy who has hung back rather than the
+  /// one at arm's length, and the party in between kept out of it.
+  List<({Combatant target, List<Combatant> caught})> aimsFor(
+      CastOption option) {
+    if (isOver || current.isEnemy || current.isDown) return const [];
     if (!option.isAvailable || option.spell.actions > _actionsLeft) {
-      return null;
+      return const [];
     }
     final caster = current;
-    final target = _nearestOpponent(caster);
-    if (target == null) return null;
     final reach = encounter.zones.indexOf(option.spell.range);
-    if (_distance(caster, target) > (reach < 0 ? 0 : reach)) return null;
-    return option.spell.area
-        ? [
-            for (final c in _combatants)
-              if (!c.isDown && c.zoneIndex == target.zoneIndex) c,
-          ]
-        : [target];
+    // Nearest first, and in turn order among the equally near, which is the
+    // one cast() picks when it is given no target.
+    final inRange = [
+      for (final c in _combatants)
+        if (c.isEnemy != caster.isEnemy &&
+            !c.isDown &&
+            _distance(caster, c) <= (reach < 0 ? 0 : reach))
+          c,
+    ]..sort((a, b) {
+        final byDistance = _distance(caster, a).compareTo(_distance(caster, b));
+        return byDistance != 0
+            ? byDistance
+            : _combatants.indexOf(a).compareTo(_combatants.indexOf(b));
+      });
+    if (!option.spell.area) {
+      return [
+        for (final t in inRange) (target: t, caught: [t]),
+      ];
+    }
+    final zones = <int>{};
+    return [
+      for (final t in inRange)
+        if (zones.add(t.zoneIndex))
+          (
+            target: t,
+            caught: [
+              for (final c in _combatants)
+                if (!c.isDown && c.zoneIndex == t.zoneIndex) c,
+            ],
+          ),
+    ];
   }
 
   /// Whether the current combatant has anywhere nearer the enemy to go.

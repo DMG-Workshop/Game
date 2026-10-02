@@ -1967,11 +1967,19 @@ class GameConsole {
         return false;
       }
       final pick = got.pick;
-      final line = switch (pick) {
+      var line = switch (pick) {
         null => got.line,
         0 => 'flee',
         _ => menu[pick - 1].command,
       };
+      if (line.startsWith(_aimOrder)) {
+        final aimed = await _aim(fight, line.substring(_aimOrder.length));
+        if (aimed == null) {
+          out.writeln('\n(script exhausted mid-fight)');
+          return false;
+        }
+        line = aimed;
+      }
       if (line.isEmpty) continue;
 
       final words = line.split(RegExp(r'\s+'));
@@ -2112,8 +2120,11 @@ class GameConsole {
       // Once each by name, as the first way of casting it that works now:
       // a cantrip known from two classes is one spell to the player.
       for (final o in fight.castOptions())
-        if (fight.wouldCatch(o) case final caught? when named.add(o.spell.name))
-          _castEntry(fight, o, caught),
+        if (fight.aimsFor(o) case final aims
+            when aims.isNotEmpty && named.add(o.spell.name))
+          aims.length == 1
+              ? _castEntry(fight, o, aims.single.caught)
+              : _aimEntry(o),
       for (final item in session.inventory.carried)
         if (item.use case final use? when use.actions <= left) ...[
           if (me.hp < me.maxHp)
@@ -2152,8 +2163,7 @@ class GameConsole {
     CastOption o,
     List<Combatant> caught,
   ) {
-    final cost = '${_actions(o.spell.actions)}, '
-        '${o.cost == CastCost.cantrip ? 'cantrip' : '${o.left} left'}';
+    final cost = _cost(o);
     if (!o.spell.area) {
       final target = caught.single;
       return (
@@ -2164,19 +2174,79 @@ class GameConsole {
         command: 'cast ${o.spell.name} ${target.id}',
       );
     }
-    final ours = caught.where((c) => !c.isEnemy).toList();
-    final names = [for (final c in caught) _called(fight, c)];
+    final ours = caught.any((c) => !c.isEnemy);
     return (
       entry: (
         text: 'Cast ${o.spell.name}  ($cost): catches '
-            '${names.length == 1 ? names.single : '${names.sublist(0, names.length - 1).join(', ')} and ${names.last}'}'
-            '${ours.isEmpty ? '' : ' — your own side too'}',
-        chip: 'Cast ${o.spell.name}${ours.isEmpty ? '' : ' (hits you too)'}',
+            '${_catches(fight, caught)}',
+        chip: 'Cast ${o.spell.name}${ours ? ' (hits you too)' : ''}',
       ),
       command:
           'cast ${o.spell.name} ${caught.firstWhere((c) => c.isEnemy, orElse: () => caught.first).id}',
     );
   }
+
+  /// A spell with more than one way to aim it: picking it asks which.
+  ({_Entry entry, String command}) _aimEntry(CastOption o) => (
+        entry: (
+          text: 'Cast ${o.spell.name}  (${_cost(o)}): choose '
+              '${o.spell.area ? 'where' : 'a target'}',
+          chip: 'Cast ${o.spell.name}…',
+        ),
+        command: '$_aimOrder${o.spell.name}',
+      );
+
+  /// Marks a fight order that still needs a target picked.
+  static const _aimOrder = ':aim ';
+
+  /// Where to aim [spellName]: each enemy in range, or for a burst each
+  /// place it could land and everyone standing there. The order to give,
+  /// empty to go back to the others, or null when the input ran out.
+  Future<String?> _aim(EncounterSession fight, String spellName) async {
+    final option = fight
+        .castOptions()
+        .where((o) => o.spell.name == spellName && fight.aimsFor(o).isNotEmpty)
+        .firstOrNull;
+    if (option == null) return '';
+    final aims = fight.aimsFor(option);
+    final area = option.spell.area;
+    out.writeln('\n${option.spell.name}: ${area ? 'where?' : 'at whom?'}');
+    _offer([
+      for (final (:target, :caught) in aims)
+        area
+            ? (
+                text: 'At ${_called(fight, target)}, '
+                    '${fight.zones[target.zoneIndex]}: catches '
+                    '${_catches(fight, caught)}',
+                chip: 'At ${_called(fight, target)}'
+                    '${caught.any((c) => !c.isEnemy) ? ' (hits you too)' : ''}',
+              )
+            : (
+                text: '${_called(fight, target)}  (${target.hp}/'
+                    '${target.maxHp} HP, ${fight.zones[target.zoneIndex]})',
+                chip: _called(fight, target),
+              ),
+    ], 'Back to the fight');
+    final got = await _read('aim> ', aims.length);
+    if (got == null) return null;
+    return switch (got.pick) {
+      null => got.line,
+      0 => '',
+      final pick => 'cast ${option.spell.name} ${aims[pick - 1].target.id}',
+    };
+  }
+
+  /// "Hollow Thrall 2 and Korash Blackearth — your own side too".
+  String _catches(EncounterSession fight, List<Combatant> caught) {
+    final names = [for (final c in caught) _called(fight, c)];
+    final list = names.length == 1
+        ? names.single
+        : '${names.sublist(0, names.length - 1).join(', ')} and ${names.last}';
+    return caught.any((c) => !c.isEnemy) ? '$list — your own side too' : list;
+  }
+
+  String _cost(CastOption o) => '${_actions(o.spell.actions)}, '
+      '${o.cost == CastCost.cantrip ? 'cantrip' : '${o.left} left'}';
 
   String _actions(int n) => n == 1 ? '1 action' : '$n actions';
 

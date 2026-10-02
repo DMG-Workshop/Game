@@ -12,8 +12,8 @@ sys.path.insert(0, HERE)
 import house_json as h  # noqa: E402
 from scenes_fights import FIGHTS, VOICES  # noqa: E402
 from scenes_world import (HUNTER_SCENES, ITEM_LINES, NPC_BARKS,  # noqa: E402
-                          REST_LINES, ROOM_AMBIANCE, SHOP_LINES,
-                          WEATHER_REMARKS)
+                          REST_LINES, ROOM_AMBIANCE, ROOM_AMBIANCE_DAY,
+                          ROOM_AMBIANCE_NIGHT, SHOP_LINES, WEATHER_REMARKS)
 
 os.chdir(os.path.dirname(HERE))
 
@@ -38,6 +38,8 @@ h.save('hunt.json', hunt)
 
 locations = h.load('locations.json')
 attach(locations['rooms'], 'room_id', 'ambiance', ROOM_AMBIANCE)
+attach(locations['rooms'], 'room_id', 'ambiance_day', ROOM_AMBIANCE_DAY)
+attach(locations['rooms'], 'room_id', 'ambiance_night', ROOM_AMBIANCE_NIGHT)
 h.save('locations.json', locations)
 
 items = h.load('world_items.json')
@@ -70,6 +72,8 @@ lines = (
     + sum(len(v[k]) for v in VOICES.values()
           for k in ('taunts', 'hurt', 'dying'))
     + sum(len(v) for v in ROOM_AMBIANCE.values())
+    + sum(len(v) for v in ROOM_AMBIANCE_DAY.values())
+    + sum(len(v) for v in ROOM_AMBIANCE_NIGHT.values())
     + sum(len(v) for v in ITEM_LINES.values())
     + sum(len(v) for s in SHOP_LINES.values() for v in s.values())
     + len(WEATHER_REMARKS)

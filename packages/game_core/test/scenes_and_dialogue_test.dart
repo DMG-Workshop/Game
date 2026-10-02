@@ -7,13 +7,15 @@ import 'helpers.dart';
 
 late Campaign _campaign;
 
-WorldSession _world(String room, {Set<String> flags = const {}}) =>
+WorldSession _world(String room,
+        {Set<String> flags = const {}, int hour = 8}) =>
     WorldSession(
       campaign: _campaign,
       actors: [SessionActor(id: 'korash', character: loadKorash())],
       roller: DiceRoller(3),
       roomId: room,
       flags: flags,
+      hour: hour,
     );
 
 EncounterSession _fight(String encounterId, {int seed = 1}) => EncounterSession(
@@ -52,9 +54,24 @@ void main() {
           isTrue);
     });
 
+    test('the market keeps market hours', () {
+      List<String?> lines(int hour) {
+        final world = _world('MH_001_Square', hour: hour);
+        return [for (var i = 0; i < 6; i++) world.roomAmbiance()];
+      }
+
+      expect(lines(10), contains(contains('bread seller')));
+      expect(lines(2), isNot(contains(contains('bread seller'))),
+          reason: 'nobody sells bread at two in the morning');
+      expect(lines(2), contains(contains('fountain is loud at night')));
+    });
+
     test('every room has something going on in it', () {
       for (final room in _campaign.locations.rooms.values) {
-        expect(room.ambiance.length, greaterThanOrEqualTo(2), reason: room.id);
+        for (final night in [false, true]) {
+          expect(room.ambianceAt(night: night).length, greaterThanOrEqualTo(2),
+              reason: '${room.id}${night ? ' at night' : ''}');
+        }
       }
     });
 

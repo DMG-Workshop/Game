@@ -48,6 +48,8 @@ class Room {
     this.exits = const {},
     this.shelter = false,
     this.ambiance = const [],
+    this.dayAmbiance = const [],
+    this.nightAmbiance = const [],
   });
 
   final String id;
@@ -59,6 +61,17 @@ class Room {
 
   /// Small things that happen here while the party is about, one at a time.
   final List<String> ambiance;
+
+  /// What happens here only by day: a market calling its prices, which it
+  /// should not be doing at two in the morning.
+  final List<String> dayAmbiance;
+
+  /// What happens here only at night.
+  final List<String> nightAmbiance;
+
+  /// Everything that can happen here at this time of day.
+  List<String> ambianceAt({required bool night}) =>
+      [...ambiance, ...night ? nightAmbiance : dayAmbiance];
 
   /// Direction to the exit leading that way.
   final Map<String, Exit> exits;
