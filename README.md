@@ -243,6 +243,13 @@ a day, and a staff from charges that come back with rest; a caster uses
 their own spell attack and DC, anybody else the item's. The best of it is
 only found, on whatever guards the end of the story.
 
+Besides the story there are forty-two side quests, none of them needed to
+finish it: thirty of them small jobs for the people of the valley and the
+capital, offered as the story reaches them. Somebody asks for something
+found, a word from somebody else, or a fight won, and going back to them
+pays. What is to be found is not lying about until somebody has asked for
+it. `quests` shows what is underway.
+
 A game saves to a file and picks up where it was left. The save remembers
 its campaign and characters, so resuming needs nothing else; pass
 `--characters` to bring a sheet re-exported from Pathbuilder, and a level

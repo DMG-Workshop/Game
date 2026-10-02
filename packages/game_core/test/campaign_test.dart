@@ -501,7 +501,7 @@ void main() {
     test('reads both tiers', () {
       // Three tiers of main story, and the side quests alongside them.
       expect(campaign.arcs.all.where((a) => !a.isSide), hasLength(3));
-      expect(campaign.arcs.all.where((a) => a.isSide), hasLength(12));
+      expect(campaign.arcs.all.where((a) => a.isSide), hasLength(42));
       final tier1 = campaign.arcs.byId('tier_1_local_threat')!;
       expect(tier1.name, 'Shadows Over Millhaven');
       expect(tier1.minLevel, 1);

@@ -11,11 +11,7 @@
         { "id": 2, "task": "Investigate Old Oak Grove", "condition": "item_acquired_elaras_doll" },
         { "id": 3, "task": "Slay the Hollow Avatar", "condition": "boss_defeated_hollow_avatar" }
       ],
-      "world_state_changes_on_completion": [
-        "NPC_Elara_freed",
-        "Town_Millhaven_Saved",
-        "Unlock_Travel_to_Valorheim"
-      ]
+      "world_state_changes_on_completion": ["NPC_Elara_freed", "Town_Millhaven_Saved", "Unlock_Travel_to_Valorheim"]
     },
     {
       "arc_id": "tier_2_kingdom_threat",
@@ -29,11 +25,7 @@
         { "id": 3, "task": "Assault Thornhaven Estate", "condition": "enter_TH_002" },
         { "id": 4, "task": "Prevent the Ascension", "condition": "boss_defeated_malachai_vex" }
       ],
-      "world_state_changes_on_completion": [
-        "NPC_King_Aldric_cured",
-        "Faction_Covenant_shattered",
-        "Trigger_Sundering_Earthquake_Event"
-      ]
+      "world_state_changes_on_completion": ["NPC_King_Aldric_cured", "Faction_Covenant_shattered", "Trigger_Sundering_Earthquake_Event"]
     },
     {
       "arc_id": "tier_3_quiet_kingdom",
@@ -263,6 +255,500 @@
           "task": "Ask Brother Aldus to take the name back",
           "condition": "aldus_took_back_the_name"
         }
+      ]
+    },
+    {
+      "arc_id": "side_sq_bad_water",
+      "name": "Bad Water",
+      "kind": "side",
+      "zone": "z_01_proper",
+      "reward": { "gp": 10, "xp": "minor" },
+      "levels": [1, 10],
+      "start_trigger": "sq_bad_water_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find what is fouling the temple well",
+          "condition": "sq_bad_water_item1"
+        },
+        { "id": 2, "task": "Go back to Brother Aldus", "condition": "sq_bad_water_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_roster",
+      "name": "The Watch Roster",
+      "kind": "side",
+      "zone": "z_01_proper",
+      "reward": { "gp": 10, "xp": "minor" },
+      "levels": [1, 10],
+      "start_trigger": "sq_roster_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Get the Captain to sign the Watch roster",
+          "condition": "sq_roster_word1"
+        },
+        { "id": 2, "task": "Go back to Sergeant Rook", "condition": "sq_roster_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_watch_horn",
+      "name": "The Lost Horn",
+      "kind": "side",
+      "zone": "z_02_whisperwood",
+      "reward": { "gp": 20, "xp": "moderate" },
+      "levels": [1, 10],
+      "start_trigger": "sq_watch_horn_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find Corporal Penn's horn in the deep wood",
+          "condition": "sq_watch_horn_item1"
+        },
+        { "id": 2, "task": "Go back to Captain Thorne", "condition": "sq_watch_horn_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_jorys_crate",
+      "name": "Jory's Crate",
+      "kind": "side",
+      "zone": "z_07_mere_road",
+      "reward": { "gp": 15, "xp": "minor" },
+      "levels": [1, 10],
+      "start_trigger": "sq_jorys_crate_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find Jory's crate on the Mere Road",
+          "condition": "sq_jorys_crate_item1"
+        },
+        { "id": 2, "task": "Go back to Jory", "condition": "sq_jorys_crate_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_lost_ewes",
+      "name": "The Lost Ewes",
+      "kind": "side",
+      "zone": "z_02_whisperwood",
+      "reward": { "gp": 15, "xp": "minor" },
+      "levels": [1, 10],
+      "start_trigger": "sq_lost_ewes_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find the bell-collar from Marta's fold",
+          "condition": "sq_lost_ewes_item1"
+        },
+        { "id": 2, "task": "Go back to Marta", "condition": "sq_lost_ewes_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_seal_stone",
+      "name": "Seal-Stone",
+      "kind": "side",
+      "zone": "z_07_mere_road",
+      "reward": { "gp": 25, "xp": "moderate" },
+      "levels": [1, 10],
+      "start_trigger": "sq_seal_stone_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Bring Harrow a piece of the broken boundary marker",
+          "condition": "sq_seal_stone_item1"
+        },
+        { "id": 2, "task": "Go back to Harrow", "condition": "sq_seal_stone_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_oak_marks",
+      "name": "The Marks on the Oak",
+      "kind": "side",
+      "zone": "z_03_ravencrest",
+      "reward": { "gp": 15, "xp": "minor" },
+      "levels": [1, 10],
+      "start_trigger": "sq_oak_marks_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Bring Brother Aldus the marks from the old oak",
+          "condition": "sq_oak_marks_item1"
+        },
+        { "id": 2, "task": "Go back to Brother Aldus", "condition": "sq_oak_marks_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_drovers_road",
+      "name": "The Drovers' Road",
+      "kind": "side",
+      "zone": "z_02_whisperwood",
+      "reward": { "gp": 20, "xp": "moderate" },
+      "levels": [1, 10],
+      "start_trigger": "sq_drovers_road_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Clear the deep wood so the drovers come back to Ravencrest",
+          "condition": "cleared_whisperwood_thralls"
+        },
+        { "id": 2, "task": "Go back to Marta", "condition": "sq_drovers_road_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_tollgate_pass",
+      "name": "A Pass for the Tollgate",
+      "kind": "side",
+      "zone": "z_01_proper",
+      "reward": { "gp": 10, "xp": "minor" },
+      "levels": [1, 10],
+      "start_trigger": "sq_tollgate_pass_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Get Captain Thorne to write Jory a tollgate pass",
+          "condition": "sq_tollgate_pass_word1"
+        },
+        { "id": 2, "task": "Go back to Jory", "condition": "sq_tollgate_pass_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_mill_bell",
+      "name": "The Mill Bell",
+      "kind": "side",
+      "zone": "z_07_mere_road",
+      "reward": { "gp": 25, "xp": "moderate" },
+      "levels": [1, 10],
+      "start_trigger": "sq_mill_bell_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Bring Captain Thorne the mill bell's clapper",
+          "condition": "sq_mill_bell_item1"
+        },
+        { "id": 2, "task": "Go back to Captain Thorne", "condition": "sq_mill_bell_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_watch_crate",
+      "name": "The Lost Crate",
+      "kind": "side",
+      "zone": "z_07_mere_road",
+      "reward": { "gp": 30, "xp": "moderate" },
+      "levels": [1, 10],
+      "start_trigger": "sq_watch_crate_taken",
+      "objectives": [
+        { "id": 1, "task": "Clear the drowned out of the reeds", "condition": "cleared_reed_beds" },
+        { "id": 2, "task": "Find a Watch Stores Crate", "condition": "sq_watch_crate_item2" },
+        { "id": 3, "task": "Go back to Sergeant Rook", "condition": "sq_watch_crate_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_altar_coal",
+      "name": "Altar-Coal",
+      "kind": "side",
+      "zone": "z_01_proper",
+      "reward": { "gp": 10, "xp": "minor" },
+      "levels": [1, 10],
+      "start_trigger": "sq_altar_coal_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Fetch Harrow coal from the temple altar",
+          "condition": "sq_altar_coal_word1"
+        },
+        { "id": 2, "task": "Go back to Harrow", "condition": "sq_altar_coal_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_crown_picks",
+      "name": "The Crown's Picks",
+      "kind": "side",
+      "zone": "z_05_bloodstone_mines",
+      "reward": { "gp": 300, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "sq_crown_picks_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find the mine's loan ledger for Quartermaster Venn",
+          "condition": "sq_crown_picks_item1"
+        },
+        { "id": 2, "task": "Go back to Quartermaster Venn", "condition": "sq_crown_picks_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_requisitions",
+      "name": "Forged Requisitions",
+      "kind": "side",
+      "zone": "z_04_palace_district",
+      "reward": { "gp": 250, "xp": "minor" },
+      "levels": [11, 20],
+      "start_trigger": "sq_requisitions_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find out who signs the forged requisitions",
+          "condition": "sq_requisitions_word1"
+        },
+        { "id": 2, "task": "Go back to Quartermaster Venn", "condition": "sq_requisitions_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_cut_pages",
+      "name": "The Cut Pages",
+      "kind": "side",
+      "zone": "z_08_under_archive",
+      "reward": { "gp": 400, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "sq_cut_pages_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Bring the cut pages back up out of the Under-Archive",
+          "condition": "sq_cut_pages_item1"
+        },
+        { "id": 2, "task": "Go back to Master Hale", "condition": "sq_cut_pages_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_prayer_beads",
+      "name": "The Reader's Beads",
+      "kind": "side",
+      "zone": "z_08_under_archive",
+      "reward": { "gp": 350, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "sq_prayer_beads_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Bring Brother Aldus a string of the readers' beads",
+          "condition": "sq_prayer_beads_item1"
+        },
+        { "id": 2, "task": "Go back to Brother Aldus", "condition": "sq_prayer_beads_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_canary",
+      "name": "The Canary Cage",
+      "kind": "side",
+      "zone": "z_05_bloodstone_mines",
+      "reward": { "gp": 300, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "sq_canary_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find out if Jory's cousin's canary still sings",
+          "condition": "sq_canary_item1"
+        },
+        { "id": 2, "task": "Go back to Jory", "condition": "sq_canary_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_crimson_banner",
+      "name": "The Crimson Banner",
+      "kind": "side",
+      "zone": "z_06_thornhaven",
+      "reward": { "gp": 600, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "sq_crimson_banner_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Break the watch on Thornhaven's gate",
+          "condition": "thornhaven_watch_broken"
+        },
+        { "id": 2, "task": "Find the Crimson Banner", "condition": "sq_crimson_banner_item2" },
+        { "id": 3, "task": "Go back to Captain Thorne", "condition": "sq_crimson_banner_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_brazier_ash",
+      "name": "Cold Ash",
+      "kind": "side",
+      "zone": "z_06_thornhaven",
+      "reward": { "gp": 500, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "sq_brazier_ash_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Bring Brother Aldus the ash from the ritual chamber",
+          "condition": "sq_brazier_ash_item1"
+        },
+        { "id": 2, "task": "Go back to Brother Aldus", "condition": "sq_brazier_ash_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_warden_keystone",
+      "name": "The Warden's Keystone",
+      "kind": "side",
+      "zone": "z_08_under_archive",
+      "reward": { "gp": 600, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "sq_warden_keystone_taken",
+      "objectives": [
+        { "id": 1, "task": "Stop the Archive Warden", "condition": "cleared_sealed_stacks" },
+        { "id": 2, "task": "Find the Warden's Keystone", "condition": "sq_warden_keystone_item2" },
+        { "id": 3, "task": "Go back to Master Hale", "condition": "sq_warden_keystone_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_crown_debt",
+      "name": "The Crown's Debt",
+      "kind": "side",
+      "zone": "z_04_palace_district",
+      "reward": { "gp": 250, "xp": "minor" },
+      "levels": [11, 20],
+      "start_trigger": "sq_crown_debt_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find out what the Crown owes the Millhaven Watch",
+          "condition": "sq_crown_debt_word1"
+        },
+        { "id": 2, "task": "Go back to Quartermaster Venn", "condition": "sq_crown_debt_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_red_ore",
+      "name": "Red-Veined Ore",
+      "kind": "side",
+      "zone": "z_05_bloodstone_mines",
+      "reward": { "gp": 400, "xp": "moderate" },
+      "levels": [11, 20],
+      "start_trigger": "sq_red_ore_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Bring Harrow a lump of bloodstone ore",
+          "condition": "sq_red_ore_item1"
+        },
+        { "id": 2, "task": "Go back to Harrow", "condition": "sq_red_ore_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_rift_patrol",
+      "name": "The Armoury Patrol",
+      "kind": "side",
+      "zone": "z_09_the_sundering",
+      "reward": { "gp": 2000, "xp": "moderate" },
+      "levels": [14, 20],
+      "start_trigger": "sq_rift_patrol_taken",
+      "objectives": [
+        { "id": 1, "task": "Clear the mouth of the Rift", "condition": "cleared_the_rift" },
+        { "id": 2, "task": "Find an Armoury Tag", "condition": "sq_rift_patrol_item2" },
+        { "id": 3, "task": "Go back to Quartermaster Venn", "condition": "sq_rift_patrol_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_house_deeds",
+      "name": "The Deeds of the Buried Street",
+      "kind": "side",
+      "zone": "z_09_the_sundering",
+      "reward": { "gp": 1500, "xp": "minor" },
+      "levels": [14, 20],
+      "start_trigger": "sq_house_deeds_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find the Registry's deed-box in the Buried Street",
+          "condition": "sq_house_deeds_item1"
+        },
+        { "id": 2, "task": "Go back to Master Hale", "condition": "sq_house_deeds_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_silenced_bell",
+      "name": "The Silenced Bell",
+      "kind": "side",
+      "zone": "z_09_the_sundering",
+      "reward": { "gp": 2500, "xp": "moderate" },
+      "levels": [14, 20],
+      "start_trigger": "sq_silenced_bell_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Cleanse the temple of Unmaking",
+          "condition": "cleared_unmaking_temple"
+        },
+        { "id": 2, "task": "Find Ashkyr's Silenced Bell", "condition": "sq_silenced_bell_item2" },
+        { "id": 3, "task": "Go back to Brother Aldus", "condition": "sq_silenced_bell_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_signet",
+      "name": "The King's Signet",
+      "kind": "side",
+      "zone": "z_09_the_sundering",
+      "reward": { "gp": 2000, "xp": "moderate" },
+      "levels": [14, 20],
+      "start_trigger": "sq_signet_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Find King Aldric's signet at the fallen guard post",
+          "condition": "sq_signet_item1"
+        },
+        { "id": 2, "task": "Go back to King Aldric", "condition": "sq_signet_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_name_stone",
+      "name": "A Name-Stone",
+      "kind": "side",
+      "zone": "z_10_quiet_court",
+      "reward": { "gp": 3000, "xp": "moderate" },
+      "levels": [14, 20],
+      "start_trigger": "sq_name_stone_taken",
+      "objectives": [
+        { "id": 1, "task": "Find a Name-Stone", "condition": "sq_name_stone_item1" },
+        { "id": 2, "task": "Ask Brother Aldus", "condition": "sq_name_stone_word2" },
+        { "id": 3, "task": "Go back to King Aldric", "condition": "sq_name_stone_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_iron_crown",
+      "name": "The Iron Crown",
+      "kind": "side",
+      "zone": "z_10_quiet_court",
+      "reward": { "gp": 3500, "xp": "moderate" },
+      "levels": [14, 20],
+      "start_trigger": "sq_iron_crown_taken",
+      "objectives": [
+        { "id": 1, "task": "Silence the Quiet Court", "condition": "cleared_quiet_court" },
+        { "id": 2, "task": "Find a Courtier's Iron Crown", "condition": "sq_iron_crown_item2" },
+        { "id": 3, "task": "Go back to Quartermaster Venn", "condition": "sq_iron_crown_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_seal_water",
+      "name": "Water from the Well of Seals",
+      "kind": "side",
+      "zone": "z_10_quiet_court",
+      "reward": { "gp": 2500, "xp": "minor" },
+      "levels": [14, 20],
+      "start_trigger": "sq_seal_water_taken",
+      "objectives": [
+        {
+          "id": 1,
+          "task": "Bring Brother Aldus water from the Well of Seals",
+          "condition": "sq_seal_water_item1"
+        },
+        { "id": 2, "task": "Go back to Brother Aldus", "condition": "sq_seal_water_done" }
+      ]
+    },
+    {
+      "arc_id": "side_sq_true_history",
+      "name": "The True History",
+      "kind": "side",
+      "zone": "z_10_quiet_court",
+      "reward": { "gp": 3000, "xp": "moderate" },
+      "levels": [14, 20],
+      "start_trigger": "sq_true_history_taken",
+      "objectives": [
+        { "id": 1, "task": "Ask Master Hale", "condition": "sq_true_history_word1" },
+        { "id": 2, "task": "Cross the Causeway of Names", "condition": "cleared_causeway" },
+        { "id": 3, "task": "Go back to Jory", "condition": "sq_true_history_done" }
       ]
     }
   ]

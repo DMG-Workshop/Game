@@ -135,6 +135,132 @@
               }
             },
             {
+              "id": "sq_roster_word",
+              "label": "Ask him to sign the Watch roster",
+              "say": "Sergeant Rook needs the new roster signed.",
+              "outcome": {
+                "text": "He looks at the sheet a long time, at the three names, and signs it without a word. Then he writes a fourth name underneath: his own.",
+                "goTo": "thorne_case",
+                "setFlags": ["sq_roster_word1"]
+              },
+              "requires": {
+                "flags": ["sq_roster_taken"],
+                "notFlags": ["sq_roster_word1"]
+              }
+            },
+            {
+              "id": "sq_watch_horn",
+              "label": "Ask what else was lost in the wood",
+              "say": "Did the Watch lose anything else in the wood?",
+              "outcome": {
+                "text": "\"A horn.\" His jaw works. \"Corporal Penn carried it. He did not come back and neither did the horn. It was his father's. I would like his mother to have it.\"",
+                "goTo": "thorne_case",
+                "setFlags": ["sq_watch_horn_taken"]
+              },
+              "requires": {
+                "flags": ["keyword_quest_unlocked", "cleared_whisperwood_thralls"],
+                "notFlags": ["sq_watch_horn_taken"]
+              }
+            },
+            {
+              "id": "sq_watch_horn_back",
+              "label": "Give him Penn's horn",
+              "say": "We found Corporal Penn's horn.",
+              "outcome": {
+                "text": "He takes it in both hands. For a while he does not say anything. \"I will take it to her myself,\" he says. \"Thank you.\"",
+                "goTo": "thorne_case",
+                "setFlags": ["sq_watch_horn_done"]
+              },
+              "requires": {
+                "flags": ["sq_watch_horn_taken", "sq_watch_horn_item1"],
+                "notFlags": ["sq_watch_horn_done"]
+              }
+            },
+            {
+              "id": "sq_tollgate_pass_word",
+              "label": "Ask him for a pass for Jory",
+              "say": "Jory Tallow wants a pass through the tollgate.",
+              "outcome": {
+                "text": "\"Tallow.\" He sighs, and writes something on a slip of card, and stamps it. \"Tell him the road is still shut. This is for when it is not.\"",
+                "goTo": "thorne_case",
+                "setFlags": ["sq_tollgate_pass_word1"]
+              },
+              "requires": {
+                "flags": ["sq_tollgate_pass_taken"],
+                "notFlags": ["sq_tollgate_pass_word1"]
+              }
+            },
+            {
+              "id": "sq_mill_bell",
+              "label": "Ask about the bell you heard at the mill",
+              "say": "We heard a bell ring at the drowned mill.",
+              "outcome": {
+                "text": "\"The mill bell.\" His face goes still. \"It rang for the hangings, when there were hangings. Bring me the clapper and it will never ring for anybody again.\"",
+                "goTo": "thorne_case",
+                "setFlags": ["sq_mill_bell_taken"]
+              },
+              "requires": {
+                "flags": ["deception_revealed_mere_road"],
+                "notFlags": ["sq_mill_bell_taken"]
+              }
+            },
+            {
+              "id": "sq_mill_bell_back",
+              "label": "Give him the clapper",
+              "say": "The clapper from the mill bell.",
+              "outcome": {
+                "text": "He weighs it in his hand, then drops it into the strongbox under his desk and locks it. \"Good,\" he says. \"Good.\"",
+                "goTo": "thorne_case",
+                "setFlags": ["sq_mill_bell_done"]
+              },
+              "requires": {
+                "flags": ["sq_mill_bell_taken", "sq_mill_bell_item1"],
+                "notFlags": ["sq_mill_bell_done"]
+              }
+            },
+            {
+              "id": "sq_crimson_banner",
+              "label": "Ask what he would have from Thornhaven",
+              "say": "Is there anything you want from Thornhaven, Captain?",
+              "outcome": {
+                "text": "\"Their banner.\" He does not smile. \"The Covenant flies it over the gate like they won something. Bring it down, and bring it here, and I will burn it in the square.\"",
+                "goTo": "thorne_case",
+                "setFlags": ["sq_crimson_banner_taken"]
+              },
+              "requires": {
+                "flags": ["Unlock_Travel_to_Valorheim", "met_thorne"],
+                "notFlags": ["sq_crimson_banner_taken"]
+              }
+            },
+            {
+              "id": "sq_crimson_banner_back",
+              "label": "Give him the banner",
+              "say": "The Covenant's banner, from Thornhaven's gate.",
+              "outcome": {
+                "text": "He carries it out to the square himself, and the whole town watches it burn. Nobody cheers. Everybody stays until it is ash.",
+                "goTo": "thorne_case",
+                "setFlags": ["sq_crimson_banner_done"]
+              },
+              "requires": {
+                "flags": ["sq_crimson_banner_taken", "thornhaven_watch_broken", "sq_crimson_banner_item2"],
+                "notFlags": ["sq_crimson_banner_done"]
+              }
+            },
+            {
+              "id": "sq_crown_debt_word",
+              "label": "Ask him what the Crown owes the Watch",
+              "say": "What does the Crown owe the Millhaven Watch?",
+              "outcome": {
+                "text": "\"Since spring?\" He laughs without much in it. \"Two hundred and twelve gold. Ten men. Nine, now. Ten again,\" he corrects himself.",
+                "goTo": "thorne_case",
+                "setFlags": ["sq_crown_debt_word1"]
+              },
+              "requires": {
+                "flags": ["sq_crown_debt_taken"],
+                "notFlags": ["sq_crown_debt_word1"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "say": "We'll find her.",
@@ -278,6 +404,132 @@
               "requires": {
                 "flags": ["item_acquired_drowning_stone"],
                 "notFlags": ["thorne_knew_the_stone"]
+              }
+            },
+            {
+              "id": "sq_roster_word",
+              "label": "Ask him to sign the Watch roster",
+              "say": "Sergeant Rook needs the new roster signed.",
+              "outcome": {
+                "text": "He looks at the sheet a long time, at the three names, and signs it without a word. Then he writes a fourth name underneath: his own.",
+                "goTo": "thorne_after",
+                "setFlags": ["sq_roster_word1"]
+              },
+              "requires": {
+                "flags": ["sq_roster_taken"],
+                "notFlags": ["sq_roster_word1"]
+              }
+            },
+            {
+              "id": "sq_watch_horn",
+              "label": "Ask what else was lost in the wood",
+              "say": "Did the Watch lose anything else in the wood?",
+              "outcome": {
+                "text": "\"A horn.\" His jaw works. \"Corporal Penn carried it. He did not come back and neither did the horn. It was his father's. I would like his mother to have it.\"",
+                "goTo": "thorne_after",
+                "setFlags": ["sq_watch_horn_taken"]
+              },
+              "requires": {
+                "flags": ["keyword_quest_unlocked", "cleared_whisperwood_thralls"],
+                "notFlags": ["sq_watch_horn_taken"]
+              }
+            },
+            {
+              "id": "sq_watch_horn_back",
+              "label": "Give him Penn's horn",
+              "say": "We found Corporal Penn's horn.",
+              "outcome": {
+                "text": "He takes it in both hands. For a while he does not say anything. \"I will take it to her myself,\" he says. \"Thank you.\"",
+                "goTo": "thorne_after",
+                "setFlags": ["sq_watch_horn_done"]
+              },
+              "requires": {
+                "flags": ["sq_watch_horn_taken", "sq_watch_horn_item1"],
+                "notFlags": ["sq_watch_horn_done"]
+              }
+            },
+            {
+              "id": "sq_tollgate_pass_word",
+              "label": "Ask him for a pass for Jory",
+              "say": "Jory Tallow wants a pass through the tollgate.",
+              "outcome": {
+                "text": "\"Tallow.\" He sighs, and writes something on a slip of card, and stamps it. \"Tell him the road is still shut. This is for when it is not.\"",
+                "goTo": "thorne_after",
+                "setFlags": ["sq_tollgate_pass_word1"]
+              },
+              "requires": {
+                "flags": ["sq_tollgate_pass_taken"],
+                "notFlags": ["sq_tollgate_pass_word1"]
+              }
+            },
+            {
+              "id": "sq_mill_bell",
+              "label": "Ask about the bell you heard at the mill",
+              "say": "We heard a bell ring at the drowned mill.",
+              "outcome": {
+                "text": "\"The mill bell.\" His face goes still. \"It rang for the hangings, when there were hangings. Bring me the clapper and it will never ring for anybody again.\"",
+                "goTo": "thorne_after",
+                "setFlags": ["sq_mill_bell_taken"]
+              },
+              "requires": {
+                "flags": ["deception_revealed_mere_road"],
+                "notFlags": ["sq_mill_bell_taken"]
+              }
+            },
+            {
+              "id": "sq_mill_bell_back",
+              "label": "Give him the clapper",
+              "say": "The clapper from the mill bell.",
+              "outcome": {
+                "text": "He weighs it in his hand, then drops it into the strongbox under his desk and locks it. \"Good,\" he says. \"Good.\"",
+                "goTo": "thorne_after",
+                "setFlags": ["sq_mill_bell_done"]
+              },
+              "requires": {
+                "flags": ["sq_mill_bell_taken", "sq_mill_bell_item1"],
+                "notFlags": ["sq_mill_bell_done"]
+              }
+            },
+            {
+              "id": "sq_crimson_banner",
+              "label": "Ask what he would have from Thornhaven",
+              "say": "Is there anything you want from Thornhaven, Captain?",
+              "outcome": {
+                "text": "\"Their banner.\" He does not smile. \"The Covenant flies it over the gate like they won something. Bring it down, and bring it here, and I will burn it in the square.\"",
+                "goTo": "thorne_after",
+                "setFlags": ["sq_crimson_banner_taken"]
+              },
+              "requires": {
+                "flags": ["Unlock_Travel_to_Valorheim", "met_thorne"],
+                "notFlags": ["sq_crimson_banner_taken"]
+              }
+            },
+            {
+              "id": "sq_crimson_banner_back",
+              "label": "Give him the banner",
+              "say": "The Covenant's banner, from Thornhaven's gate.",
+              "outcome": {
+                "text": "He carries it out to the square himself, and the whole town watches it burn. Nobody cheers. Everybody stays until it is ash.",
+                "goTo": "thorne_after",
+                "setFlags": ["sq_crimson_banner_done"]
+              },
+              "requires": {
+                "flags": ["sq_crimson_banner_taken", "thornhaven_watch_broken", "sq_crimson_banner_item2"],
+                "notFlags": ["sq_crimson_banner_done"]
+              }
+            },
+            {
+              "id": "sq_crown_debt_word",
+              "label": "Ask him what the Crown owes the Watch",
+              "say": "What does the Crown owe the Millhaven Watch?",
+              "outcome": {
+                "text": "\"Since spring?\" He laughs without much in it. \"Two hundred and twelve gold. Ten men. Nine, now. Ten again,\" he corrects himself.",
+                "goTo": "thorne_after",
+                "setFlags": ["sq_crown_debt_word1"]
+              },
+              "requires": {
+                "flags": ["sq_crown_debt_taken"],
+                "notFlags": ["sq_crown_debt_word1"]
               }
             },
             {
@@ -444,6 +696,62 @@
               }
             },
             {
+              "id": "sq_lost_ewes",
+              "label": "Ask about the empty sheepfold",
+              "say": "The fold behind the house is empty.",
+              "outcome": {
+                "text": "\"The ewes went the night Elara did.\" She looks at the treeline. \"They will be dead. But the bell-collar was her grandmother's, and I would like it back.\"",
+                "goTo": "marta_ask",
+                "setFlags": ["sq_lost_ewes_taken"]
+              },
+              "requires": {
+                "flags": ["met_marta"],
+                "notFlags": ["sq_lost_ewes_taken"]
+              }
+            },
+            {
+              "id": "sq_lost_ewes_back",
+              "label": "Give her the bell-collar",
+              "say": "This was on a thorn at the edge of the wood.",
+              "outcome": {
+                "text": "She rings it once, and smiles for the first time since you met her. \"Elara used to follow this home.\"",
+                "goTo": "marta_ask",
+                "setFlags": ["sq_lost_ewes_done"]
+              },
+              "requires": {
+                "flags": ["sq_lost_ewes_taken", "sq_lost_ewes_item1"],
+                "notFlags": ["sq_lost_ewes_done"]
+              }
+            },
+            {
+              "id": "sq_drovers_road",
+              "label": "Ask why the drovers stopped coming",
+              "say": "Nobody seems to come out to the farm.",
+              "outcome": {
+                "text": "\"The drovers will not come through the wood with those things walking it.\" She looks at her empty yard. \"If the deep wood were clear, they would come. I could sell the hay.\"",
+                "goTo": "marta_ask",
+                "setFlags": ["sq_drovers_road_taken"]
+              },
+              "requires": {
+                "flags": ["met_marta"],
+                "notFlags": ["sq_drovers_road_taken"]
+              }
+            },
+            {
+              "id": "sq_drovers_road_back",
+              "label": "Tell her the wood is clear",
+              "say": "The deep wood is clear. The drovers can come.",
+              "outcome": {
+                "text": "\"Then I will send word to the drovers.\" She is already reaching for her shawl. \"Thank you. You do not know what it is to have nobody come.\"",
+                "goTo": "marta_ask",
+                "setFlags": ["sq_drovers_road_done"]
+              },
+              "requires": {
+                "flags": ["sq_drovers_road_taken", "cleared_whisperwood_thralls"],
+                "notFlags": ["sq_drovers_road_done"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "say": "We'll bring her home.",
@@ -559,6 +867,62 @@
               "requires": {
                 "flags": ["scarecrow_burned"],
                 "notFlags": ["marta_scarecrow_settled"]
+              }
+            },
+            {
+              "id": "sq_lost_ewes",
+              "label": "Ask about the empty sheepfold",
+              "say": "The fold behind the house is empty.",
+              "outcome": {
+                "text": "\"The ewes went the night Elara did.\" She looks at the treeline. \"They will be dead. But the bell-collar was her grandmother's, and I would like it back.\"",
+                "goTo": "marta_home",
+                "setFlags": ["sq_lost_ewes_taken"]
+              },
+              "requires": {
+                "flags": ["met_marta"],
+                "notFlags": ["sq_lost_ewes_taken"]
+              }
+            },
+            {
+              "id": "sq_lost_ewes_back",
+              "label": "Give her the bell-collar",
+              "say": "This was on a thorn at the edge of the wood.",
+              "outcome": {
+                "text": "She rings it once, and smiles for the first time since you met her. \"Elara used to follow this home.\"",
+                "goTo": "marta_home",
+                "setFlags": ["sq_lost_ewes_done"]
+              },
+              "requires": {
+                "flags": ["sq_lost_ewes_taken", "sq_lost_ewes_item1"],
+                "notFlags": ["sq_lost_ewes_done"]
+              }
+            },
+            {
+              "id": "sq_drovers_road",
+              "label": "Ask why the drovers stopped coming",
+              "say": "Nobody seems to come out to the farm.",
+              "outcome": {
+                "text": "\"The drovers will not come through the wood with those things walking it.\" She looks at her empty yard. \"If the deep wood were clear, they would come. I could sell the hay.\"",
+                "goTo": "marta_home",
+                "setFlags": ["sq_drovers_road_taken"]
+              },
+              "requires": {
+                "flags": ["met_marta"],
+                "notFlags": ["sq_drovers_road_taken"]
+              }
+            },
+            {
+              "id": "sq_drovers_road_back",
+              "label": "Tell her the wood is clear",
+              "say": "The deep wood is clear. The drovers can come.",
+              "outcome": {
+                "text": "\"Then I will send word to the drovers.\" She is already reaching for her shawl. \"Thank you. You do not know what it is to have nobody come.\"",
+                "goTo": "marta_home",
+                "setFlags": ["sq_drovers_road_done"]
+              },
+              "requires": {
+                "flags": ["sq_drovers_road_taken", "cleared_whisperwood_thralls"],
+                "notFlags": ["sq_drovers_road_done"]
               }
             },
             {
@@ -741,6 +1105,202 @@
               }
             },
             {
+              "id": "sq_bad_water",
+              "label": "Ask if the temple needs anything",
+              "say": "Is there anything the temple needs, Brother?",
+              "outcome": {
+                "text": "\"The well.\" He wipes his hands. \"It tastes of iron since the wood went bad. The spring runs under the forge before it gets here. If something has been dropped in the channel, I would like it out.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_bad_water_taken"]
+              },
+              "requires": {
+                "flags": ["met_aldus", "cleared_whisperwood_thralls"],
+                "notFlags": ["sq_bad_water_taken"]
+              }
+            },
+            {
+              "id": "sq_bad_water_back",
+              "label": "Tell him the well is clear",
+              "say": "The spring was full of nails. It is clear now.",
+              "outcome": {
+                "text": "\"Nails.\" He closes his eyes. \"Of course it was. Ashkyr keep you; the bread will taste of bread again.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_bad_water_done"]
+              },
+              "requires": {
+                "flags": ["sq_bad_water_taken", "sq_bad_water_item1"],
+                "notFlags": ["sq_bad_water_done"]
+              }
+            },
+            {
+              "id": "sq_oak_marks",
+              "label": "Ask if he can read the marks on the oak",
+              "say": "There are marks scored into the old oak at Ravencrest.",
+              "outcome": {
+                "text": "\"Marks?\" He looks up sharply. \"Bring me a rubbing of them, or the bark itself if it comes away. I would know whose hand that is.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_oak_marks_taken"]
+              },
+              "requires": {
+                "flags": ["aldus_told_burials"],
+                "notFlags": ["sq_oak_marks_taken"]
+              }
+            },
+            {
+              "id": "sq_oak_marks_back",
+              "label": "Show him the bark",
+              "say": "The marks from the oak.",
+              "outcome": {
+                "text": "He reads them twice, moving his lips. \"It is the old rite,\" he says, \"written backwards. Somebody was teaching it to the tree.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_oak_marks_done"]
+              },
+              "requires": {
+                "flags": ["sq_oak_marks_taken", "sq_oak_marks_item1"],
+                "notFlags": ["sq_oak_marks_done"]
+              }
+            },
+            {
+              "id": "sq_altar_coal_word",
+              "label": "Ask him for coal from the altar fire",
+              "say": "Harrow asks for coal from the altar fire.",
+              "outcome": {
+                "text": "\"Harrow asks?\" He smiles, and scoops a coal into a little iron box. \"Tell her Ashkyr does not mind where his fire goes, as long as it goes somewhere useful.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_altar_coal_word1"]
+              },
+              "requires": {
+                "flags": ["sq_altar_coal_taken"],
+                "notFlags": ["sq_altar_coal_word1"]
+              }
+            },
+            {
+              "id": "sq_prayer_beads",
+              "label": "Ask what is buried under the capital library",
+              "say": "There are dead under the Grand Library, Brother.",
+              "outcome": {
+                "text": "\"The readers.\" He nods slowly. \"Ashkyr's first scribes. They were buried with their beads. If one string came back up, I could say the rite over it here, for all of them.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_prayer_beads_taken"]
+              },
+              "requires": {
+                "flags": ["Unlock_Travel_to_Valorheim", "heard_of_the_under_archive"],
+                "notFlags": ["sq_prayer_beads_taken"]
+              }
+            },
+            {
+              "id": "sq_prayer_beads_back",
+              "label": "Give him the prayer-beads",
+              "say": "A reader's beads, from the ossuary stair.",
+              "outcome": {
+                "text": "He says the rite there and then, kneeling, the beads wound round his hand. When he stands, he looks ten years younger.",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_prayer_beads_done"]
+              },
+              "requires": {
+                "flags": ["sq_prayer_beads_taken", "sq_prayer_beads_item1"],
+                "notFlags": ["sq_prayer_beads_done"]
+              }
+            },
+            {
+              "id": "sq_brazier_ash",
+              "label": "Ask what should be done with the ritual chamber",
+              "say": "Malachai is dead. What happens to the chamber?",
+              "outcome": {
+                "text": "\"Bring me ash from the brazier.\" He does not hesitate. \"Whoever burned in it deserves a grave, even if all that is left of them is ash.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_brazier_ash_taken"]
+              },
+              "requires": {
+                "flags": ["boss_defeated_malachai_vex"],
+                "notFlags": ["sq_brazier_ash_taken"]
+              }
+            },
+            {
+              "id": "sq_brazier_ash_back",
+              "label": "Give him the ash",
+              "say": "Ash from the ritual chamber's brazier.",
+              "outcome": {
+                "text": "He buries it himself, in the temple yard, under a stone with no name on it. \"Ashkyr knows who they were,\" he says.",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_brazier_ash_done"]
+              },
+              "requires": {
+                "flags": ["sq_brazier_ash_taken", "sq_brazier_ash_item1"],
+                "notFlags": ["sq_brazier_ash_done"]
+              }
+            },
+            {
+              "id": "sq_silenced_bell",
+              "label": "Ask about the temple under the city",
+              "say": "There is a temple to the Unmaking under the capital.",
+              "outcome": {
+                "text": "\"It was Ashkyr's once.\" His voice is very quiet. \"They took its bell and silenced it. Bring it back to the light, and I will hang it here.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_silenced_bell_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_aldus"],
+                "notFlags": ["sq_silenced_bell_taken"]
+              }
+            },
+            {
+              "id": "sq_silenced_bell_back",
+              "label": "Give him the bell",
+              "say": "Ashkyr's bell, from under the capital.",
+              "outcome": {
+                "text": "He hangs it over the temple door with Harrow's help. It has no clapper. It rings every morning at dawn anyway.",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_silenced_bell_done"]
+              },
+              "requires": {
+                "flags": ["sq_silenced_bell_taken", "cleared_unmaking_temple", "sq_silenced_bell_item2"],
+                "notFlags": ["sq_silenced_bell_done"]
+              }
+            },
+            {
+              "id": "sq_name_stone_word",
+              "label": "Ask him how a name is given back",
+              "say": "How is a name given back, Brother?",
+              "outcome": {
+                "text": "\"You say it,\" he says simply. \"Out loud, where the dead can hear. If you do not know it, you say that you would have known it, and Ashkyr fills in the rest.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_name_stone_word2"]
+              },
+              "requires": {
+                "flags": ["sq_name_stone_taken"],
+                "notFlags": ["sq_name_stone_word2"]
+              }
+            },
+            {
+              "id": "sq_seal_water",
+              "label": "Ask what the temple needs for the end",
+              "say": "Is there anything the temple needs, before the end?",
+              "outcome": {
+                "text": "\"Water from the Well of Seals.\" He holds out an empty flask. \"Every seal in the valley was blessed with it. If there is any left, we can bless new ones.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_seal_water_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_aldus"],
+                "notFlags": ["sq_seal_water_taken"]
+              }
+            },
+            {
+              "id": "sq_seal_water_back",
+              "label": "Give him the seal-water",
+              "say": "Water from the Well of Seals.",
+              "outcome": {
+                "text": "\"Enough for one seal.\" He holds the flask to the light. \"Then we will make one, and set it where it is needed most.\"",
+                "goTo": "aldus_ask",
+                "setFlags": ["sq_seal_water_done"]
+              },
+              "requires": {
+                "flags": ["sq_seal_water_taken", "sq_seal_water_item1"],
+                "notFlags": ["sq_seal_water_done"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "say": "Keep a lamp lit, Brother.",
@@ -845,6 +1405,202 @@
               "outcome": {
                 "text": "\"More than it could, these days.\" He lifts the cloth off the alms-table.",
                 "goTo": "aldus_after"
+              }
+            },
+            {
+              "id": "sq_bad_water",
+              "label": "Ask if the temple needs anything",
+              "say": "Is there anything the temple needs, Brother?",
+              "outcome": {
+                "text": "\"The well.\" He wipes his hands. \"It tastes of iron since the wood went bad. The spring runs under the forge before it gets here. If something has been dropped in the channel, I would like it out.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_bad_water_taken"]
+              },
+              "requires": {
+                "flags": ["met_aldus", "cleared_whisperwood_thralls"],
+                "notFlags": ["sq_bad_water_taken"]
+              }
+            },
+            {
+              "id": "sq_bad_water_back",
+              "label": "Tell him the well is clear",
+              "say": "The spring was full of nails. It is clear now.",
+              "outcome": {
+                "text": "\"Nails.\" He closes his eyes. \"Of course it was. Ashkyr keep you; the bread will taste of bread again.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_bad_water_done"]
+              },
+              "requires": {
+                "flags": ["sq_bad_water_taken", "sq_bad_water_item1"],
+                "notFlags": ["sq_bad_water_done"]
+              }
+            },
+            {
+              "id": "sq_oak_marks",
+              "label": "Ask if he can read the marks on the oak",
+              "say": "There are marks scored into the old oak at Ravencrest.",
+              "outcome": {
+                "text": "\"Marks?\" He looks up sharply. \"Bring me a rubbing of them, or the bark itself if it comes away. I would know whose hand that is.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_oak_marks_taken"]
+              },
+              "requires": {
+                "flags": ["aldus_told_burials"],
+                "notFlags": ["sq_oak_marks_taken"]
+              }
+            },
+            {
+              "id": "sq_oak_marks_back",
+              "label": "Show him the bark",
+              "say": "The marks from the oak.",
+              "outcome": {
+                "text": "He reads them twice, moving his lips. \"It is the old rite,\" he says, \"written backwards. Somebody was teaching it to the tree.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_oak_marks_done"]
+              },
+              "requires": {
+                "flags": ["sq_oak_marks_taken", "sq_oak_marks_item1"],
+                "notFlags": ["sq_oak_marks_done"]
+              }
+            },
+            {
+              "id": "sq_altar_coal_word",
+              "label": "Ask him for coal from the altar fire",
+              "say": "Harrow asks for coal from the altar fire.",
+              "outcome": {
+                "text": "\"Harrow asks?\" He smiles, and scoops a coal into a little iron box. \"Tell her Ashkyr does not mind where his fire goes, as long as it goes somewhere useful.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_altar_coal_word1"]
+              },
+              "requires": {
+                "flags": ["sq_altar_coal_taken"],
+                "notFlags": ["sq_altar_coal_word1"]
+              }
+            },
+            {
+              "id": "sq_prayer_beads",
+              "label": "Ask what is buried under the capital library",
+              "say": "There are dead under the Grand Library, Brother.",
+              "outcome": {
+                "text": "\"The readers.\" He nods slowly. \"Ashkyr's first scribes. They were buried with their beads. If one string came back up, I could say the rite over it here, for all of them.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_prayer_beads_taken"]
+              },
+              "requires": {
+                "flags": ["Unlock_Travel_to_Valorheim", "heard_of_the_under_archive"],
+                "notFlags": ["sq_prayer_beads_taken"]
+              }
+            },
+            {
+              "id": "sq_prayer_beads_back",
+              "label": "Give him the prayer-beads",
+              "say": "A reader's beads, from the ossuary stair.",
+              "outcome": {
+                "text": "He says the rite there and then, kneeling, the beads wound round his hand. When he stands, he looks ten years younger.",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_prayer_beads_done"]
+              },
+              "requires": {
+                "flags": ["sq_prayer_beads_taken", "sq_prayer_beads_item1"],
+                "notFlags": ["sq_prayer_beads_done"]
+              }
+            },
+            {
+              "id": "sq_brazier_ash",
+              "label": "Ask what should be done with the ritual chamber",
+              "say": "Malachai is dead. What happens to the chamber?",
+              "outcome": {
+                "text": "\"Bring me ash from the brazier.\" He does not hesitate. \"Whoever burned in it deserves a grave, even if all that is left of them is ash.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_brazier_ash_taken"]
+              },
+              "requires": {
+                "flags": ["boss_defeated_malachai_vex"],
+                "notFlags": ["sq_brazier_ash_taken"]
+              }
+            },
+            {
+              "id": "sq_brazier_ash_back",
+              "label": "Give him the ash",
+              "say": "Ash from the ritual chamber's brazier.",
+              "outcome": {
+                "text": "He buries it himself, in the temple yard, under a stone with no name on it. \"Ashkyr knows who they were,\" he says.",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_brazier_ash_done"]
+              },
+              "requires": {
+                "flags": ["sq_brazier_ash_taken", "sq_brazier_ash_item1"],
+                "notFlags": ["sq_brazier_ash_done"]
+              }
+            },
+            {
+              "id": "sq_silenced_bell",
+              "label": "Ask about the temple under the city",
+              "say": "There is a temple to the Unmaking under the capital.",
+              "outcome": {
+                "text": "\"It was Ashkyr's once.\" His voice is very quiet. \"They took its bell and silenced it. Bring it back to the light, and I will hang it here.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_silenced_bell_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_aldus"],
+                "notFlags": ["sq_silenced_bell_taken"]
+              }
+            },
+            {
+              "id": "sq_silenced_bell_back",
+              "label": "Give him the bell",
+              "say": "Ashkyr's bell, from under the capital.",
+              "outcome": {
+                "text": "He hangs it over the temple door with Harrow's help. It has no clapper. It rings every morning at dawn anyway.",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_silenced_bell_done"]
+              },
+              "requires": {
+                "flags": ["sq_silenced_bell_taken", "cleared_unmaking_temple", "sq_silenced_bell_item2"],
+                "notFlags": ["sq_silenced_bell_done"]
+              }
+            },
+            {
+              "id": "sq_name_stone_word",
+              "label": "Ask him how a name is given back",
+              "say": "How is a name given back, Brother?",
+              "outcome": {
+                "text": "\"You say it,\" he says simply. \"Out loud, where the dead can hear. If you do not know it, you say that you would have known it, and Ashkyr fills in the rest.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_name_stone_word2"]
+              },
+              "requires": {
+                "flags": ["sq_name_stone_taken"],
+                "notFlags": ["sq_name_stone_word2"]
+              }
+            },
+            {
+              "id": "sq_seal_water",
+              "label": "Ask what the temple needs for the end",
+              "say": "Is there anything the temple needs, before the end?",
+              "outcome": {
+                "text": "\"Water from the Well of Seals.\" He holds out an empty flask. \"Every seal in the valley was blessed with it. If there is any left, we can bless new ones.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_seal_water_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_aldus"],
+                "notFlags": ["sq_seal_water_taken"]
+              }
+            },
+            {
+              "id": "sq_seal_water_back",
+              "label": "Give him the seal-water",
+              "say": "Water from the Well of Seals.",
+              "outcome": {
+                "text": "\"Enough for one seal.\" He holds the flask to the light. \"Then we will make one, and set it where it is needed most.\"",
+                "goTo": "aldus_after",
+                "setFlags": ["sq_seal_water_done"]
+              },
+              "requires": {
+                "flags": ["sq_seal_water_taken", "sq_seal_water_item1"],
+                "notFlags": ["sq_seal_water_done"]
               }
             },
             {
@@ -1014,6 +1770,90 @@
               }
             },
             {
+              "id": "sq_seal_stone",
+              "label": "Ask if she could make another maul",
+              "say": "Could you make another maul like that one?",
+              "outcome": {
+                "text": "\"Not without the stone.\" She taps the head on the wall. \"The boundary marker at the mill end of the causeway broke in the flood. Bring me a piece of it, and I will try a fourth.\"",
+                "goTo": "harrow_ask",
+                "setFlags": ["sq_seal_stone_taken"]
+              },
+              "requires": {
+                "flags": ["harrow_told_of_the_maul"],
+                "notFlags": ["sq_seal_stone_taken"]
+              }
+            },
+            {
+              "id": "sq_seal_stone_back",
+              "label": "Give her the seal-stone",
+              "say": "A piece of the boundary marker.",
+              "outcome": {
+                "text": "She turns it in the forge light. \"Good.\" She sets it on the anvil like something asleep. \"This one will not crack.\"",
+                "goTo": "harrow_ask",
+                "setFlags": ["sq_seal_stone_done"]
+              },
+              "requires": {
+                "flags": ["sq_seal_stone_taken", "sq_seal_stone_item1"],
+                "notFlags": ["sq_seal_stone_done"]
+              }
+            },
+            {
+              "id": "sq_altar_coal",
+              "label": "Ask what she needs for the forge",
+              "say": "Is there anything the forge needs?",
+              "outcome": {
+                "text": "\"Coal from the temple altar.\" She does not look embarrassed. \"The old smiths quenched against the dark in blessed fire. Ask the Brother. He will give it to you before he gives it to me.\"",
+                "goTo": "harrow_ask",
+                "setFlags": ["sq_altar_coal_taken"]
+              },
+              "requires": {
+                "flags": ["met_harrow", "cleared_whisperwood_thralls"],
+                "notFlags": ["sq_altar_coal_taken"]
+              }
+            },
+            {
+              "id": "sq_altar_coal_back",
+              "label": "Give her the altar-coal",
+              "say": "Coal from the temple altar.",
+              "outcome": {
+                "text": "She tips it into the forge. The fire goes white for a moment, and every blade on the rack rings very faintly. \"Huh,\" she says.",
+                "goTo": "harrow_ask",
+                "setFlags": ["sq_altar_coal_done"]
+              },
+              "requires": {
+                "flags": ["sq_altar_coal_taken", "sq_altar_coal_word1"],
+                "notFlags": ["sq_altar_coal_done"]
+              }
+            },
+            {
+              "id": "sq_red_ore",
+              "label": "Ask what she knows of bloodstone",
+              "say": "Have you ever worked bloodstone?",
+              "outcome": {
+                "text": "\"No, and I would like to know why nobody will.\" She sets down the hammer. \"Bring me a lump of the red ore from the deep workings. I will find out what it does in a fire.\"",
+                "goTo": "harrow_ask",
+                "setFlags": ["sq_red_ore_taken"]
+              },
+              "requires": {
+                "flags": ["Unlock_Travel_to_Valorheim", "met_harrow"],
+                "notFlags": ["sq_red_ore_taken"]
+              }
+            },
+            {
+              "id": "sq_red_ore_back",
+              "label": "Give her the ore",
+              "say": "A lump of bloodstone ore.",
+              "outcome": {
+                "text": "She puts it in the fire and watches. The red veins crawl toward the edge of the coal, away from the heat. She takes it out with the tongs and drops it in the quench. \"No,\" she says. \"Nobody is working that.\"",
+                "goTo": "harrow_ask",
+                "setFlags": ["sq_red_ore_done"]
+              },
+              "requires": {
+                "flags": ["sq_red_ore_taken", "sq_red_ore_item1"],
+                "notFlags": ["sq_red_ore_done"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "outcome": { "text": "The hammer starts again before you reach the door.", "goTo": "harrow_bye" }
@@ -1081,6 +1921,90 @@
               "outcome": {
                 "text": "\"Same rack. More on it, now people are buying again.\"",
                 "goTo": "harrow_after"
+              }
+            },
+            {
+              "id": "sq_seal_stone",
+              "label": "Ask if she could make another maul",
+              "say": "Could you make another maul like that one?",
+              "outcome": {
+                "text": "\"Not without the stone.\" She taps the head on the wall. \"The boundary marker at the mill end of the causeway broke in the flood. Bring me a piece of it, and I will try a fourth.\"",
+                "goTo": "harrow_after",
+                "setFlags": ["sq_seal_stone_taken"]
+              },
+              "requires": {
+                "flags": ["harrow_told_of_the_maul"],
+                "notFlags": ["sq_seal_stone_taken"]
+              }
+            },
+            {
+              "id": "sq_seal_stone_back",
+              "label": "Give her the seal-stone",
+              "say": "A piece of the boundary marker.",
+              "outcome": {
+                "text": "She turns it in the forge light. \"Good.\" She sets it on the anvil like something asleep. \"This one will not crack.\"",
+                "goTo": "harrow_after",
+                "setFlags": ["sq_seal_stone_done"]
+              },
+              "requires": {
+                "flags": ["sq_seal_stone_taken", "sq_seal_stone_item1"],
+                "notFlags": ["sq_seal_stone_done"]
+              }
+            },
+            {
+              "id": "sq_altar_coal",
+              "label": "Ask what she needs for the forge",
+              "say": "Is there anything the forge needs?",
+              "outcome": {
+                "text": "\"Coal from the temple altar.\" She does not look embarrassed. \"The old smiths quenched against the dark in blessed fire. Ask the Brother. He will give it to you before he gives it to me.\"",
+                "goTo": "harrow_after",
+                "setFlags": ["sq_altar_coal_taken"]
+              },
+              "requires": {
+                "flags": ["met_harrow", "cleared_whisperwood_thralls"],
+                "notFlags": ["sq_altar_coal_taken"]
+              }
+            },
+            {
+              "id": "sq_altar_coal_back",
+              "label": "Give her the altar-coal",
+              "say": "Coal from the temple altar.",
+              "outcome": {
+                "text": "She tips it into the forge. The fire goes white for a moment, and every blade on the rack rings very faintly. \"Huh,\" she says.",
+                "goTo": "harrow_after",
+                "setFlags": ["sq_altar_coal_done"]
+              },
+              "requires": {
+                "flags": ["sq_altar_coal_taken", "sq_altar_coal_word1"],
+                "notFlags": ["sq_altar_coal_done"]
+              }
+            },
+            {
+              "id": "sq_red_ore",
+              "label": "Ask what she knows of bloodstone",
+              "say": "Have you ever worked bloodstone?",
+              "outcome": {
+                "text": "\"No, and I would like to know why nobody will.\" She sets down the hammer. \"Bring me a lump of the red ore from the deep workings. I will find out what it does in a fire.\"",
+                "goTo": "harrow_after",
+                "setFlags": ["sq_red_ore_taken"]
+              },
+              "requires": {
+                "flags": ["Unlock_Travel_to_Valorheim", "met_harrow"],
+                "notFlags": ["sq_red_ore_taken"]
+              }
+            },
+            {
+              "id": "sq_red_ore_back",
+              "label": "Give her the ore",
+              "say": "A lump of bloodstone ore.",
+              "outcome": {
+                "text": "She puts it in the fire and watches. The red veins crawl toward the edge of the coal, away from the heat. She takes it out with the tongs and drops it in the quench. \"No,\" she says. \"Nobody is working that.\"",
+                "goTo": "harrow_after",
+                "setFlags": ["sq_red_ore_done"]
+              },
+              "requires": {
+                "flags": ["sq_red_ore_taken", "sq_red_ore_item1"],
+                "notFlags": ["sq_red_ore_done"]
               }
             },
             {
@@ -1784,6 +2708,118 @@
               }
             },
             {
+              "id": "sq_requisitions_word",
+              "label": "Ask him whose hand signs the forged requisitions",
+              "say": "Whose hand is this, on the Crown requisitions?",
+              "outcome": {
+                "text": "He looks at it for a long moment. \"Nobody's,\" he says. \"It is a copy of the Queen's secretary's hand. A good copy. Made by somebody who has seen a great deal of it.\"",
+                "goTo": "hale_desk",
+                "setFlags": ["sq_requisitions_word1"]
+              },
+              "requires": {
+                "flags": ["sq_requisitions_taken"],
+                "notFlags": ["sq_requisitions_word1"]
+              }
+            },
+            {
+              "id": "sq_cut_pages",
+              "label": "Ask about the books with pages cut out",
+              "say": "Somebody has been cutting pages out of the seal books.",
+              "outcome": {
+                "text": "\"I know.\" He does not meet your eye. \"They went down. Into the stacks. If they are still there, I would have them back, whatever is on them.\"",
+                "goTo": "hale_desk",
+                "setFlags": ["sq_cut_pages_taken"]
+              },
+              "requires": {
+                "flags": ["met_hale", "heard_of_the_under_archive"],
+                "notFlags": ["sq_cut_pages_taken"]
+              }
+            },
+            {
+              "id": "sq_cut_pages_back",
+              "label": "Give him the cut pages",
+              "say": "The pages from the seal books.",
+              "outcome": {
+                "text": "He unties the thread with shaking fingers and lays the pages out. \"Every seal in the valley,\" he says. \"Every one.\"",
+                "goTo": "hale_desk",
+                "setFlags": ["sq_cut_pages_done"]
+              },
+              "requires": {
+                "flags": ["sq_cut_pages_taken", "sq_cut_pages_item1"],
+                "notFlags": ["sq_cut_pages_done"]
+              }
+            },
+            {
+              "id": "sq_warden_keystone",
+              "label": "Ask about the thing that guards the stacks",
+              "say": "Something guards the sealed stacks.",
+              "outcome": {
+                "text": "\"The Archive Warden.\" He swallows. \"Built to keep the stacks, and now it keeps them from us. There is a keystone in its chest. Stop it, and bring me the stone.\"",
+                "goTo": "hale_desk",
+                "setFlags": ["sq_warden_keystone_taken"]
+              },
+              "requires": {
+                "flags": ["met_hale", "heard_of_the_under_archive"],
+                "notFlags": ["sq_warden_keystone_taken"]
+              }
+            },
+            {
+              "id": "sq_warden_keystone_back",
+              "label": "Give him the keystone",
+              "say": "The Warden's keystone.",
+              "outcome": {
+                "text": "He sets it on his desk and lays both hands on it. \"Then the stacks are ours again,\" he says. \"Whatever is left in them.\"",
+                "goTo": "hale_desk",
+                "setFlags": ["sq_warden_keystone_done"]
+              },
+              "requires": {
+                "flags": ["sq_warden_keystone_taken", "cleared_sealed_stacks", "sq_warden_keystone_item2"],
+                "notFlags": ["sq_warden_keystone_done"]
+              }
+            },
+            {
+              "id": "sq_house_deeds",
+              "label": "Ask what was lost in the Buried Street",
+              "say": "What was on the street the earthquake swallowed?",
+              "outcome": {
+                "text": "\"The Registry of Deeds.\" He is already writing a list. \"Every house in the lower city. Without the deeds, the Crown can say the land is the Crown's. Find the deed-box.\"",
+                "goTo": "hale_desk",
+                "setFlags": ["sq_house_deeds_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_hale"],
+                "notFlags": ["sq_house_deeds_taken"]
+              }
+            },
+            {
+              "id": "sq_house_deeds_back",
+              "label": "Give him the deed-box",
+              "say": "The Registry's deed-box.",
+              "outcome": {
+                "text": "\"Every one.\" He opens it and lifts out the first deed as if it might break. \"Nobody is taking these houses now.\"",
+                "goTo": "hale_desk",
+                "setFlags": ["sq_house_deeds_done"]
+              },
+              "requires": {
+                "flags": ["sq_house_deeds_taken", "sq_house_deeds_item1"],
+                "notFlags": ["sq_house_deeds_done"]
+              }
+            },
+            {
+              "id": "sq_true_history_word",
+              "label": "Ask him for the true history of the seals",
+              "say": "How were the seals really made, Master Hale?",
+              "outcome": {
+                "text": "\"By people.\" He takes off his spectacles. \"Not by kings or gods. A smith, a priest, a clerk and a soldier, who were too stubborn to let the world end. Nobody wrote their names down. That is how they wanted it.\"",
+                "goTo": "hale_desk",
+                "setFlags": ["sq_true_history_word1"]
+              },
+              "requires": {
+                "flags": ["sq_true_history_taken"],
+                "notFlags": ["sq_true_history_word1"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "outcome": { "text": "\"Quietly, please,\" he says, to nobody.", "goTo": "hale_bye" }
@@ -2029,6 +3065,118 @@
               }
             },
             {
+              "id": "sq_requisitions_word",
+              "label": "Ask him whose hand signs the forged requisitions",
+              "say": "Whose hand is this, on the Crown requisitions?",
+              "outcome": {
+                "text": "He looks at it for a long moment. \"Nobody's,\" he says. \"It is a copy of the Queen's secretary's hand. A good copy. Made by somebody who has seen a great deal of it.\"",
+                "goTo": "hale_ashamed",
+                "setFlags": ["sq_requisitions_word1"]
+              },
+              "requires": {
+                "flags": ["sq_requisitions_taken"],
+                "notFlags": ["sq_requisitions_word1"]
+              }
+            },
+            {
+              "id": "sq_cut_pages",
+              "label": "Ask about the books with pages cut out",
+              "say": "Somebody has been cutting pages out of the seal books.",
+              "outcome": {
+                "text": "\"I know.\" He does not meet your eye. \"They went down. Into the stacks. If they are still there, I would have them back, whatever is on them.\"",
+                "goTo": "hale_ashamed",
+                "setFlags": ["sq_cut_pages_taken"]
+              },
+              "requires": {
+                "flags": ["met_hale", "heard_of_the_under_archive"],
+                "notFlags": ["sq_cut_pages_taken"]
+              }
+            },
+            {
+              "id": "sq_cut_pages_back",
+              "label": "Give him the cut pages",
+              "say": "The pages from the seal books.",
+              "outcome": {
+                "text": "He unties the thread with shaking fingers and lays the pages out. \"Every seal in the valley,\" he says. \"Every one.\"",
+                "goTo": "hale_ashamed",
+                "setFlags": ["sq_cut_pages_done"]
+              },
+              "requires": {
+                "flags": ["sq_cut_pages_taken", "sq_cut_pages_item1"],
+                "notFlags": ["sq_cut_pages_done"]
+              }
+            },
+            {
+              "id": "sq_warden_keystone",
+              "label": "Ask about the thing that guards the stacks",
+              "say": "Something guards the sealed stacks.",
+              "outcome": {
+                "text": "\"The Archive Warden.\" He swallows. \"Built to keep the stacks, and now it keeps them from us. There is a keystone in its chest. Stop it, and bring me the stone.\"",
+                "goTo": "hale_ashamed",
+                "setFlags": ["sq_warden_keystone_taken"]
+              },
+              "requires": {
+                "flags": ["met_hale", "heard_of_the_under_archive"],
+                "notFlags": ["sq_warden_keystone_taken"]
+              }
+            },
+            {
+              "id": "sq_warden_keystone_back",
+              "label": "Give him the keystone",
+              "say": "The Warden's keystone.",
+              "outcome": {
+                "text": "He sets it on his desk and lays both hands on it. \"Then the stacks are ours again,\" he says. \"Whatever is left in them.\"",
+                "goTo": "hale_ashamed",
+                "setFlags": ["sq_warden_keystone_done"]
+              },
+              "requires": {
+                "flags": ["sq_warden_keystone_taken", "cleared_sealed_stacks", "sq_warden_keystone_item2"],
+                "notFlags": ["sq_warden_keystone_done"]
+              }
+            },
+            {
+              "id": "sq_house_deeds",
+              "label": "Ask what was lost in the Buried Street",
+              "say": "What was on the street the earthquake swallowed?",
+              "outcome": {
+                "text": "\"The Registry of Deeds.\" He is already writing a list. \"Every house in the lower city. Without the deeds, the Crown can say the land is the Crown's. Find the deed-box.\"",
+                "goTo": "hale_ashamed",
+                "setFlags": ["sq_house_deeds_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_hale"],
+                "notFlags": ["sq_house_deeds_taken"]
+              }
+            },
+            {
+              "id": "sq_house_deeds_back",
+              "label": "Give him the deed-box",
+              "say": "The Registry's deed-box.",
+              "outcome": {
+                "text": "\"Every one.\" He opens it and lifts out the first deed as if it might break. \"Nobody is taking these houses now.\"",
+                "goTo": "hale_ashamed",
+                "setFlags": ["sq_house_deeds_done"]
+              },
+              "requires": {
+                "flags": ["sq_house_deeds_taken", "sq_house_deeds_item1"],
+                "notFlags": ["sq_house_deeds_done"]
+              }
+            },
+            {
+              "id": "sq_true_history_word",
+              "label": "Ask him for the true history of the seals",
+              "say": "How were the seals really made, Master Hale?",
+              "outcome": {
+                "text": "\"By people.\" He takes off his spectacles. \"Not by kings or gods. A smith, a priest, a clerk and a soldier, who were too stubborn to let the world end. Nobody wrote their names down. That is how they wanted it.\"",
+                "goTo": "hale_ashamed",
+                "setFlags": ["sq_true_history_word1"]
+              },
+              "requires": {
+                "flags": ["sq_true_history_taken"],
+                "notFlags": ["sq_true_history_word1"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Go and find her",
               "outcome": { "text": "He does not watch you go.", "goTo": "hale_bye" }
@@ -2066,6 +3214,118 @@
               "requires": {
                 "flags": ["item_acquired_causeway_rubbing"],
                 "notFlags": ["hale_read_the_rubbing"]
+              }
+            },
+            {
+              "id": "sq_requisitions_word",
+              "label": "Ask him whose hand signs the forged requisitions",
+              "say": "Whose hand is this, on the Crown requisitions?",
+              "outcome": {
+                "text": "He looks at it for a long moment. \"Nobody's,\" he says. \"It is a copy of the Queen's secretary's hand. A good copy. Made by somebody who has seen a great deal of it.\"",
+                "goTo": "hale_home",
+                "setFlags": ["sq_requisitions_word1"]
+              },
+              "requires": {
+                "flags": ["sq_requisitions_taken"],
+                "notFlags": ["sq_requisitions_word1"]
+              }
+            },
+            {
+              "id": "sq_cut_pages",
+              "label": "Ask about the books with pages cut out",
+              "say": "Somebody has been cutting pages out of the seal books.",
+              "outcome": {
+                "text": "\"I know.\" He does not meet your eye. \"They went down. Into the stacks. If they are still there, I would have them back, whatever is on them.\"",
+                "goTo": "hale_home",
+                "setFlags": ["sq_cut_pages_taken"]
+              },
+              "requires": {
+                "flags": ["met_hale", "heard_of_the_under_archive"],
+                "notFlags": ["sq_cut_pages_taken"]
+              }
+            },
+            {
+              "id": "sq_cut_pages_back",
+              "label": "Give him the cut pages",
+              "say": "The pages from the seal books.",
+              "outcome": {
+                "text": "He unties the thread with shaking fingers and lays the pages out. \"Every seal in the valley,\" he says. \"Every one.\"",
+                "goTo": "hale_home",
+                "setFlags": ["sq_cut_pages_done"]
+              },
+              "requires": {
+                "flags": ["sq_cut_pages_taken", "sq_cut_pages_item1"],
+                "notFlags": ["sq_cut_pages_done"]
+              }
+            },
+            {
+              "id": "sq_warden_keystone",
+              "label": "Ask about the thing that guards the stacks",
+              "say": "Something guards the sealed stacks.",
+              "outcome": {
+                "text": "\"The Archive Warden.\" He swallows. \"Built to keep the stacks, and now it keeps them from us. There is a keystone in its chest. Stop it, and bring me the stone.\"",
+                "goTo": "hale_home",
+                "setFlags": ["sq_warden_keystone_taken"]
+              },
+              "requires": {
+                "flags": ["met_hale", "heard_of_the_under_archive"],
+                "notFlags": ["sq_warden_keystone_taken"]
+              }
+            },
+            {
+              "id": "sq_warden_keystone_back",
+              "label": "Give him the keystone",
+              "say": "The Warden's keystone.",
+              "outcome": {
+                "text": "He sets it on his desk and lays both hands on it. \"Then the stacks are ours again,\" he says. \"Whatever is left in them.\"",
+                "goTo": "hale_home",
+                "setFlags": ["sq_warden_keystone_done"]
+              },
+              "requires": {
+                "flags": ["sq_warden_keystone_taken", "cleared_sealed_stacks", "sq_warden_keystone_item2"],
+                "notFlags": ["sq_warden_keystone_done"]
+              }
+            },
+            {
+              "id": "sq_house_deeds",
+              "label": "Ask what was lost in the Buried Street",
+              "say": "What was on the street the earthquake swallowed?",
+              "outcome": {
+                "text": "\"The Registry of Deeds.\" He is already writing a list. \"Every house in the lower city. Without the deeds, the Crown can say the land is the Crown's. Find the deed-box.\"",
+                "goTo": "hale_home",
+                "setFlags": ["sq_house_deeds_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_hale"],
+                "notFlags": ["sq_house_deeds_taken"]
+              }
+            },
+            {
+              "id": "sq_house_deeds_back",
+              "label": "Give him the deed-box",
+              "say": "The Registry's deed-box.",
+              "outcome": {
+                "text": "\"Every one.\" He opens it and lifts out the first deed as if it might break. \"Nobody is taking these houses now.\"",
+                "goTo": "hale_home",
+                "setFlags": ["sq_house_deeds_done"]
+              },
+              "requires": {
+                "flags": ["sq_house_deeds_taken", "sq_house_deeds_item1"],
+                "notFlags": ["sq_house_deeds_done"]
+              }
+            },
+            {
+              "id": "sq_true_history_word",
+              "label": "Ask him for the true history of the seals",
+              "say": "How were the seals really made, Master Hale?",
+              "outcome": {
+                "text": "\"By people.\" He takes off his spectacles. \"Not by kings or gods. A smith, a priest, a clerk and a soldier, who were too stubborn to let the world end. Nobody wrote their names down. That is how they wanted it.\"",
+                "goTo": "hale_home",
+                "setFlags": ["sq_true_history_word1"]
+              },
+              "requires": {
+                "flags": ["sq_true_history_taken"],
+                "notFlags": ["sq_true_history_word1"]
               }
             },
             {
@@ -2354,6 +3614,118 @@
               "outcome": {
                 "text": "\"Have another look. It's all still here, more's the pity.\"",
                 "goTo": "jory_talk"
+              }
+            },
+            {
+              "id": "sq_jorys_crate",
+              "label": "Ask what he lost on the road",
+              "say": "You came in by the Mere Road once, didn't you?",
+              "outcome": {
+                "text": "\"Once.\" He shudders. \"A crate went off the back of the cart on the causeway and I did not stop for it. Best cutlery in the valley. If it is still there, it is still mine.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["sq_jorys_crate_taken"]
+              },
+              "requires": {
+                "flags": ["met_jory", "heard_of_the_mere_road"],
+                "notFlags": ["sq_jorys_crate_taken"]
+              }
+            },
+            {
+              "id": "sq_jorys_crate_back",
+              "label": "Give him his crate",
+              "say": "Your forks, Jory.",
+              "outcome": {
+                "text": "\"My forks!\" He hugs the crate. \"I will sell every one of them to somebody who deserves them.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["sq_jorys_crate_done"]
+              },
+              "requires": {
+                "flags": ["sq_jorys_crate_taken", "sq_jorys_crate_item1"],
+                "notFlags": ["sq_jorys_crate_done"]
+              }
+            },
+            {
+              "id": "sq_tollgate_pass",
+              "label": "Ask if he wants a word put in for him",
+              "say": "Would a word with the Captain help you?",
+              "outcome": {
+                "text": "\"A word!\" He brightens. \"Ask him for a pedlar's pass for the tollgate. Just for me. I will be no trouble on the road. I am never any trouble anywhere.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["sq_tollgate_pass_taken"]
+              },
+              "requires": {
+                "flags": ["jory_told_of_the_road"],
+                "notFlags": ["sq_tollgate_pass_taken"]
+              }
+            },
+            {
+              "id": "sq_tollgate_pass_back",
+              "label": "Give Jory the pass",
+              "say": "A pass, for when the road opens.",
+              "outcome": {
+                "text": "\"For when it opens.\" He pins it to his hat next to the other stamp. \"That is the nicest thing anybody has given me all year.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["sq_tollgate_pass_done"]
+              },
+              "requires": {
+                "flags": ["sq_tollgate_pass_taken", "sq_tollgate_pass_word1"],
+                "notFlags": ["sq_tollgate_pass_done"]
+              }
+            },
+            {
+              "id": "sq_canary",
+              "label": "Ask about his cousin in the mines",
+              "say": "You mentioned a cousin in the capital.",
+              "outcome": {
+                "text": "\"Pell. In the Bloodstone mine.\" He fidgets. \"He keeps the canary for the deep shaft. If the canary is still alive, so is Pell. Would you look?\"",
+                "goTo": "jory_talk",
+                "setFlags": ["sq_canary_taken"]
+              },
+              "requires": {
+                "flags": ["Unlock_Travel_to_Valorheim", "met_jory"],
+                "notFlags": ["sq_canary_taken"]
+              }
+            },
+            {
+              "id": "sq_canary_back",
+              "label": "Give him the canary",
+              "say": "Pell's canary. Alive and furious.",
+              "outcome": {
+                "text": "\"Then Pell is alive!\" Jory takes the cage and the canary bites him too. \"Family,\" he says, beaming.",
+                "goTo": "jory_talk",
+                "setFlags": ["sq_canary_done"]
+              },
+              "requires": {
+                "flags": ["sq_canary_taken", "sq_canary_item1"],
+                "notFlags": ["sq_canary_done"]
+              }
+            },
+            {
+              "id": "sq_true_history",
+              "label": "Ask what a pedlar wants at the end of the world",
+              "say": "What does a pedlar want at the end of the world?",
+              "outcome": {
+                "text": "\"A story to sell after it.\" He grins. \"The true one. Get the Keeper at the library to tell you how the seals were made, and go and see the causeway for yourself, and I will sell it in every market from here to the sea.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["sq_true_history_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_jory"],
+                "notFlags": ["sq_true_history_taken"]
+              }
+            },
+            {
+              "id": "sq_true_history_back",
+              "label": "Tell Jory the true history",
+              "say": "A smith, a priest, a clerk and a soldier. That is the story.",
+              "outcome": {
+                "text": "\"A smith, a priest, a clerk and a soldier.\" He is quiet for a long moment. \"I am not going to sell that,\" he says. \"I am going to tell it.\"",
+                "goTo": "jory_talk",
+                "setFlags": ["sq_true_history_done"]
+              },
+              "requires": {
+                "flags": ["sq_true_history_taken", "sq_true_history_word1", "cleared_causeway"],
+                "notFlags": ["sq_true_history_done"]
               }
             },
             {
@@ -2806,6 +4178,62 @@
               }
             },
             {
+              "id": "sq_signet",
+              "label": "Ask what he lost when the city fell",
+              "say": "Did you lose anything when the city fell, Majesty?",
+              "outcome": {
+                "text": "\"My signet.\" He looks at his bare hand. \"I threw it down at the guard post, the night I was not myself. If it is still there, I would wear it again, and mean it this time.\"",
+                "goTo": "aldric_ask",
+                "setFlags": ["sq_signet_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_aldric"],
+                "notFlags": ["sq_signet_taken"]
+              }
+            },
+            {
+              "id": "sq_signet_back",
+              "label": "Give him the signet",
+              "say": "Your signet, Majesty.",
+              "outcome": {
+                "text": "He puts it on slowly. \"I will try to deserve it,\" he says, to nobody in particular.",
+                "goTo": "aldric_ask",
+                "setFlags": ["sq_signet_done"]
+              },
+              "requires": {
+                "flags": ["sq_signet_taken", "sq_signet_item1"],
+                "notFlags": ["sq_signet_done"]
+              }
+            },
+            {
+              "id": "sq_name_stone",
+              "label": "Ask about the Causeway of Names",
+              "say": "What is the Causeway of Names, Majesty?",
+              "outcome": {
+                "text": "\"Every king of Valorheim, written in stone, and then forgotten.\" He frowns. \"Bring me one of the stones. And ask the Brother at Millhaven how a name is given back. He will know the rite.\"",
+                "goTo": "aldric_ask",
+                "setFlags": ["sq_name_stone_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_aldric"],
+                "notFlags": ["sq_name_stone_taken"]
+              }
+            },
+            {
+              "id": "sq_name_stone_back",
+              "label": "Give him the name-stone, and the rite",
+              "say": "A name-stone from the causeway, and the rite to give it back.",
+              "outcome": {
+                "text": "He holds the stone and says, out loud, that he would have known the name. The scratches in the stone seem, for a moment, shallower.",
+                "goTo": "aldric_ask",
+                "setFlags": ["sq_name_stone_done"]
+              },
+              "requires": {
+                "flags": ["sq_name_stone_taken", "sq_name_stone_item1", "sq_name_stone_word2"],
+                "notFlags": ["sq_name_stone_done"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "outcome": { "text": "He nods, and goes back to looking at the crown.", "goTo": "aldric_bye" }
@@ -2860,6 +4288,62 @@
               "requires": {
                 "flags": ["item_acquired_patrol_roll"],
                 "notFlags": ["aldric_given_the_roll"]
+              }
+            },
+            {
+              "id": "sq_signet",
+              "label": "Ask what he lost when the city fell",
+              "say": "Did you lose anything when the city fell, Majesty?",
+              "outcome": {
+                "text": "\"My signet.\" He looks at his bare hand. \"I threw it down at the guard post, the night I was not myself. If it is still there, I would wear it again, and mean it this time.\"",
+                "goTo": "aldric_after",
+                "setFlags": ["sq_signet_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_aldric"],
+                "notFlags": ["sq_signet_taken"]
+              }
+            },
+            {
+              "id": "sq_signet_back",
+              "label": "Give him the signet",
+              "say": "Your signet, Majesty.",
+              "outcome": {
+                "text": "He puts it on slowly. \"I will try to deserve it,\" he says, to nobody in particular.",
+                "goTo": "aldric_after",
+                "setFlags": ["sq_signet_done"]
+              },
+              "requires": {
+                "flags": ["sq_signet_taken", "sq_signet_item1"],
+                "notFlags": ["sq_signet_done"]
+              }
+            },
+            {
+              "id": "sq_name_stone",
+              "label": "Ask about the Causeway of Names",
+              "say": "What is the Causeway of Names, Majesty?",
+              "outcome": {
+                "text": "\"Every king of Valorheim, written in stone, and then forgotten.\" He frowns. \"Bring me one of the stones. And ask the Brother at Millhaven how a name is given back. He will know the rite.\"",
+                "goTo": "aldric_after",
+                "setFlags": ["sq_name_stone_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_aldric"],
+                "notFlags": ["sq_name_stone_taken"]
+              }
+            },
+            {
+              "id": "sq_name_stone_back",
+              "label": "Give him the name-stone, and the rite",
+              "say": "A name-stone from the causeway, and the rite to give it back.",
+              "outcome": {
+                "text": "He holds the stone and says, out loud, that he would have known the name. The scratches in the stone seem, for a moment, shallower.",
+                "goTo": "aldric_after",
+                "setFlags": ["sq_name_stone_done"]
+              },
+              "requires": {
+                "flags": ["sq_name_stone_taken", "sq_name_stone_item1", "sq_name_stone_word2"],
+                "notFlags": ["sq_name_stone_done"]
               }
             },
             {
@@ -3644,6 +5128,62 @@
               }
             },
             {
+              "id": "sq_roster",
+              "label": "Ask if the Watch needs a hand",
+              "say": "Anything we can do for the Watch, Sergeant?",
+              "outcome": {
+                "text": "\"The roster.\" She holds up a sheet with three names struck through. \"The Captain has to sign the new one, and he will not look at it. Get him to sign it. He will do it for strangers. He will not do it for me.\"",
+                "goTo": "rook_talk",
+                "setFlags": ["sq_roster_taken"]
+              },
+              "requires": {
+                "flags": ["met_rook"],
+                "notFlags": ["sq_roster_taken"]
+              }
+            },
+            {
+              "id": "sq_roster_back",
+              "label": "Give her the signed roster",
+              "say": "Signed. He put himself on it too.",
+              "outcome": {
+                "text": "\"Did he.\" She folds it very carefully. \"Then we are ten.\"",
+                "goTo": "rook_talk",
+                "setFlags": ["sq_roster_done"]
+              },
+              "requires": {
+                "flags": ["sq_roster_taken", "sq_roster_word1"],
+                "notFlags": ["sq_roster_done"]
+              }
+            },
+            {
+              "id": "sq_watch_crate",
+              "label": "Ask what the Watch has lost on the Mere",
+              "say": "Has the Watch lost anything out on the Mere?",
+              "outcome": {
+                "text": "\"A crate of frost vials.\" She checks the ledger. \"It went in the reeds when the drowned came up at the patrol. Clear the reeds and bring it back, and it is yours to keep half of.\"",
+                "goTo": "rook_talk",
+                "setFlags": ["sq_watch_crate_taken"]
+              },
+              "requires": {
+                "flags": ["met_rook", "heard_of_the_mere_road"],
+                "notFlags": ["sq_watch_crate_taken"]
+              }
+            },
+            {
+              "id": "sq_watch_crate_back",
+              "label": "Give her the crate",
+              "say": "Your crate of frost vials, Sergeant.",
+              "outcome": {
+                "text": "\"Unbroken!\" She signs it back in, and counts out coin for half. \"You are wasted on adventure.\"",
+                "goTo": "rook_talk",
+                "setFlags": ["sq_watch_crate_done"]
+              },
+              "requires": {
+                "flags": ["sq_watch_crate_taken", "cleared_reed_beds", "sq_watch_crate_item2"],
+                "notFlags": ["sq_watch_crate_done"]
+              }
+            },
+            {
               "id": "leave",
               "label": "Leave",
               "outcome": { "text": "She goes back to counting crates.", "goTo": "rook_bye" }
@@ -3755,6 +5295,146 @@
               "outcome": {
                 "text": "\"Blades on the left, wands and staffs on the right. Do not wave the wands.\"",
                 "goTo": "venn_talk"
+              }
+            },
+            {
+              "id": "sq_crown_picks",
+              "label": "Ask what the Crown is missing",
+              "say": "Is the Crown short of anything besides coin?",
+              "outcome": {
+                "text": "\"Forty picks.\" She chalks it on a slate. \"Lent to the Bloodstone mine and never returned. The mine head will have the loan ledger. Bring it, and I will have them back.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["sq_crown_picks_taken"]
+              },
+              "requires": {
+                "flags": ["met_venn"],
+                "notFlags": ["sq_crown_picks_taken"]
+              }
+            },
+            {
+              "id": "sq_crown_picks_back",
+              "label": "Give her the loan ledger",
+              "say": "The mine's loan ledger.",
+              "outcome": {
+                "text": "\"Forty.\" She runs a finger down the column. \"And not one returned. The Crown will be writing a stern letter.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["sq_crown_picks_done"]
+              },
+              "requires": {
+                "flags": ["sq_crown_picks_taken", "sq_crown_picks_item1"],
+                "notFlags": ["sq_crown_picks_done"]
+              }
+            },
+            {
+              "id": "sq_requisitions",
+              "label": "Ask about the requisitions on her slate",
+              "say": "Those requisitions you rubbed out. Forged?",
+              "outcome": {
+                "text": "\"Signed by a clerk who does not exist.\" She lowers her voice. \"The Keeper at the library knows every clerk's hand in the city. Ask him whose this is.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["sq_requisitions_taken"]
+              },
+              "requires": {
+                "flags": ["met_venn"],
+                "notFlags": ["sq_requisitions_taken"]
+              }
+            },
+            {
+              "id": "sq_requisitions_back",
+              "label": "Tell her whose hand it is",
+              "say": "It copies the Queen's secretary's hand.",
+              "outcome": {
+                "text": "She sets down the chalk. \"Then I will stop filling them,\" she says, \"and I will start keeping them.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["sq_requisitions_done"]
+              },
+              "requires": {
+                "flags": ["sq_requisitions_taken", "sq_requisitions_word1"],
+                "notFlags": ["sq_requisitions_done"]
+              }
+            },
+            {
+              "id": "sq_crown_debt",
+              "label": "Ask what the Crown owes",
+              "say": "Does the Crown owe anybody besides you?",
+              "outcome": {
+                "text": "\"Millhaven.\" She taps a slate. \"The Watch there has not been paid since spring. Ask their Captain the sum. I will see it paid, if I have to sell every sword on this table.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["sq_crown_debt_taken"]
+              },
+              "requires": {
+                "flags": ["met_venn"],
+                "notFlags": ["sq_crown_debt_taken"]
+              }
+            },
+            {
+              "id": "sq_crown_debt_back",
+              "label": "Tell her the sum",
+              "say": "Two hundred and twelve gold, since spring.",
+              "outcome": {
+                "text": "\"Then it will be two hundred and twelve gold by the next post.\" She writes it on the slate and underlines it twice.",
+                "goTo": "venn_talk",
+                "setFlags": ["sq_crown_debt_done"]
+              },
+              "requires": {
+                "flags": ["sq_crown_debt_taken", "sq_crown_debt_word1"],
+                "notFlags": ["sq_crown_debt_done"]
+              }
+            },
+            {
+              "id": "sq_rift_patrol",
+              "label": "Ask about the patrol she sent into the Rift",
+              "say": "Did the Crown send anybody into the Rift?",
+              "outcome": {
+                "text": "\"Six from the armoury, the night it opened.\" Her hands are still. \"I signed their kit out myself. If you go down, bring back a tag. Any tag.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["sq_rift_patrol_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_venn"],
+                "notFlags": ["sq_rift_patrol_taken"]
+              }
+            },
+            {
+              "id": "sq_rift_patrol_back",
+              "label": "Give her the tag",
+              "say": "Tag forty-one, from the lip of the Rift.",
+              "outcome": {
+                "text": "\"Forty-one. Corporal Asha Venn.\" She closes her hand on it. \"My niece,\" she says, when she can.",
+                "goTo": "venn_talk",
+                "setFlags": ["sq_rift_patrol_done"]
+              },
+              "requires": {
+                "flags": ["sq_rift_patrol_taken", "cleared_the_rift", "sq_rift_patrol_item2"],
+                "notFlags": ["sq_rift_patrol_done"]
+              }
+            },
+            {
+              "id": "sq_iron_crown",
+              "label": "Ask what the Crown wants from the Quiet Court",
+              "say": "Is there anything in the Quiet Court the Crown would want?",
+              "outcome": {
+                "text": "\"The iron crowns the courtiers wear.\" She has gone pale. \"They were made in our armoury, eight hundred years ago. I want one back on the inventory, so I can strike it off.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["sq_iron_crown_taken"]
+              },
+              "requires": {
+                "flags": ["Trigger_Sundering_Earthquake_Event", "met_venn"],
+                "notFlags": ["sq_iron_crown_taken"]
+              }
+            },
+            {
+              "id": "sq_iron_crown_back",
+              "label": "Give her the iron crown",
+              "say": "A courtier's crown, from the Quiet Court.",
+              "outcome": {
+                "text": "She checks the stamp against a ledger older than she is, then draws a single line through an entry. \"Returned,\" she says. \"At last.\"",
+                "goTo": "venn_talk",
+                "setFlags": ["sq_iron_crown_done"]
+              },
+              "requires": {
+                "flags": ["sq_iron_crown_taken", "cleared_quiet_court", "sq_iron_crown_item2"],
+                "notFlags": ["sq_iron_crown_done"]
               }
             },
             {

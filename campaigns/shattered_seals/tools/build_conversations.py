@@ -2130,10 +2130,53 @@ def derive(value):
             derive(v)
 
 
+# --- side quests ---------------------------------------------------------------
+#
+# Asked for, answered and handed in at the scenes each person comes back to
+# between questions, ahead of the way out.
+
+from side_quests import HUBS, QUESTS, flags  # noqa: E402
+
+
+def _offer(conversations, npc, option_for):
+    for convo in conversations:
+        if convo['npc'] != npc:
+            continue
+        for sc in convo['scenes']:
+            if sc['id'] not in HUBS[npc]:
+                continue
+            option = option_for(sc['id'])
+            ids = [o['id'] for o in sc['options']]
+            at = ids.index('leave') if 'leave' in ids else len(ids)
+            sc['options'].insert(at, option)
+
+
+def add_side_quests(conversations):
+    for q in QUESTS:
+        taken, conditions, done = flags(q)
+        key = q['key']
+        label, say, reply = q['ask']
+        _offer(conversations, q['giver'], lambda hub: opt(
+            f'sq_{key}', label, reply, go=hub, say=say, sets=[taken],
+            requires=q['unlock'], unless=[taken]))
+        for (kind, data), condition in zip(q['objectives'], conditions):
+            if kind != 'word':
+                continue
+            _offer(conversations, data['npc'], lambda hub: opt(
+                f'sq_{key}_word', data['label'], data['reply'], go=hub,
+                say=data['say'], sets=[condition], requires=[taken],
+                unless=[condition]))
+        label, say, reply = q['back']
+        _offer(conversations, q['giver'], lambda hub: opt(
+            f'sq_{key}_back', label, reply, go=hub, say=say, sets=[done],
+            requires=[taken, *conditions], unless=[done]))
+
+
 document = {'conversations': [
     thorne, marta, aldus, harrow, wendel, liora, hale, malachai, jory,
     sal, brask, aldric, bren, tamsin, wren, ilse, grum, vey, rook, venn,
 ]}
+add_side_quests(document['conversations'])
 derive(document)
 h.save('conversations.json', quoted(document))
 print(f"{len(document['conversations'])} conversations, "
