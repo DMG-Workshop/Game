@@ -184,11 +184,11 @@ void main() {
       final fight = _winHere(world);
       world.concludeEncounter(fight);
 
-      // Two level 3 thralls against a level 6 party: 15 XP each, 30 in all,
-      // and each character earns all 30.
-      expect(fight.xpEarned, 30);
-      expect(world.experience.xpOf('korash'), 30);
-      expect(world.experience.xpOf('sela'), 30);
+      // Two level 3 thralls, written for four; a party of two meets one of
+      // them, at half the budget. 15 XP, and each character earns all 15.
+      expect(fight.xpEarned, 15);
+      expect(world.experience.xpOf('korash'), 15);
+      expect(world.experience.xpOf('sela'), 15);
       // 2d6 gp.
       expect(world.inventory.coin - coinBefore, inInclusiveRange(200, 1200));
     });

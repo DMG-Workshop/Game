@@ -16,14 +16,21 @@ late SpellBook _spells;
 /// A command written "#words" answers with the number of the latest menu
 /// entry containing those words, so a test says what it picks rather than
 /// where that happens to sit in the list.
+///
+/// Fights come as written, for four, unless [scaled]: the orders on offer
+/// are easier to see with two thralls in the room than with one.
 Future<String> _play(String room, List<String> commands,
-    {int seed = 1, int gold = 0, List<String> carrying = const []}) async {
+    {int seed = 1,
+    int gold = 0,
+    List<String> carrying = const [],
+    bool scaled = false}) async {
   final world = WorldSession(
     campaign: _campaign,
     actors: [SessionActor(id: 'korash', character: loadKorash())],
     roller: DiceRoller(seed),
     roomId: room,
     spells: _spells,
+    scaleFights: scaled,
   );
   if (gold > 0) world.inventory.earn(gold * 100);
   for (final item in carrying) {
@@ -170,6 +177,15 @@ void main() {
       expect(log, contains('Drink it  (HP 70/70)'));
       expect(log, contains('Korash Blackearth is not hurt.'));
     });
+  });
+
+  test('a fight cut down for a smaller party says so', () async {
+    final log = await _play('WW_001_Edge', ['west'], seed: 3, scaled: true);
+    expect(
+        log.replaceAll(RegExp(r'\s+'), ' '),
+        contains('(Written for four. Against your party of one, 1 of the 2 '
+            'Hollow Thralls comes, and weakened.)'));
+    expect(log, contains('Strike Weak Hollow Thrall'));
   });
 
   group('a fight', () {

@@ -20,6 +20,8 @@ WorldSession _world({String room = 'WW_002_Deep', int seed = 3}) =>
       roller: DiceRoller(seed),
       roomId: room,
       spells: _spells,
+      // Bursts need a crowd: the fights here are as written, for four.
+      scaleFights: false,
     );
 
 void main() {

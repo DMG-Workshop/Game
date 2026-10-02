@@ -39,6 +39,7 @@ export 'src/session/game_console.dart';
 export 'src/session/game_session.dart';
 export 'src/session/item_use.dart';
 export 'src/session/map_drawing.dart';
+export 'src/session/party_scaling.dart';
 export 'src/session/session_actor.dart';
 export 'src/session/world_event.dart';
 export 'src/session/world_session.dart';

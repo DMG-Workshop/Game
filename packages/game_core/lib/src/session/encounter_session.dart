@@ -8,6 +8,7 @@ import '../party/experience.dart';
 import '../party/vitals.dart';
 import 'casting.dart';
 import 'item_use.dart';
+import 'party_scaling.dart';
 import 'session_actor.dart';
 
 /// Thrown when an action is not legal right now.
@@ -258,6 +259,7 @@ class EncounterSession {
     SpellBook? spells,
     Map<String, ActorVitals> vitals = const {},
     PartyInventory? inventory,
+    this.scaling,
   })  : _spells = spells ?? SpellBook(),
         _vitals = vitals,
         _inventory = inventory,
@@ -296,6 +298,9 @@ class EncounterSession {
       ];
 
   final Encounter encounter;
+
+  /// How the fight was cut down for a party of fewer than four, when it was.
+  final PartyScaling? scaling;
 
   /// Taken off any strike that has to cross open ground, by the weather.
   final int rangedPenalty;

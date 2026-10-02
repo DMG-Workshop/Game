@@ -17,6 +17,7 @@ import 'game_event.dart';
 import 'game_session.dart';
 import 'item_use.dart';
 import 'map_drawing.dart';
+import 'party_scaling.dart';
 import 'session_actor.dart';
 import 'world_event.dart';
 import 'world_session.dart';
@@ -1926,6 +1927,9 @@ class GameConsole {
           '${roll.combatant.name.padRight(26)} '
           'd20(${roll.die}) ${_signed(roll.modifier)} = ${roll.total}');
     }
+    if (fight.scaling case final s? when s.changed) {
+      out.writeln('\n${_wrapped(_scalingNote(s), indent: '  ')}');
+    }
     if (fight.rangedPenalty > 0) {
       out.writeln('\n  ${session.weatherNow?.name}: -${fight.rangedPenalty} '
           'to any strike across open ground.');
@@ -2271,6 +2275,28 @@ class GameConsole {
     final number = RegExp(r'(\d+)$').firstMatch(c.id)?.group(1) ??
         '${alike.indexOf(c) + 1}';
     return '${c.name} $number';
+  }
+
+  /// "(Written for four. Against your party of one, 1 of the 2 Hollow
+  /// Thralls comes, and weakened.)"
+  String _scalingNote(PartyScaling s) {
+    const sizes = ['none', 'one', 'two', 'three'];
+    final party =
+        'your party of ${s.partySize < sizes.length ? sizes[s.partySize] : s.partySize}';
+    final names = {for (final c in s.written) c.name};
+    final what = names.length == 1
+        ? '${names.single}${s.written.length == 1 ? '' : 's'}'
+        : 'foes';
+    final thinned = s.fielded.length < s.written.length;
+    final single = s.fielded.length == 1;
+    final comes = thinned
+        ? '${s.fielded.length} of the ${s.written.length} $what '
+            '${single ? 'comes' : 'come'}'
+        : single
+            ? 'it comes'
+            : 'they come';
+    return '(Written for four. Against $party, $comes'
+        '${s.weakened ? '${thinned ? ', and' : ''} weakened' : ''}.)';
   }
 
   /// "hearth-water", or "hearth-water on sela": what to use, and on whom.

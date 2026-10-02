@@ -22,6 +22,7 @@ import 'casting.dart';
 import 'encounter_session.dart';
 import 'game_session.dart';
 import 'item_use.dart';
+import 'party_scaling.dart';
 import 'session_actor.dart';
 import 'world_event.dart';
 
@@ -162,6 +163,7 @@ class WorldSession {
     Experience? experience,
     LootLedger? ledger,
     SpellBook? spells,
+    this.scaleFights = true,
   })  : _actors = List.of(actors),
         spells = spells ?? SpellBook(),
         _experience = experience ?? Experience(),
@@ -219,6 +221,11 @@ class WorldSession {
   static const int _minutesInDay = 24 * 60;
 
   final Campaign campaign;
+
+  /// Whether a party of fewer than four meets fewer and weaker foes than a
+  /// fight was written with, as Pathfinder's budget would have it. Off, every
+  /// fight comes as written, for four.
+  bool scaleFights;
 
   /// The spells the engine has numbers for, from a content package.
   final SpellBook spells;
@@ -1533,6 +1540,18 @@ class WorldSession {
           'waiting here.');
     }
     final hunter = _pursuer;
+    // A hunter comes at the level it was sent at, which is not the level the
+    // bestiary writes it at.
+    final written = hunter != null && _isHunt(encounter, hunter)
+        ? [hunter.creature]
+        : [
+            for (final id in encounter.creatureIds)
+              if (campaign.bestiary.creatureById(id) case final c?) c,
+          ];
+    final scaling = scaleFights
+        ? scaleForParty(written,
+            partyLevel: _partyLevel, partySize: _actors.length)
+        : null;
     return EncounterSession(
       encounter: encounter,
       bestiary: campaign.bestiary,
@@ -1540,11 +1559,8 @@ class WorldSession {
       roller: _roller,
       gear: campaign.gear,
       loadouts: _inventory.loadouts(),
-      // A hunter comes at the level it was sent at, which is not the level
-      // the bestiary writes it at.
-      foes: hunter != null && _isHunt(encounter, hunter)
-          ? [hunter.creature]
-          : null,
+      foes: scaling?.fielded ?? written,
+      scaling: scaling,
       // The party comes in as it is: hurt from the last one, tired from the
       // road, and fighting in whatever the sky is doing.
       hp: {for (final a in _actors) a.id: _vitals[a.id]!.hp},
@@ -1967,6 +1983,7 @@ class WorldSession {
             },
         },
         'flags': (_flags.toList()..sort()),
+        if (!scaleFights) 'scaleFights': false,
         'inventory': _inventory.toJson(),
         'ledger': _ledger.toJson(),
         'experience': _experience.toJson(),
@@ -2011,6 +2028,7 @@ class WorldSession {
       day: (snapshot['day'] as num?)?.toInt() ?? 1,
       inventory: inventory,
       cameFrom: snapshot['cameFrom']?.toString(),
+      scaleFights: snapshot['scaleFights'] != false,
       experience: snapshot.containsKey('experience')
           ? Experience.fromJson(snapshot['experience'])
           : null,

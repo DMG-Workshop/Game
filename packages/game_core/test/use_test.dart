@@ -24,6 +24,8 @@ WorldSession _world({
     ],
     roller: DiceRoller(seed),
     roomId: room,
+    // The fights here are as written, for four, whoever comes to them.
+    scaleFights: false,
   );
   carrying.forEach(world.inventory.add);
   return world;
