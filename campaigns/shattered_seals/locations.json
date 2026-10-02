@@ -43,10 +43,16 @@
           "blocked": "The king's road runs northeast, and the tollgate is shut. Whatever is happening in Millhaven has to end before anyone here is let out."
         }
       },
-      "ambiance": [
+      "ambiance": [],
+      "ambiance_day": [
         "A bread seller calls out a price, then lowers it without being asked.",
         "Pigeons settle on the fountain's rim and will not drink from it.",
         "Two women stop talking as you pass, and start again when you have."
+      ],
+      "ambiance_night": [
+        "The fountain is loud at night, with nothing in the square to drown it out.",
+        "The Watch's lantern crosses the far side of the square, and does not come any closer.",
+        "A lamp is still burning in the pedlar's cart, behind the shutter."
       ]
     },
     {
@@ -98,10 +104,12 @@
       "description": "Heat, soot, and the steady ring of a hammer that stops the moment you step inside. Commissions are stacked unclaimed along the back wall. The west door stands open onto the cart track toward the treeline.",
       "exits": { "east": "MH_001_Square", "west": "WW_001_Edge" },
       "shelter": true,
-      "ambiance": [
-        "The coals tick as they settle.",
-        "A horseshoe cools in the trough with a long hiss.",
-        "The hammer rests on the anvil, waiting."
+      "ambiance": ["The coals tick as they settle.", "The hammer rests on the anvil, waiting."],
+      "ambiance_day": [
+        "A horseshoe cools in the trough with a long hiss."
+      ],
+      "ambiance_night": [
+        "The forge has been banked for the night. The shop smells of cold iron."
       ]
     },
     {
@@ -194,9 +202,14 @@
       "exits": { "south": "VC_001_Plaza" },
       "shelter": true,
       "ambiance": [
-        "A courtier laughs at something, too loudly.",
         "The perfume in the air cannot quite cover what is under it.",
         "Somewhere behind a curtain, the King is coughing."
+      ],
+      "ambiance_day": [
+        "A courtier laughs at something, too loudly."
+      ],
+      "ambiance_night": [
+        "A servant snuffs the candles one by one, and leaves the last."
       ]
     },
     {
@@ -215,8 +228,13 @@
       "shelter": true,
       "ambiance": [
         "A page turns, very loudly, three floors up.",
-        "Dust hangs in the light from the high windows.",
         "Somebody coughs, and is shushed by nobody you can see."
+      ],
+      "ambiance_day": [
+        "Dust hangs in the light from the high windows."
+      ],
+      "ambiance_night": [
+        "Lamps burn in a single row down the reading room, for nobody."
       ]
     },
     {

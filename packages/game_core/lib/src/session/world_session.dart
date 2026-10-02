@@ -998,9 +998,12 @@ class WorldSession {
     return out;
   }
 
-  /// Something going on in the room the party is standing in.
-  String? roomAmbiance() =>
-      _next('room:${currentRoom.id}', currentRoom.ambiance);
+  /// Something going on in the room the party is standing in, as fits the
+  /// hour.
+  String? roomAmbiance() => _next(
+        'room:${currentRoom.id}${isNight ? ':night' : ''}',
+        currentRoom.ambianceAt(night: isNight),
+      );
 
   /// What the keeper here says, at [moment]: `greet`, `buy`, `sell`, or
   /// `broke` for a customer who cannot pay.
