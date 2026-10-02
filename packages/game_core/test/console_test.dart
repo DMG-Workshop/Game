@@ -310,6 +310,14 @@ void main() {
     expect(log, isNot(contains('In a fight you can:')));
   });
 
+  test('a roll still on offer is not "nothing more to ask"', () async {
+    // Wendel's story is told, and watching him tell it again is a
+    // Perception check: the way to catch him lying.
+    final log = await _play('MH_003_Tavern', ['talk wendel', '1', '0']);
+    expect(log, contains('[Perception] Watch him while he tells it again'));
+    expect(log, isNot(contains('Nothing more to ask Wendel Pike')));
+  });
+
   test('somebody asked everything says there is nothing more', () async {
     final log = await _play('MH_004_Temple',
         ['talk aldus', '1', '1', '1', '1', '1', 'talk aldus', '1', '0']);

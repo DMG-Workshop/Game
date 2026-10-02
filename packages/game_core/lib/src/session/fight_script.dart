@@ -90,8 +90,13 @@ class FightScript {
     } else if (!target.isDown &&
         target.hp * 2 <= target.maxHp &&
         _bloodied.add(target.id)) {
+      // The fight's own line for the first wound, written for this fight,
+      // speaks for the enemy if it has one; the creature's everyday line on
+      // top of it would be the same complaint twice in a breath.
+      final sceneSpeaks = !_saidBloodied &&
+          scene.bloodied.any((l) => l.speaker == Speaker.enemy);
       final hurt = target.creature?.voice?.hurt ?? const [];
-      if (hurt.isNotEmpty) {
+      if (hurt.isNotEmpty && !sceneSpeaks) {
         out.add(_voiced(target, hurt[_bloodied.length % hurt.length]));
       }
       if (!_saidBloodied) {

@@ -155,12 +155,12 @@ void main() {
         actors: world.actors,
         roller: DiceRoller(1),
         sceneId: opened.talk.currentScene.id,
-        flags: {...world.flags, 'thorne_paid_fifty'},
+        flags: {...world.flags, 'thorne_paid_seventy_five'},
       );
       world.concludeConversation(paid);
       final entry = world.ledger.entries.single;
       expect(entry.source, 'Captain Thorne');
-      expect(entry.copper, 5000);
+      expect(entry.copper, 2500, reason: 'his share over the council\'s');
       expect(entry.kind, LootKind.coin);
     });
 

@@ -217,7 +217,7 @@
               "label": "Collect the reward",
               "say": "The council's gold, Captain.",
               "outcome": {
-                "text": "\"A hundred,\" he says, and counts it out, and it is a hundred, in coin that has been several different people's savings.",
+                "text": "\"A hundred, I said. The council's fifty you'll have had already; they pay quicker than they raise.\" He counts out the other fifty himself, in coin that has been several different people's savings.",
                 "goTo": "thorne_after",
                 "setFlags": ["thorne_paid", "thorne_paid_hundred"]
               },
@@ -231,7 +231,7 @@
               "label": "Collect the reward",
               "say": "The council's gold, Captain.",
               "outcome": {
-                "text": "Seventy-five, counted out twice, the second time more slowly.",
+                "text": "\"Seventy-five. The council's fifty you'll have had.\" He counts out the other twenty-five from his own purse, twice, the second time more slowly.",
                 "goTo": "thorne_after",
                 "setFlags": ["thorne_paid", "thorne_paid_seventy_five"]
               },
@@ -242,10 +242,10 @@
             },
             {
               "id": "paid_base",
-              "label": "Collect the reward",
+              "label": "Ask about the reward",
               "say": "The council's gold, Captain.",
               "outcome": {
-                "text": "\"Fifty, as promised.\" He pushes the purse across. \"It's not enough. It never was.\"",
+                "text": "\"The council's paid you its fifty, I hear. As promised.\" He looks at the desk where a purse would have gone. \"It's not enough. It never was.\"",
                 "goTo": "thorne_after",
                 "setFlags": ["thorne_paid", "thorne_paid_fifty"]
               },
@@ -1135,9 +1135,9 @@
             {
               "id": "ask_lamp",
               "label": "Ask about the lamp on the stair",
-              "say": "Why's there a lamp lit on the stair at noon?",
+              "say": "Why's there a lamp lit on the stair day and night?",
               "outcome": {
-                "text": "\"For the late ones,\" he says easily. \"Nobody wants to break their neck on the stair in the dark.\" It is broad daylight through every window in the room.",
+                "text": "\"For the late ones,\" he says easily. \"Nobody wants to break their neck on the stair in the dark.\" The soot on the ceiling above it says it burns all day as well, and has for weeks.",
                 "goTo": "wendel_bar",
                 "setFlags": ["asked_wendel_lamp"]
               },
@@ -1379,7 +1379,7 @@
         {
           "id": "wendel_bye",
           "title": "Wendel Pike",
-          "body": "Wendel goes back to his bar. The lamp on the back stair burns on in the daylight.",
+          "body": "Wendel goes back to his bar. The lamp on the back stair burns on, whatever the hour.",
           "isEnding": true
         }
       ]

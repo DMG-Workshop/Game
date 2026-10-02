@@ -157,8 +157,7 @@
     }
   ],
   "rewards": [
-    { "flag": "thorne_paid_fifty", "gp": 50, "from": "Captain Thorne" },
-    { "flag": "thorne_paid_seventy_five", "gp": 75, "from": "Captain Thorne" },
-    { "flag": "thorne_paid_hundred", "gp": 100, "from": "Captain Thorne" }
+    { "flag": "thorne_paid_seventy_five", "gp": 25, "from": "Captain Thorne" },
+    { "flag": "thorne_paid_hundred", "gp": 50, "from": "Captain Thorne" }
   ]
 }
