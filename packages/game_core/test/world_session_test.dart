@@ -71,7 +71,8 @@ void main() {
       expect(view.room.title, 'The Guard Hall');
       expect(view.town!.name, 'Millhaven');
       expect(view.region!.id, 'r_001_millhaven_valley');
-      expect(view.npcs.single.name, 'Captain Thorne Ironhelm');
+      expect(view.npcs.map((n) => n.name),
+          ['Captain Thorne Ironhelm', 'Sergeant Ada Rook']);
     });
 
     test('separates open exits from barred ones', () {
@@ -201,12 +202,12 @@ void main() {
         world.talk('thorne', topic: topic);
       }
       expect(world.flags, contains('dialogue_complete_thorne'));
-      expect(world.unraisedTopicsFor(world.look().npcs.single), isEmpty);
+      expect(world.unraisedTopicsFor(world.look().npcs.first), isEmpty);
     });
 
     test('tracks which topics are still unraised', () {
       final world = atThorne();
-      final thorne = world.look().npcs.single;
+      final thorne = world.look().npcs.first;
       expect(world.unraisedTopicsFor(thorne), ['creatures', 'elara', 'quest']);
       world.talk('thorne', topic: 'elara');
       expect(world.unraisedTopicsFor(thorne), ['creatures', 'quest']);

@@ -281,7 +281,7 @@ void main() {
       final first = world.keeperSays('buy')!.line;
       expect(world.keeperSays('buy')!.line, isNot(first));
       expect(world.keeperSays('broke'), isNotNull);
-      expect(_world('MH_002_GuardHall').keeperSays('greet'), isNull);
+      expect(_world('MH_003_Tavern').keeperSays('greet'), isNull);
     });
 
     test('the weather draws a remark', () {

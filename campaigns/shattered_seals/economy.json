@@ -110,6 +110,18 @@
         {
           "item": "g_020_quiet_crown",
           "requires": ["deception_revealed_under_archive"]
+        },
+        {
+          "item": "w_145_riftwalker_scimitar",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "w_147_last_light_longbow",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "st_287_true_staff_of_healing",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
         }
       ],
       "lines": {
@@ -136,7 +148,46 @@
       "keeper": "npc_008_hale",
       "location": "VC_003_GrandLibrary",
       "stock": [
-        { "item": "g_039_plan_of_valorheim" }
+        { "item": "g_039_plan_of_valorheim" },
+        { "item": "sc_246_scroll_fireball_3" },
+        {
+          "item": "sc_247_scroll_fireball_5",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "sc_248_scroll_fireball_7",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "sc_249_scroll_fireball_9",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "sc_250_scroll_lightning_bolt_3" },
+        {
+          "item": "sc_251_scroll_lightning_bolt_6",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        { "item": "sc_252_scroll_breathe_fire_1" },
+        { "item": "sc_253_scroll_breathe_fire_2" },
+        { "item": "sc_254_scroll_chilling_spray_1" },
+        { "item": "sc_255_scroll_acid_grip_2" },
+        {
+          "item": "sc_256_scroll_acid_grip_4",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        { "item": "sc_257_scroll_horizon_thunder_sphere_2" },
+        {
+          "item": "sc_258_scroll_cone_of_cold_5",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "sc_259_scroll_eclipse_burst_7",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "sc_260_scroll_polar_ray_8",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        }
       ],
       "lines": {
         "greet": [
@@ -152,6 +203,342 @@
         ],
         "broke": [
           "The Crown sets the price, not I. Come back when you can pay it."
+        ]
+      }
+    },
+    {
+      "shop_id": "s_004_harrows_forge",
+      "name": "Harrow's Forge",
+      "keeper": "npc_004_harrow",
+      "location": "MH_005_Forge",
+      "stock": [
+        { "item": "w_101_dagger" },
+        { "item": "w_102_shortsword" },
+        { "item": "w_103_rapier" },
+        { "item": "w_104_longsword" },
+        { "item": "w_105_greatsword" },
+        { "item": "w_106_battle_axe" },
+        { "item": "w_107_greataxe" },
+        { "item": "w_108_warhammer" },
+        { "item": "w_109_maul" },
+        { "item": "w_110_spear" },
+        { "item": "w_111_glaive" },
+        { "item": "w_112_halberd" },
+        { "item": "w_113_mace" },
+        { "item": "w_114_morningstar" },
+        { "item": "w_115_light_hammer" },
+        { "item": "w_116_bo_staff" },
+        { "item": "w_117_scimitar" },
+        { "item": "w_118_flail" },
+        { "item": "w_119_falchion" },
+        { "item": "w_120_bastard_sword" },
+        { "item": "w_121_kukri" },
+        { "item": "w_122_whip" },
+        { "item": "w_123_javelin" },
+        { "item": "w_124_shortbow" },
+        { "item": "w_125_longbow" },
+        { "item": "w_126_composite_shortbow" },
+        { "item": "w_127_composite_longbow" },
+        { "item": "w_128_crossbow" },
+        { "item": "w_129_heavy_crossbow" },
+        { "item": "w_130_hand_crossbow" },
+        { "item": "w_131_watchmans_spear" },
+        { "item": "w_132_reedcutter_shortbow" },
+        { "item": "w_133_fenward_axe" },
+        { "item": "w_134_duellists_rapier" },
+        { "item": "w_135_tollgate_arbalest" }
+      ],
+      "lines": {
+        "greet": [
+          "Everything on the rack is sound. If it was not, it would be on the scrap pile.",
+          "Look. Do not touch the one cooling on the anvil."
+        ],
+        "buy": [
+          "Keep it oiled. Bring it back if it chips, not if you do.",
+          "Good steel. Try not to leave it in anything."
+        ],
+        "sell": [
+          "I can take the iron back. Half, which is fair for iron.",
+          "I will melt it down for something better. Half."
+        ],
+        "broke": [
+          "Steel costs what it costs. Come back with the rest."
+        ]
+      }
+    },
+    {
+      "shop_id": "s_005_temple_alms_table",
+      "name": "The Temple Alms-Table",
+      "keeper": "npc_003_aldus",
+      "location": "MH_004_Temple",
+      "stock": [
+        { "item": "e_231_elixir_of_life_minor" },
+        { "item": "e_232_elixir_of_life_lesser" },
+        {
+          "item": "e_233_elixir_of_life_moderate",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "e_234_elixir_of_life_greater",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "e_235_elixir_of_life_major",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "e_236_elixir_of_life_true",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "sc_241_scroll_heal_1" },
+        { "item": "sc_242_scroll_heal_3" },
+        {
+          "item": "sc_243_scroll_heal_5",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "sc_244_scroll_heal_7",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "sc_245_scroll_heal_9",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "wd_261_wand_of_heal_1" },
+        {
+          "item": "wd_262_wand_of_heal_3",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "wd_263_wand_of_heal_5",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "wd_264_wand_of_heal_7",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "st_284_staff_of_healing" },
+        {
+          "item": "st_285_greater_staff_of_healing",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "st_286_major_staff_of_healing",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        }
+      ],
+      "lines": {
+        "greet": [
+          "What the temple has, it shares, for what keeps the roof on.",
+          "Take what you need. Leave what you can."
+        ],
+        "buy": [
+          "Ashkyr keep you, and keep that safe until you need it.",
+          "Use it on somebody who needs it. That is all I ask."
+        ],
+        "sell": [
+          "The temple will find a use for it. Half, for the roof."
+        ],
+        "broke": [
+          "I would give it you if I could. The roof would not."
+        ]
+      }
+    },
+    {
+      "shop_id": "s_006_watch_stores",
+      "name": "The Watch Stores",
+      "keeper": "npc_019_rook",
+      "location": "MH_002_GuardHall",
+      "stock": [
+        { "item": "b_201_alchemists_fire_lesser" },
+        { "item": "b_202_alchemists_fire_moderate" },
+        {
+          "item": "b_203_alchemists_fire_greater",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "b_204_alchemists_fire_major",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "b_205_acid_flask_lesser" },
+        { "item": "b_206_acid_flask_moderate" },
+        {
+          "item": "b_207_acid_flask_greater",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "b_208_acid_flask_major",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "b_209_frost_vial_lesser" },
+        { "item": "b_210_frost_vial_moderate" },
+        {
+          "item": "b_211_frost_vial_greater",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "b_212_frost_vial_major",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "b_213_bottled_lightning_lesser" },
+        { "item": "b_214_bottled_lightning_moderate" },
+        {
+          "item": "b_215_bottled_lightning_greater",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "b_216_bottled_lightning_major",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "b_217_thunderstone_lesser" },
+        { "item": "b_218_thunderstone_moderate" },
+        {
+          "item": "b_219_thunderstone_greater",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "b_220_thunderstone_major",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "b_221_blight_bomb_lesser" },
+        { "item": "b_222_blight_bomb_moderate" },
+        {
+          "item": "b_223_blight_bomb_greater",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "b_224_blight_bomb_major",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        }
+      ],
+      "lines": {
+        "greet": [
+          "Watch stores. Sign for what you take, and pay for it, both.",
+          "Mind the crates. Mind them a lot."
+        ],
+        "buy": [
+          "Throw it at them, not at me. Away from the thatch.",
+          "Signed for. Do not drop it on the stairs."
+        ],
+        "sell": [
+          "Back into stores it goes. Half, as per regulations."
+        ],
+        "broke": [
+          "Regulations say coin first. I did not write them. I enforce them."
+        ]
+      }
+    },
+    {
+      "shop_id": "s_007_crown_armoury",
+      "name": "The Crown Armoury",
+      "keeper": "npc_020_venn",
+      "location": "VC_001_Plaza",
+      "stock": [
+        {
+          "item": "w_136_bridgeguard_glaive",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_137_greywood_longbow",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_138_archive_kukri",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_139_minebreaker_axe",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_140_knight_captains_sword",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_141_palace_halberd",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_142_whisper_blade",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "w_143_seal_masons_maul",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "w_144_quiet_court_crossbow",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "wd_265_wand_of_fireball_3",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "wd_266_wand_of_fireball_5",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "wd_267_wand_of_fireball_9",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "wd_268_wand_of_lightning_bolt_3",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "wd_269_wand_of_lightning_bolt_6",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "wd_270_wand_of_breathe_fire_1" },
+        { "item": "wd_271_wand_of_breathe_fire_2" },
+        { "item": "wd_272_wand_of_chilling_spray_1" },
+        { "item": "wd_273_wand_of_horizon_thunder_sphere_2" },
+        { "item": "wd_274_wand_of_acid_grip_2" },
+        {
+          "item": "wd_275_wand_of_cone_of_cold_5",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "wd_276_wand_of_eclipse_burst_7",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        {
+          "item": "wd_277_wand_of_polar_ray_8",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        },
+        { "item": "st_281_staff_of_fire" },
+        {
+          "item": "st_282_greater_staff_of_fire",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "st_283_major_staff_of_fire",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "st_288_stormwardens_staff",
+          "requires": ["Unlock_Travel_to_Valorheim"]
+        },
+        {
+          "item": "st_289_rimewood_staff",
+          "requires": ["Trigger_Sundering_Earthquake_Event"]
+        }
+      ],
+      "lines": {
+        "greet": [
+          "Crown surplus, and Crown prices. Both negotiable, neither by much.",
+          "Everything here has the royal stamp, and most of it has the royal edge."
+        ],
+        "buy": [
+          "Struck off the inventory. You were never here.",
+          "A sound purchase. The Crown thanks you for your custom."
+        ],
+        "sell": [
+          "The Crown will take it back into stores. At half."
+        ],
+        "broke": [
+          "The Crown does not extend credit. Not to you, not to the King."
         ]
       }
     }

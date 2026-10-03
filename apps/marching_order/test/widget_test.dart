@@ -132,7 +132,9 @@ void main() {
     await pumpEventQueue();
     expect(game.prompt, '> ');
 
-    // Three steps west, something has been keeping pace.
+    // Three steps west, something has been keeping pace: both thralls,
+    // as written, so a spell has two to choose between.
+    game.session.scaleFights = false;
     for (var i = 0; i < 3; i++) {
       game.send('west');
       await pumpEventQueue();
@@ -188,6 +190,38 @@ void main() {
       contains(startsWith('The Bustling Market Square')),
       reason: 'somewhere been is somewhere to go back to',
     );
+  });
+
+  test('somebody who would join is a chip, and so is the party', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    final game = await GameController.start([
+      await GameController.demoCharacter(),
+    ], seed: 3);
+    await pumpEventQueue();
+    expect(game.chips.map((c) => c.label), contains('Party'));
+
+    // The tavern is east of the square, and Bren Cask is in it.
+    game.send('east');
+    await pumpEventQueue();
+    expect(game.chips.map((c) => c.label), contains('Recruit: Cask'));
+
+    game.send(game.chips.firstWhere((c) => c.label == 'Recruit: Cask').command);
+    await pumpEventQueue();
+    expect(game.prompt, 'hire> ');
+    expect(game.chips.map((c) => c.label), ['Take Bren on', 'Not now']);
+    game.send('1');
+    await pumpEventQueue();
+    expect(game.log, contains('Bren Cask joins the party.'));
+    expect(game.chips.map((c) => c.label), isNot(contains('Recruit: Cask')));
+
+    game.send('party');
+    await pumpEventQueue();
+    expect(game.prompt, 'party> ');
+    expect(game.chips.map((c) => c.label), [
+      'Korash Blackearth',
+      'Bren Cask',
+      'Close',
+    ]);
   });
 
   test('a won haggle shows on the Trade chip and in the prices', () async {

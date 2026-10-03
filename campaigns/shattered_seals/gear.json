@@ -53,7 +53,9 @@
       "description": "Thralls come out of the Whisperwood with these in them, driven in at the base of the skull and long since grown over. Pulling one free is easy. Deciding to keep it is the part people regret.",
       "stats": { "damage": "1d4", "bonus": 1, "magic": true },
       "special": "+1 item bonus to saves against effects that would control you, while you hold it. On a critical hit, the target cannot become concealed until the end of your next turn.",
-      "drops": [{ "from": "c_hollow_thrall", "chance": 8 }]
+      "drops": [
+        { "from": "c_hollow_thrall", "chance": 8 }
+      ]
     },
     {
       "item_id": "w_029_drovers_goad",
@@ -110,7 +112,9 @@
       "description": "What a thrall leaves when it finally stops. It does not scatter in wind, and it is cold in a way ash has no business being.",
       "stats": { "bonus": 1, "magic": true },
       "special": "Activate when a creature with the shadow trait would become incorporeal to prevent it until the end of your next turn. The ash is spent.",
-      "drops": [{ "from": "c_hollow_thrall", "chance": 25 }]
+      "drops": [
+        { "from": "c_hollow_thrall", "chance": 25 }
+      ]
     },
     {
       "item_id": "w_006_shadowbane_dagger",
@@ -132,7 +136,9 @@
       "description": "Road armour: steel plates riveted inside a coat of oiled canvas that has been rained on across three kingdoms and has kept out every drop.",
       "stats": { "ac": 14, "bonus": 1, "magic": true, "ac_bonus": 3, "dex_cap": 2 },
       "special": "+1 item bonus to Fortitude saves against cold and exposure.",
-      "check_bonuses": [{ "stat": "fortitude", "bonus": 1, "when": "exposure" }]
+      "check_bonuses": [
+        { "stat": "fortitude", "bonus": 1, "when": "exposure" }
+      ]
     },
     {
       "item_id": "g_039_plan_of_valorheim",
@@ -154,7 +160,9 @@
       "description": "Farm leather, patched and re-patched, still smelling faintly of the byre. The previous owner's name is inked inside the collar and has been crossed through once.",
       "stats": { "ac": 15, "bonus": 1, "magic": true, "ac_bonus": 2, "dex_cap": 3 },
       "special": "+1 item bonus to Survival checks made within a day's walk of Millhaven.",
-      "check_bonuses": [{ "stat": "survival", "bonus": 1, "when": "region:r_001_millhaven_valley" }]
+      "check_bonuses": [
+        { "stat": "survival", "bonus": 1, "when": "region:r_001_millhaven_valley" }
+      ]
     },
     {
       "item_id": "g_035_hearth_water_moderate",
@@ -219,7 +227,9 @@
       "description": "The bowyers cut from the tree inside the ring every ninth year, and never twice from the same limb. This is the limb they took first, back again, and longer than it was.",
       "stats": { "damage": "1d4", "bonus": 1, "magic": true, "striking": "striking" },
       "special": "Striking rune. On a critical hit, roots hold the target in place until the end of your next turn, whether or not there is any soil.",
-      "drops": [{ "from": "c_hollow_avatar", "chance": 25 }]
+      "drops": [
+        { "from": "c_hollow_avatar", "chance": 25 }
+      ]
     },
     {
       "item_id": "a_032_mourners_mail",
@@ -242,7 +252,9 @@
       "description": "The Avatar wears a ring of these and is not wearing a crown. When it goes down one of them stays behind — always one, never the same one twice.",
       "stats": { "damage": "1d6", "bonus": 2, "magic": true, "striking": "striking" },
       "special": "Striking rune. Ignores the resistance an incorporeal creature has to physical damage. While it is drawn, you can see the shadow of anything that is keeping one hidden.",
-      "drops": [{ "from": "c_hollow_avatar", "chance": 100 }]
+      "drops": [
+        { "from": "c_hollow_avatar", "chance": 100 }
+      ]
     },
     {
       "item_id": "w_010_inquisitors_blade",
@@ -263,7 +275,9 @@
       "description": "Crown issue, crimson-lacquered, and newer than the man who was wearing it. The quartermaster's stamp inside is dated after his funeral.",
       "stats": { "ac": 18, "bonus": 2, "magic": true, "ac_bonus": 5, "dex_cap": 1 },
       "special": "+1 item bonus to Society checks made inside the Palace District.",
-      "check_bonuses": [{ "stat": "society", "bonus": 1, "when": "zone:z_04_palace_district" }]
+      "check_bonuses": [
+        { "stat": "society", "bonus": 1, "when": "zone:z_04_palace_district" }
+      ]
     },
     {
       "item_id": "w_025_censer_chain",
@@ -275,7 +289,9 @@
       "description": "Acolytes swing these at the head of a procession, and the smoke is the point: it is what keeps a congregation from noticing what the singing is doing to them.",
       "stats": { "damage": "1d6", "bonus": 2, "magic": true, "striking": "striking" },
       "special": "+1 item bonus to Deception checks made among Covenant members. On a successful Strike, the target takes a -1 status penalty to Will saves until the end of your next turn.",
-      "drops": [{ "from": "c_covenant_acolyte", "chance": 15 }]
+      "drops": [
+        { "from": "c_covenant_acolyte", "chance": 15 }
+      ]
     },
     {
       "item_id": "w_012_bloodstone_pick",
@@ -297,8 +313,12 @@
       "description": "Long, fine, and kept in a velvet roll with eleven others. The Covenant does not call what it does with these torture, and it is technically correct: the needle does the asking.",
       "stats": { "damage": "1d4", "bonus": 2, "magic": true, "striking": "greaterStriking" },
       "special": "+2 item bonus to Intimidation checks. A creature critically hit by it answers the next question it is asked truthfully, though nothing makes it answer at length.",
-      "drops": [{ "from": "c_covenant_acolyte", "chance": 8 }],
-      "check_bonuses": [{ "stat": "intimidation", "bonus": 2 }]
+      "drops": [
+        { "from": "c_covenant_acolyte", "chance": 8 }
+      ],
+      "check_bonuses": [
+        { "stat": "intimidation", "bonus": 2 }
+      ]
     },
     {
       "item_id": "g_036_hearth_water_greater",
@@ -322,7 +342,9 @@
       "description": "Malachai Vex did not carry a weapon. He carried the thing he intended to become, and used it on whoever stood between him and that.",
       "stats": { "damage": "1d6", "bonus": 2, "magic": true, "striking": "greaterStriking" },
       "special": "Greater striking rune. Once per day you may trade places with a creature within 30 feet that you can see, each of you appearing where the other stood. The rod was built for this and does not care that you are the one holding it.",
-      "drops": [{ "from": "c_malachai_vex", "chance": 100 }]
+      "drops": [
+        { "from": "c_malachai_vex", "chance": 100 }
+      ]
     },
     {
       "item_id": "g_013_fourth_name_ledger",
@@ -333,7 +355,9 @@
       "description": "A burial register kept in two hands: the undertaker's, and a second that added a small mark beside four of the entries afterward. The fifth line is still blank.",
       "stats": { "bonus": 2, "magic": true },
       "special": "+2 item bonus to Occultism checks and to Lore checks concerning the undead. While carried, you know without checking whether a corpse you can see died of what the record says it did.",
-      "check_bonuses": [{ "stat": "occultism", "bonus": 2 }]
+      "check_bonuses": [
+        { "stat": "occultism", "bonus": 2 }
+      ]
     },
     {
       "item_id": "a_011_monarchs_vestment",
@@ -344,7 +368,9 @@
       "description": "Golden plate armor fit for a king. It emanates majesty.",
       "stats": { "ac": 20, "bonus": 2, "magic": true, "ac_bonus": 6, "dex_cap": 0 },
       "special": "+2 item bonus to Diplomacy checks.",
-      "check_bonuses": [{ "stat": "diplomacy", "bonus": 2 }]
+      "check_bonuses": [
+        { "stat": "diplomacy", "bonus": 2 }
+      ]
     },
     {
       "item_id": "w_028_seal_breakers_athame",
@@ -356,7 +382,9 @@
       "description": "The knife the Covenant opens seals with. It is not sharp and does not need to be: the edge is an argument rather than a blade.",
       "stats": { "damage": "1d4", "bonus": 2, "magic": true, "striking": "greaterStriking" },
       "special": "+2 item bonus to Occultism checks made to identify or undo a seal. It deals no damage at all to an unwarded object, and double damage to a warded one.",
-      "drops": [{ "from": "c_malachai_vex", "chance": 30 }]
+      "drops": [
+        { "from": "c_malachai_vex", "chance": 30 }
+      ]
     },
     {
       "item_id": "a_015_seal_wardens_regalia",
@@ -429,7 +457,1499 @@
       "description": "Not the crown of Valorheim. The crown of what was here before Valorheim, recovered from beneath it, worn by people who understood entropy well enough to decide against it.",
       "stats": { "bonus": 3, "magic": true },
       "special": "+3 item bonus to Diplomacy and Intimidation checks. Once per day, you may close one seal that has been broken, anywhere you can see, and know afterward exactly what it cost you.",
-      "check_bonuses": [{ "stat": "diplomacy", "bonus": 3 }, { "stat": "intimidation", "bonus": 3 }]
+      "check_bonuses": [
+        { "stat": "diplomacy", "bonus": 3 },
+        { "stat": "intimidation", "bonus": 3 }
+      ]
+    },
+    {
+      "item_id": "w_101_dagger",
+      "name": "Dagger",
+      "level": 0,
+      "type": "weapon",
+      "price": 0.2,
+      "traits": ["simple", "agile", "finesse", "thrown", "versatile s"],
+      "description": "A plain double-edged knife with a leather grip, balanced for throwing as well as for everything else.",
+      "stats": { "damage": "1d4", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_102_shortsword",
+      "name": "Shortsword",
+      "level": 0,
+      "type": "weapon",
+      "price": 0.9,
+      "traits": ["martial", "agile", "finesse", "versatile s"],
+      "description": "A short, broad thrusting blade of the kind the Watch issues and nobody gives back.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_103_rapier",
+      "name": "Rapier",
+      "level": 0,
+      "type": "weapon",
+      "price": 2,
+      "traits": ["martial", "deadly d8", "disarm", "finesse"],
+      "description": "A long, narrow blade with a swept hilt: a duellist's weapon, and a capital fashion.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_104_longsword",
+      "name": "Longsword",
+      "level": 0,
+      "type": "weapon",
+      "price": 1,
+      "traits": ["martial", "versatile p"],
+      "description": "A knight's sword, or a farmer's grandfather's: straight, plain, and heavier than it looks.",
+      "stats": { "damage": "1d8", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_105_greatsword",
+      "name": "Greatsword",
+      "level": 0,
+      "type": "weapon",
+      "price": 2,
+      "traits": ["martial", "versatile p"],
+      "description": "Five feet of steel that wants both hands and most of the room.",
+      "stats": { "damage": "1d12", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_106_battle_axe",
+      "name": "Battle Axe",
+      "level": 0,
+      "type": "weapon",
+      "price": 1,
+      "traits": ["martial", "sweep"],
+      "description": "A broad-bladed axe on a hickory haft, made for people, not wood.",
+      "stats": { "damage": "1d8", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_107_greataxe",
+      "name": "Greataxe",
+      "level": 0,
+      "type": "weapon",
+      "price": 2,
+      "traits": ["martial", "sweep"],
+      "description": "A crescent head the width of a man's chest on a haft as long as a leg.",
+      "stats": { "damage": "1d12", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_108_warhammer",
+      "name": "Warhammer",
+      "level": 0,
+      "type": "weapon",
+      "price": 1,
+      "traits": ["martial", "shove"],
+      "description": "A square-headed hammer with a spike behind, for armour that will not be cut.",
+      "stats": { "damage": "1d8", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_109_maul",
+      "name": "Maul",
+      "level": 0,
+      "type": "weapon",
+      "price": 3,
+      "traits": ["martial", "shove"],
+      "description": "A sledge with ambitions. It does not so much hit as arrive.",
+      "stats": { "damage": "1d12", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_110_spear",
+      "name": "Spear",
+      "level": 0,
+      "type": "weapon",
+      "price": 0.1,
+      "traits": ["simple", "thrown"],
+      "description": "An ash pole and a leaf-shaped head. Every farm in the valley has one behind the door.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_111_glaive",
+      "name": "Glaive",
+      "level": 0,
+      "type": "weapon",
+      "price": 1,
+      "traits": ["martial", "deadly d8", "forceful", "reach"],
+      "description": "A long blade on a longer pole, for keeping something at arm's length and then some.",
+      "stats": { "damage": "1d8", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_112_halberd",
+      "name": "Halberd",
+      "level": 0,
+      "type": "weapon",
+      "price": 2,
+      "traits": ["martial", "reach", "versatile s"],
+      "description": "Axe, spike and hook on one pole: the Crown guard's answer to everything.",
+      "stats": { "damage": "1d10", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_113_mace",
+      "name": "Mace",
+      "level": 0,
+      "type": "weapon",
+      "price": 1,
+      "traits": ["simple", "shove"],
+      "description": "A flanged iron head on a short haft. Priests like them; so do bailiffs.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_114_morningstar",
+      "name": "Morningstar",
+      "level": 0,
+      "type": "weapon",
+      "price": 1,
+      "traits": ["simple", "versatile p"],
+      "description": "A spiked ball on a stout handle, as subtle as it looks.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_115_light_hammer",
+      "name": "Light Hammer",
+      "level": 0,
+      "type": "weapon",
+      "price": 0.3,
+      "traits": ["martial", "agile", "thrown"],
+      "description": "A smith's hammer that has been told it is a weapon, and believed it.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_116_bo_staff",
+      "name": "Bo Staff",
+      "level": 0,
+      "type": "weapon",
+      "price": 0.2,
+      "traits": ["martial", "monk", "parry", "reach", "trip"],
+      "description": "Six feet of seasoned oak, iron-shod at both ends.",
+      "stats": { "damage": "1d8", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_117_scimitar",
+      "name": "Scimitar",
+      "level": 0,
+      "type": "weapon",
+      "price": 1,
+      "traits": ["martial", "forceful", "sweep"],
+      "description": "A curved blade from somewhere south, made for cutting from horseback.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_118_flail",
+      "name": "Flail",
+      "level": 0,
+      "type": "weapon",
+      "price": 0.8,
+      "traits": ["martial", "disarm", "sweep", "trip"],
+      "description": "A spiked head on a chain on a handle. The chain is the point.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_119_falchion",
+      "name": "Falchion",
+      "level": 0,
+      "type": "weapon",
+      "price": 3,
+      "traits": ["martial", "forceful"],
+      "description": "A heavy, single-edged blade that widens toward the tip like a cleaver.",
+      "stats": { "damage": "1d10", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_120_bastard_sword",
+      "name": "Bastard Sword",
+      "level": 0,
+      "type": "weapon",
+      "price": 4,
+      "traits": ["martial", "two hand d12"],
+      "description": "A sword long enough for two hands and light enough for one, if the one is strong.",
+      "stats": { "damage": "1d8", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_121_kukri",
+      "name": "Kukri",
+      "level": 0,
+      "type": "weapon",
+      "price": 0.6,
+      "traits": ["martial", "agile", "finesse", "trip"],
+      "description": "A forward-curved knife, heavy at the tip. It chops like a hatchet.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_122_whip",
+      "name": "Whip",
+      "level": 0,
+      "type": "weapon",
+      "price": 0.1,
+      "traits": ["martial", "disarm", "finesse", "nonlethal", "reach", "trip"],
+      "description": "A drover's whip, plaited leather with a lead-weighted tail.",
+      "stats": { "damage": "1d4", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_123_javelin",
+      "name": "Javelin",
+      "level": 0,
+      "type": "weapon",
+      "price": 0.1,
+      "traits": ["simple", "thrown"],
+      "description": "A light throwing spear, sold in bundles to people who expect to miss.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_124_shortbow",
+      "name": "Shortbow",
+      "level": 0,
+      "type": "weapon",
+      "price": 3,
+      "traits": ["martial", "ranged", "deadly d10"],
+      "description": "A hunter's bow, short enough to draw in a hedge.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_125_longbow",
+      "name": "Longbow",
+      "level": 0,
+      "type": "weapon",
+      "price": 6,
+      "traits": ["martial", "ranged", "deadly d10", "volley"],
+      "description": "A yew bow as tall as the archer, and a good deal more patient.",
+      "stats": { "damage": "1d8", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_126_composite_shortbow",
+      "name": "Composite Shortbow",
+      "level": 0,
+      "type": "weapon",
+      "price": 14,
+      "traits": ["martial", "ranged", "deadly d10", "propulsive"],
+      "description": "Horn, wood and sinew glued in layers: a short bow that pulls like a long one, and lets a strong arm tell.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_127_composite_longbow",
+      "name": "Composite Longbow",
+      "level": 0,
+      "type": "weapon",
+      "price": 20,
+      "traits": ["martial", "ranged", "deadly d10", "propulsive", "volley"],
+      "description": "A recurved war bow of horn and sinew. The strong get more out of it.",
+      "stats": { "damage": "1d8", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_128_crossbow",
+      "name": "Crossbow",
+      "level": 0,
+      "type": "weapon",
+      "price": 3,
+      "traits": ["simple", "ranged", "reload 1"],
+      "description": "A stirrup crossbow. Anyone can shoot one; the trick is the reloading.",
+      "stats": { "damage": "1d8", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_129_heavy_crossbow",
+      "name": "Heavy Crossbow",
+      "level": 0,
+      "type": "weapon",
+      "price": 4,
+      "traits": ["simple", "ranged", "reload 2"],
+      "description": "A windlass crossbow for walls and gates, brought down to the road.",
+      "stats": { "damage": "1d10", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_130_hand_crossbow",
+      "name": "Hand Crossbow",
+      "level": 0,
+      "type": "weapon",
+      "price": 3,
+      "traits": ["simple", "ranged", "reload 1"],
+      "description": "A crossbow small enough to hold in one hand and hide in a sleeve.",
+      "stats": { "damage": "1d6", "bonus": 0, "magic": false }
+    },
+    {
+      "item_id": "w_131_watchmans_spear",
+      "name": "Watchman's Spear",
+      "level": 2,
+      "type": "weapon",
+      "traits": ["simple", "magical", "thrown"],
+      "description": "A Millhaven Watch spear, the haft burned with the tower-and-water mark and the head kept bright by somebody who cared.",
+      "stats": { "damage": "1d6", "bonus": 1, "magic": true },
+      "special": "A potency rune: a +1 item bonus to attack rolls with it, and one damage die."
+    },
+    {
+      "item_id": "w_132_reedcutter_shortbow",
+      "name": "Reedcutter Shortbow",
+      "level": 2,
+      "type": "weapon",
+      "traits": ["martial", "magical", "ranged", "deadly d10"],
+      "description": "Strung by a fowler from the Mere and waxed against the damp. It has never once warped, which the fowler takes personally.",
+      "stats": { "damage": "1d6", "bonus": 1, "magic": true },
+      "special": "A potency rune: a +1 item bonus to attack rolls with it, and one damage die."
+    },
+    {
+      "item_id": "w_133_fenward_axe",
+      "name": "Fenward Axe",
+      "level": 3,
+      "type": "weapon",
+      "traits": ["martial", "magical", "sweep"],
+      "description": "An old Fenward family axe with a new edge and an older rune, still keen after three generations of being lent out.",
+      "stats": { "damage": "1d8", "bonus": 1, "magic": true },
+      "special": "A potency rune: a +1 item bonus to attack rolls with it, and one damage die."
+    },
+    {
+      "item_id": "w_134_duellists_rapier",
+      "name": "Duellist's Rapier",
+      "level": 4,
+      "type": "weapon",
+      "traits": ["martial", "magical", "deadly d8", "disarm", "finesse"],
+      "description": "A capital rapier with a cup hilt and a crest filed off it. Whoever it belonged to left town owing Harrow money.",
+      "stats": { "damage": "1d6", "bonus": 1, "magic": true, "striking": "striking" },
+      "special": "Potency and striking runes: a +1 item bonus to attack rolls with it, and two damage dice."
+    },
+    {
+      "item_id": "w_135_tollgate_arbalest",
+      "name": "Tollgate Arbalest",
+      "level": 5,
+      "type": "weapon",
+      "traits": ["simple", "magical", "ranged", "reload 2"],
+      "description": "One of the heavy crossbows from the king's road tollgate, sold off when the gate shut, its windlass oiled and its sights true.",
+      "stats": { "damage": "1d10", "bonus": 1, "magic": true, "striking": "striking" },
+      "special": "Potency and striking runes: a +1 item bonus to attack rolls with it, and two damage dice."
+    },
+    {
+      "item_id": "w_136_bridgeguard_glaive",
+      "name": "Bridgeguard Glaive",
+      "level": 6,
+      "type": "weapon",
+      "traits": ["martial", "magical", "deadly d8", "forceful", "reach"],
+      "description": "Carried on the Valorheim bridges by guards who were never once called on to use it, until this year.",
+      "stats": { "damage": "1d8", "bonus": 1, "magic": true, "striking": "striking" },
+      "special": "Potency and striking runes: a +1 item bonus to attack rolls with it, and two damage dice."
+    },
+    {
+      "item_id": "w_137_greywood_longbow",
+      "name": "Greywood Longbow",
+      "level": 7,
+      "type": "weapon",
+      "traits": ["martial", "magical", "ranged", "deadly d10", "propulsive", "volley"],
+      "description": "A war bow backed with grey horn, from the royal bowyers. The string hums a long time after the arrow has gone.",
+      "stats": { "damage": "1d8", "bonus": 1, "magic": true, "striking": "striking" },
+      "special": "Potency and striking runes: a +1 item bonus to attack rolls with it, and two damage dice."
+    },
+    {
+      "item_id": "w_138_archive_kukri",
+      "name": "Archive Kukri",
+      "level": 8,
+      "type": "weapon",
+      "rarity": "uncommon",
+      "traits": ["martial", "magical", "agile", "finesse", "trip"],
+      "description": "Issued to the Grand Library's night porters, which tells you something about the night porters, or about the library.",
+      "stats": { "damage": "1d6", "bonus": 1, "magic": true, "striking": "striking" },
+      "special": "Potency and striking runes: a +1 item bonus to attack rolls with it, and two damage dice."
+    },
+    {
+      "item_id": "w_139_minebreaker_axe",
+      "name": "Minebreaker Axe",
+      "level": 9,
+      "type": "weapon",
+      "traits": ["martial", "magical", "sweep"],
+      "description": "A greataxe forged from a mine-gate bar. The dwarves who made it say it remembers the weight of the mountain.",
+      "stats": { "damage": "1d12", "bonus": 1, "magic": true, "striking": "striking" },
+      "special": "Potency and striking runes: a +1 item bonus to attack rolls with it, and two damage dice."
+    },
+    {
+      "item_id": "w_140_knight_captains_sword",
+      "name": "Knight-Captain's Sword",
+      "level": 10,
+      "type": "weapon",
+      "traits": ["martial", "magical", "versatile p"],
+      "description": "A Crown officer's sword, plain where a courtier's would be gilded, and sharper for it.",
+      "stats": { "damage": "1d8", "bonus": 2, "magic": true, "striking": "striking" },
+      "special": "Potency and striking runes: a +2 item bonus to attack rolls with it, and two damage dice."
+    },
+    {
+      "item_id": "w_141_palace_halberd",
+      "name": "Palace Halberd",
+      "level": 11,
+      "type": "weapon",
+      "traits": ["martial", "magical", "reach", "versatile s"],
+      "description": "Black-lacquered and silver-chased, from the palace stair. The lacquer is for show; the edge is not.",
+      "stats": { "damage": "1d10", "bonus": 2, "magic": true, "striking": "striking" },
+      "special": "Potency and striking runes: a +2 item bonus to attack rolls with it, and two damage dice."
+    },
+    {
+      "item_id": "w_142_whisper_blade",
+      "name": "Whisper Blade",
+      "level": 12,
+      "type": "weapon",
+      "rarity": "uncommon",
+      "traits": ["martial", "magical", "agile", "finesse", "versatile s"],
+      "description": "A short, matt-grey blade that makes no sound leaving the scabbard and very little going in.",
+      "stats": { "damage": "1d6", "bonus": 2, "magic": true, "striking": "greaterStriking" },
+      "special": "Potency and greater striking runes: a +2 item bonus to attack rolls with it, and three damage dice."
+    },
+    {
+      "item_id": "w_143_seal_masons_maul",
+      "name": "Seal-Mason's Maul",
+      "level": 13,
+      "type": "weapon",
+      "rarity": "uncommon",
+      "traits": ["martial", "magical", "shove"],
+      "description": "The maul the old seal-masons used to set boundary stones. Its head is the same stone as the seals.",
+      "stats": { "damage": "1d12", "bonus": 2, "magic": true, "striking": "greaterStriking" },
+      "special": "Potency and greater striking runes: a +2 item bonus to attack rolls with it, and three damage dice."
+    },
+    {
+      "item_id": "w_144_quiet_court_crossbow",
+      "name": "Quiet Court Crossbow",
+      "level": 14,
+      "type": "weapon",
+      "rarity": "uncommon",
+      "traits": ["simple", "magical", "ranged", "reload 1"],
+      "description": "Taken from the Quiet Court's gate. Its bolts are stamped with names nobody in Valorheim remembers.",
+      "stats": { "damage": "1d8", "bonus": 2, "magic": true, "striking": "greaterStriking" },
+      "special": "Potency and greater striking runes: a +2 item bonus to attack rolls with it, and three damage dice."
+    },
+    {
+      "item_id": "w_145_riftwalker_scimitar",
+      "name": "Riftwalker Scimitar",
+      "level": 15,
+      "type": "weapon",
+      "rarity": "uncommon",
+      "traits": ["martial", "magical", "forceful", "sweep"],
+      "description": "Carried up out of the Rift by somebody who did not carry anything else up. The blade is cold in summer.",
+      "stats": { "damage": "1d6", "bonus": 2, "magic": true, "striking": "greaterStriking" },
+      "special": "Potency and greater striking runes: a +2 item bonus to attack rolls with it, and three damage dice."
+    },
+    {
+      "item_id": "w_146_cradle_breaker",
+      "name": "Cradle-Breaker",
+      "level": 16,
+      "type": "weapon",
+      "rarity": "rare",
+      "traits": ["martial", "magical", "versatile p"],
+      "description": "A greatsword the Quiet Court's courtiers carry and never draw, until the Cradle is threatened. It is heavier than steel ought to be.",
+      "stats": { "damage": "1d12", "bonus": 3, "magic": true, "striking": "greaterStriking" },
+      "special": "Potency and greater striking runes: a +3 item bonus to attack rolls with it, and three damage dice.",
+      "drops": [
+        { "from": "c_quiet_courtier", "chance": 20 }
+      ]
+    },
+    {
+      "item_id": "w_147_last_light_longbow",
+      "name": "Last Light Longbow",
+      "level": 17,
+      "type": "weapon",
+      "rarity": "uncommon",
+      "traits": ["martial", "magical", "ranged", "deadly d10", "volley"],
+      "description": "A longbow cut from the last tree to stand on the Causeway of Names. Its arrows burn faintly in the dark.",
+      "stats": { "damage": "1d8", "bonus": 3, "magic": true, "striking": "greaterStriking" },
+      "special": "Potency and greater striking runes: a +3 item bonus to attack rolls with it, and three damage dice."
+    },
+    {
+      "item_id": "w_148_unmaking_ward_flail",
+      "name": "Unmaking-Ward Flail",
+      "level": 18,
+      "type": "weapon",
+      "rarity": "rare",
+      "traits": ["martial", "magical", "disarm", "sweep", "trip"],
+      "description": "The hierophants' own flail, its chain links each stamped with a seal-sign, turned now against whatever wields the Unmaking.",
+      "stats": { "damage": "1d6", "bonus": 3, "magic": true, "striking": "greaterStriking" },
+      "special": "Potency and greater striking runes: a +3 item bonus to attack rolls with it, and three damage dice.",
+      "drops": [
+        { "from": "c_entropy_hierophant", "chance": 30 }
+      ]
+    },
+    {
+      "item_id": "w_149_quietus",
+      "name": "Quietus",
+      "level": 19,
+      "type": "weapon",
+      "rarity": "unique",
+      "traits": ["martial", "magical", "deadly d8", "disarm", "finesse"],
+      "description": "The rapier of the last seal-breaker, so fine it bends in the wind and so sharp it does not need to be swung hard.",
+      "stats": { "damage": "1d6", "bonus": 3, "magic": true, "striking": "majorStriking" },
+      "special": "Potency and major striking runes: a +3 item bonus to attack rolls with it, and four damage dice.",
+      "drops": [
+        { "from": "c_last_seal_breaker", "chance": 50 }
+      ]
+    },
+    {
+      "item_id": "w_150_hammer_of_the_first_seal",
+      "name": "Hammer of the First Seal",
+      "level": 20,
+      "type": "weapon",
+      "rarity": "unique",
+      "traits": ["martial", "magical", "shove"],
+      "description": "The hammer that set the first seal in the valley, a thousand years before Millhaven. The Last Quiet King kept it to make sure nobody would set another.",
+      "stats": { "damage": "1d8", "bonus": 3, "magic": true, "striking": "majorStriking" },
+      "special": "Potency and major striking runes: a +3 item bonus to attack rolls with it, and four damage dice.",
+      "drops": [
+        { "from": "c_quiet_king", "chance": 100 }
+      ]
+    },
+    {
+      "item_id": "b_201_alchemists_fire_lesser",
+      "name": "Lesser Alchemist's Fire",
+      "level": 1,
+      "type": "bomb",
+      "price": 3,
+      "traits": ["consumable", "alchemical", "bomb", "fire", "splash"],
+      "description": "A clay flask of something that catches the moment air reaches it and keeps burning on whatever it lands on.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 1d8 fire damage on a hit, double on a critical, and 1 splash damage even on a miss.",
+      "use": { "bomb": "1d8", "splash": 1 }
+    },
+    {
+      "item_id": "b_202_alchemists_fire_moderate",
+      "name": "Moderate Alchemist's Fire",
+      "level": 3,
+      "type": "bomb",
+      "price": 10,
+      "traits": ["consumable", "alchemical", "bomb", "fire", "splash"],
+      "description": "A clay flask of something that catches the moment air reaches it and keeps burning on whatever it lands on.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 2d8 fire damage on a hit, double on a critical, and 2 splash damage even on a miss, with a +1 item bonus to the attack roll.",
+      "use": { "bomb": "2d8", "splash": 2, "bonus": 1 }
+    },
+    {
+      "item_id": "b_203_alchemists_fire_greater",
+      "name": "Greater Alchemist's Fire",
+      "level": 11,
+      "type": "bomb",
+      "price": 250,
+      "traits": ["consumable", "alchemical", "bomb", "fire", "splash"],
+      "description": "A clay flask of something that catches the moment air reaches it and keeps burning on whatever it lands on.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 3d8 fire damage on a hit, double on a critical, and 3 splash damage even on a miss, with a +2 item bonus to the attack roll.",
+      "use": { "bomb": "3d8", "splash": 3, "bonus": 2 }
+    },
+    {
+      "item_id": "b_204_alchemists_fire_major",
+      "name": "Major Alchemist's Fire",
+      "level": 17,
+      "type": "bomb",
+      "price": 3000,
+      "traits": ["consumable", "alchemical", "bomb", "fire", "splash"],
+      "description": "A clay flask of something that catches the moment air reaches it and keeps burning on whatever it lands on.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 4d8 fire damage on a hit, double on a critical, and 4 splash damage even on a miss, with a +3 item bonus to the attack roll.",
+      "use": { "bomb": "4d8", "splash": 4, "bonus": 3 }
+    },
+    {
+      "item_id": "b_205_acid_flask_lesser",
+      "name": "Lesser Acid Flask",
+      "level": 1,
+      "type": "bomb",
+      "price": 3,
+      "traits": ["consumable", "alchemical", "bomb", "acid", "splash"],
+      "description": "A stoppered flask of green acid, wrapped in straw so it does not eat the pack on the way.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 1d6 acid damage on a hit, double on a critical, and 1 splash damage even on a miss.",
+      "use": { "bomb": "1d6", "splash": 1 }
+    },
+    {
+      "item_id": "b_206_acid_flask_moderate",
+      "name": "Moderate Acid Flask",
+      "level": 3,
+      "type": "bomb",
+      "price": 10,
+      "traits": ["consumable", "alchemical", "bomb", "acid", "splash"],
+      "description": "A stoppered flask of green acid, wrapped in straw so it does not eat the pack on the way.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 2d6 acid damage on a hit, double on a critical, and 2 splash damage even on a miss, with a +1 item bonus to the attack roll.",
+      "use": { "bomb": "2d6", "splash": 2, "bonus": 1 }
+    },
+    {
+      "item_id": "b_207_acid_flask_greater",
+      "name": "Greater Acid Flask",
+      "level": 11,
+      "type": "bomb",
+      "price": 250,
+      "traits": ["consumable", "alchemical", "bomb", "acid", "splash"],
+      "description": "A stoppered flask of green acid, wrapped in straw so it does not eat the pack on the way.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 3d6 acid damage on a hit, double on a critical, and 3 splash damage even on a miss, with a +2 item bonus to the attack roll.",
+      "use": { "bomb": "3d6", "splash": 3, "bonus": 2 }
+    },
+    {
+      "item_id": "b_208_acid_flask_major",
+      "name": "Major Acid Flask",
+      "level": 17,
+      "type": "bomb",
+      "price": 3000,
+      "traits": ["consumable", "alchemical", "bomb", "acid", "splash"],
+      "description": "A stoppered flask of green acid, wrapped in straw so it does not eat the pack on the way.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 4d6 acid damage on a hit, double on a critical, and 4 splash damage even on a miss, with a +3 item bonus to the attack roll.",
+      "use": { "bomb": "4d6", "splash": 4, "bonus": 3 }
+    },
+    {
+      "item_id": "b_209_frost_vial_lesser",
+      "name": "Lesser Frost Vial",
+      "level": 1,
+      "type": "bomb",
+      "price": 3,
+      "traits": ["consumable", "alchemical", "bomb", "cold", "splash"],
+      "description": "A thin glass vial, frosted on the outside, that bursts into a cloud of rime.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 1d6 cold damage on a hit, double on a critical, and 1 splash damage even on a miss.",
+      "use": { "bomb": "1d6", "splash": 1 }
+    },
+    {
+      "item_id": "b_210_frost_vial_moderate",
+      "name": "Moderate Frost Vial",
+      "level": 3,
+      "type": "bomb",
+      "price": 10,
+      "traits": ["consumable", "alchemical", "bomb", "cold", "splash"],
+      "description": "A thin glass vial, frosted on the outside, that bursts into a cloud of rime.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 2d6 cold damage on a hit, double on a critical, and 2 splash damage even on a miss, with a +1 item bonus to the attack roll.",
+      "use": { "bomb": "2d6", "splash": 2, "bonus": 1 }
+    },
+    {
+      "item_id": "b_211_frost_vial_greater",
+      "name": "Greater Frost Vial",
+      "level": 11,
+      "type": "bomb",
+      "price": 250,
+      "traits": ["consumable", "alchemical", "bomb", "cold", "splash"],
+      "description": "A thin glass vial, frosted on the outside, that bursts into a cloud of rime.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 3d6 cold damage on a hit, double on a critical, and 3 splash damage even on a miss, with a +2 item bonus to the attack roll.",
+      "use": { "bomb": "3d6", "splash": 3, "bonus": 2 }
+    },
+    {
+      "item_id": "b_212_frost_vial_major",
+      "name": "Major Frost Vial",
+      "level": 17,
+      "type": "bomb",
+      "price": 3000,
+      "traits": ["consumable", "alchemical", "bomb", "cold", "splash"],
+      "description": "A thin glass vial, frosted on the outside, that bursts into a cloud of rime.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 4d6 cold damage on a hit, double on a critical, and 4 splash damage even on a miss, with a +3 item bonus to the attack roll.",
+      "use": { "bomb": "4d6", "splash": 4, "bonus": 3 }
+    },
+    {
+      "item_id": "b_213_bottled_lightning_lesser",
+      "name": "Lesser Bottled Lightning",
+      "level": 1,
+      "type": "bomb",
+      "price": 3,
+      "traits": ["consumable", "alchemical", "bomb", "electricity", "splash"],
+      "description": "A copper-capped bottle full of a storm, crackling faintly against the glass.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 1d6 electricity damage on a hit, double on a critical, and 1 splash damage even on a miss.",
+      "use": { "bomb": "1d6", "splash": 1 }
+    },
+    {
+      "item_id": "b_214_bottled_lightning_moderate",
+      "name": "Moderate Bottled Lightning",
+      "level": 3,
+      "type": "bomb",
+      "price": 10,
+      "traits": ["consumable", "alchemical", "bomb", "electricity", "splash"],
+      "description": "A copper-capped bottle full of a storm, crackling faintly against the glass.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 2d6 electricity damage on a hit, double on a critical, and 2 splash damage even on a miss, with a +1 item bonus to the attack roll.",
+      "use": { "bomb": "2d6", "splash": 2, "bonus": 1 }
+    },
+    {
+      "item_id": "b_215_bottled_lightning_greater",
+      "name": "Greater Bottled Lightning",
+      "level": 11,
+      "type": "bomb",
+      "price": 250,
+      "traits": ["consumable", "alchemical", "bomb", "electricity", "splash"],
+      "description": "A copper-capped bottle full of a storm, crackling faintly against the glass.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 3d6 electricity damage on a hit, double on a critical, and 3 splash damage even on a miss, with a +2 item bonus to the attack roll.",
+      "use": { "bomb": "3d6", "splash": 3, "bonus": 2 }
+    },
+    {
+      "item_id": "b_216_bottled_lightning_major",
+      "name": "Major Bottled Lightning",
+      "level": 17,
+      "type": "bomb",
+      "price": 3000,
+      "traits": ["consumable", "alchemical", "bomb", "electricity", "splash"],
+      "description": "A copper-capped bottle full of a storm, crackling faintly against the glass.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 4d6 electricity damage on a hit, double on a critical, and 4 splash damage even on a miss, with a +3 item bonus to the attack roll.",
+      "use": { "bomb": "4d6", "splash": 4, "bonus": 3 }
+    },
+    {
+      "item_id": "b_217_thunderstone_lesser",
+      "name": "Lesser Thunderstone",
+      "level": 1,
+      "type": "bomb",
+      "price": 3,
+      "traits": ["consumable", "alchemical", "bomb", "sonic", "splash"],
+      "description": "A stone the size of an egg that goes off like a thunderclap where it lands.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 1d4 sonic damage on a hit, double on a critical, and 1 splash damage even on a miss.",
+      "use": { "bomb": "1d4", "splash": 1 }
+    },
+    {
+      "item_id": "b_218_thunderstone_moderate",
+      "name": "Moderate Thunderstone",
+      "level": 3,
+      "type": "bomb",
+      "price": 10,
+      "traits": ["consumable", "alchemical", "bomb", "sonic", "splash"],
+      "description": "A stone the size of an egg that goes off like a thunderclap where it lands.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 2d4 sonic damage on a hit, double on a critical, and 2 splash damage even on a miss, with a +1 item bonus to the attack roll.",
+      "use": { "bomb": "2d4", "splash": 2, "bonus": 1 }
+    },
+    {
+      "item_id": "b_219_thunderstone_greater",
+      "name": "Greater Thunderstone",
+      "level": 11,
+      "type": "bomb",
+      "price": 250,
+      "traits": ["consumable", "alchemical", "bomb", "sonic", "splash"],
+      "description": "A stone the size of an egg that goes off like a thunderclap where it lands.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 3d4 sonic damage on a hit, double on a critical, and 3 splash damage even on a miss, with a +2 item bonus to the attack roll.",
+      "use": { "bomb": "3d4", "splash": 3, "bonus": 2 }
+    },
+    {
+      "item_id": "b_220_thunderstone_major",
+      "name": "Major Thunderstone",
+      "level": 17,
+      "type": "bomb",
+      "price": 3000,
+      "traits": ["consumable", "alchemical", "bomb", "sonic", "splash"],
+      "description": "A stone the size of an egg that goes off like a thunderclap where it lands.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 4d4 sonic damage on a hit, double on a critical, and 4 splash damage even on a miss, with a +3 item bonus to the attack roll.",
+      "use": { "bomb": "4d4", "splash": 4, "bonus": 3 }
+    },
+    {
+      "item_id": "b_221_blight_bomb_lesser",
+      "name": "Lesser Blight Bomb",
+      "level": 1,
+      "type": "bomb",
+      "price": 3,
+      "traits": ["consumable", "alchemical", "bomb", "poison", "splash"],
+      "description": "A fragile gourd of yellow spores that bursts into choking dust.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 1d6 poison damage on a hit, double on a critical, and 1 splash damage even on a miss.",
+      "use": { "bomb": "1d6", "splash": 1 }
+    },
+    {
+      "item_id": "b_222_blight_bomb_moderate",
+      "name": "Moderate Blight Bomb",
+      "level": 3,
+      "type": "bomb",
+      "price": 10,
+      "traits": ["consumable", "alchemical", "bomb", "poison", "splash"],
+      "description": "A fragile gourd of yellow spores that bursts into choking dust.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 2d6 poison damage on a hit, double on a critical, and 2 splash damage even on a miss, with a +1 item bonus to the attack roll.",
+      "use": { "bomb": "2d6", "splash": 2, "bonus": 1 }
+    },
+    {
+      "item_id": "b_223_blight_bomb_greater",
+      "name": "Greater Blight Bomb",
+      "level": 11,
+      "type": "bomb",
+      "price": 250,
+      "traits": ["consumable", "alchemical", "bomb", "poison", "splash"],
+      "description": "A fragile gourd of yellow spores that bursts into choking dust.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 3d6 poison damage on a hit, double on a critical, and 3 splash damage even on a miss, with a +2 item bonus to the attack roll.",
+      "use": { "bomb": "3d6", "splash": 3, "bonus": 2 }
+    },
+    {
+      "item_id": "b_224_blight_bomb_major",
+      "name": "Major Blight Bomb",
+      "level": 17,
+      "type": "bomb",
+      "price": 3000,
+      "traits": ["consumable", "alchemical", "bomb", "poison", "splash"],
+      "description": "A fragile gourd of yellow spores that bursts into choking dust.",
+      "stats": { "magic": false },
+      "special": "Thrown, for 1 action, at an enemy no further than near: 4d6 poison damage on a hit, double on a critical, and 4 splash damage even on a miss, with a +3 item bonus to the attack roll.",
+      "use": { "bomb": "4d6", "splash": 4, "bonus": 3 }
+    },
+    {
+      "item_id": "e_231_elixir_of_life_minor",
+      "name": "Minor Elixir of Life",
+      "level": 1,
+      "type": "elixir",
+      "price": 3,
+      "traits": ["consumable", "alchemical", "elixir", "healing"],
+      "description": "A red, faintly fizzing draught that tastes of iron and pepper and knits flesh as it goes down.",
+      "stats": { "magic": false },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 1d6 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "1d6" }
+    },
+    {
+      "item_id": "e_232_elixir_of_life_lesser",
+      "name": "Lesser Elixir of Life",
+      "level": 5,
+      "type": "elixir",
+      "price": 30,
+      "traits": ["consumable", "alchemical", "elixir", "healing"],
+      "description": "A red, faintly fizzing draught that tastes of iron and pepper and knits flesh as it goes down.",
+      "stats": { "magic": false },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 3d6+6 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "3d6+6" }
+    },
+    {
+      "item_id": "e_233_elixir_of_life_moderate",
+      "name": "Moderate Elixir of Life",
+      "level": 9,
+      "type": "elixir",
+      "price": 150,
+      "traits": ["consumable", "alchemical", "elixir", "healing"],
+      "description": "A red, faintly fizzing draught that tastes of iron and pepper and knits flesh as it goes down.",
+      "stats": { "magic": false },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 5d6+12 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "5d6+12" }
+    },
+    {
+      "item_id": "e_234_elixir_of_life_greater",
+      "name": "Greater Elixir of Life",
+      "level": 13,
+      "type": "elixir",
+      "price": 600,
+      "traits": ["consumable", "alchemical", "elixir", "healing"],
+      "description": "A red, faintly fizzing draught that tastes of iron and pepper and knits flesh as it goes down.",
+      "stats": { "magic": false },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 7d6+18 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "7d6+18" }
+    },
+    {
+      "item_id": "e_235_elixir_of_life_major",
+      "name": "Major Elixir of Life",
+      "level": 15,
+      "type": "elixir",
+      "price": 1500,
+      "traits": ["consumable", "alchemical", "elixir", "healing"],
+      "description": "A red, faintly fizzing draught that tastes of iron and pepper and knits flesh as it goes down.",
+      "stats": { "magic": false },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 8d6+21 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "8d6+21" }
+    },
+    {
+      "item_id": "e_236_elixir_of_life_true",
+      "name": "True Elixir of Life",
+      "level": 19,
+      "type": "elixir",
+      "price": 30000,
+      "traits": ["consumable", "alchemical", "elixir", "healing"],
+      "description": "A red, faintly fizzing draught that tastes of iron and pepper and knits flesh as it goes down.",
+      "stats": { "magic": false },
+      "special": "Drink it, or get it into somebody within reach, for 1 action: it restores 10d6+27 Hit Points, and gets somebody who is down back on their feet.",
+      "use": { "heal": "10d6+27" }
+    },
+    {
+      "item_id": "sc_241_scroll_heal_1",
+      "name": "Scroll of Heal (1st rank)",
+      "level": 1,
+      "type": "scroll",
+      "price": 4,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll pale vellum, the words in the gold ink of Ashkyr's temples.",
+      "stats": { "magic": true },
+      "special": "Casts Heal at 1st rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Heal", "rank": 1 }
+    },
+    {
+      "item_id": "sc_242_scroll_heal_3",
+      "name": "Scroll of Heal (3rd rank)",
+      "level": 5,
+      "type": "scroll",
+      "price": 30,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll pale vellum, the words in the gold ink of Ashkyr's temples.",
+      "stats": { "magic": true },
+      "special": "Casts Heal at 3rd rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Heal", "rank": 3 }
+    },
+    {
+      "item_id": "sc_243_scroll_heal_5",
+      "name": "Scroll of Heal (5th rank)",
+      "level": 9,
+      "type": "scroll",
+      "price": 150,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll pale vellum, the words in the gold ink of Ashkyr's temples.",
+      "stats": { "magic": true },
+      "special": "Casts Heal at 5th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Heal", "rank": 5 }
+    },
+    {
+      "item_id": "sc_244_scroll_heal_7",
+      "name": "Scroll of Heal (7th rank)",
+      "level": 13,
+      "type": "scroll",
+      "price": 600,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll pale vellum, the words in the gold ink of Ashkyr's temples.",
+      "stats": { "magic": true },
+      "special": "Casts Heal at 7th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Heal", "rank": 7 }
+    },
+    {
+      "item_id": "sc_245_scroll_heal_9",
+      "name": "Scroll of Heal (9th rank)",
+      "level": 17,
+      "type": "scroll",
+      "price": 3000,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll pale vellum, the words in the gold ink of Ashkyr's temples.",
+      "stats": { "magic": true },
+      "special": "Casts Heal at 9th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Heal", "rank": 9 }
+    },
+    {
+      "item_id": "sc_246_scroll_fireball_3",
+      "name": "Scroll of Fireball (3rd rank)",
+      "level": 5,
+      "type": "scroll",
+      "price": 30,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll scorched at the edges before anyone has read it.",
+      "stats": { "magic": true },
+      "special": "Casts Fireball at 3rd rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Fireball", "rank": 3 }
+    },
+    {
+      "item_id": "sc_247_scroll_fireball_5",
+      "name": "Scroll of Fireball (5th rank)",
+      "level": 9,
+      "type": "scroll",
+      "price": 150,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll scorched at the edges before anyone has read it.",
+      "stats": { "magic": true },
+      "special": "Casts Fireball at 5th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Fireball", "rank": 5 }
+    },
+    {
+      "item_id": "sc_248_scroll_fireball_7",
+      "name": "Scroll of Fireball (7th rank)",
+      "level": 13,
+      "type": "scroll",
+      "price": 600,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll scorched at the edges before anyone has read it.",
+      "stats": { "magic": true },
+      "special": "Casts Fireball at 7th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Fireball", "rank": 7 }
+    },
+    {
+      "item_id": "sc_249_scroll_fireball_9",
+      "name": "Scroll of Fireball (9th rank)",
+      "level": 17,
+      "type": "scroll",
+      "price": 3000,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll scorched at the edges before anyone has read it.",
+      "stats": { "magic": true },
+      "special": "Casts Fireball at 9th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Fireball", "rank": 9 }
+    },
+    {
+      "item_id": "sc_250_scroll_lightning_bolt_3",
+      "name": "Scroll of Lightning Bolt (3rd rank)",
+      "level": 5,
+      "type": "scroll",
+      "price": 30,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll that makes the hair on your arm stand up.",
+      "stats": { "magic": true },
+      "special": "Casts Lightning Bolt at 3rd rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Lightning Bolt", "rank": 3 }
+    },
+    {
+      "item_id": "sc_251_scroll_lightning_bolt_6",
+      "name": "Scroll of Lightning Bolt (6th rank)",
+      "level": 11,
+      "type": "scroll",
+      "price": 300,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll that makes the hair on your arm stand up.",
+      "stats": { "magic": true },
+      "special": "Casts Lightning Bolt at 6th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Lightning Bolt", "rank": 6 }
+    },
+    {
+      "item_id": "sc_252_scroll_breathe_fire_1",
+      "name": "Scroll of Breathe Fire (1st rank)",
+      "level": 1,
+      "type": "scroll",
+      "price": 4,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll that smells of a blown-out lamp.",
+      "stats": { "magic": true },
+      "special": "Casts Breathe Fire at 1st rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Breathe Fire", "rank": 1 }
+    },
+    {
+      "item_id": "sc_253_scroll_breathe_fire_2",
+      "name": "Scroll of Breathe Fire (2nd rank)",
+      "level": 3,
+      "type": "scroll",
+      "price": 12,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll that smells of a blown-out lamp.",
+      "stats": { "magic": true },
+      "special": "Casts Breathe Fire at 2nd rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Breathe Fire", "rank": 2 }
+    },
+    {
+      "item_id": "sc_254_scroll_chilling_spray_1",
+      "name": "Scroll of Chilling Spray (1st rank)",
+      "level": 1,
+      "type": "scroll",
+      "price": 4,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll cold to the touch, with frost in the creases.",
+      "stats": { "magic": true },
+      "special": "Casts Chilling Spray at 1st rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Chilling Spray", "rank": 1 }
+    },
+    {
+      "item_id": "sc_255_scroll_acid_grip_2",
+      "name": "Scroll of Acid Grip (2nd rank)",
+      "level": 3,
+      "type": "scroll",
+      "price": 12,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll whose ink has eaten little holes in the page.",
+      "stats": { "magic": true },
+      "special": "Casts Acid Grip at 2nd rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Acid Grip", "rank": 2 }
+    },
+    {
+      "item_id": "sc_256_scroll_acid_grip_4",
+      "name": "Scroll of Acid Grip (4th rank)",
+      "level": 7,
+      "type": "scroll",
+      "price": 70,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll whose ink has eaten little holes in the page.",
+      "stats": { "magic": true },
+      "special": "Casts Acid Grip at 4th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Acid Grip", "rank": 4 }
+    },
+    {
+      "item_id": "sc_257_scroll_horizon_thunder_sphere_2",
+      "name": "Scroll of Horizon Thunder Sphere (2nd rank)",
+      "level": 3,
+      "type": "scroll",
+      "price": 12,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll that hums when it is unrolled.",
+      "stats": { "magic": true },
+      "special": "Casts Horizon Thunder Sphere at 2nd rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Horizon Thunder Sphere", "rank": 2 }
+    },
+    {
+      "item_id": "sc_258_scroll_cone_of_cold_5",
+      "name": "Scroll of Cone of Cold (5th rank)",
+      "level": 9,
+      "type": "scroll",
+      "price": 150,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll stiff with frost that never melts.",
+      "stats": { "magic": true },
+      "special": "Casts Cone of Cold at 5th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Cone of Cold", "rank": 5 }
+    },
+    {
+      "item_id": "sc_259_scroll_eclipse_burst_7",
+      "name": "Scroll of Eclipse Burst (7th rank)",
+      "level": 13,
+      "type": "scroll",
+      "price": 600,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll written in silver on black, hard to look at for long.",
+      "stats": { "magic": true },
+      "special": "Casts Eclipse Burst at 7th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Eclipse Burst", "rank": 7 }
+    },
+    {
+      "item_id": "sc_260_scroll_polar_ray_8",
+      "name": "Scroll of Polar Ray (8th rank)",
+      "level": 15,
+      "type": "scroll",
+      "price": 1300,
+      "traits": ["consumable", "magical", "scroll"],
+      "description": "A scroll blue-white, and so cold it burns.",
+      "stats": { "magic": true },
+      "special": "Casts Polar Ray at 8th rank once, and crumbles. A caster casts it with their own spell attack and DC, anyone else with the scroll's.",
+      "use": { "spell": "Polar Ray", "rank": 8 }
+    },
+    {
+      "item_id": "wd_261_wand_of_heal_1",
+      "name": "Wand of Heal (1st rank)",
+      "level": 3,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of pale ash wood bound in gold wire, warm in the hand.",
+      "stats": { "magic": true },
+      "special": "Casts Heal at 1st rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Heal", "rank": 1, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_262_wand_of_heal_3",
+      "name": "Wand of Heal (3rd rank)",
+      "level": 7,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of pale ash wood bound in gold wire, warm in the hand.",
+      "stats": { "magic": true },
+      "special": "Casts Heal at 3rd rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Heal", "rank": 3, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_263_wand_of_heal_5",
+      "name": "Wand of Heal (5th rank)",
+      "level": 11,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of pale ash wood bound in gold wire, warm in the hand.",
+      "stats": { "magic": true },
+      "special": "Casts Heal at 5th rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Heal", "rank": 5, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_264_wand_of_heal_7",
+      "name": "Wand of Heal (7th rank)",
+      "level": 15,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of pale ash wood bound in gold wire, warm in the hand.",
+      "stats": { "magic": true },
+      "special": "Casts Heal at 7th rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Heal", "rank": 7, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_265_wand_of_fireball_3",
+      "name": "Wand of Fireball (3rd rank)",
+      "level": 7,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of blackened oak with a red stone set in its tip.",
+      "stats": { "magic": true },
+      "special": "Casts Fireball at 3rd rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Fireball", "rank": 3, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_266_wand_of_fireball_5",
+      "name": "Wand of Fireball (5th rank)",
+      "level": 11,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of blackened oak with a red stone set in its tip.",
+      "stats": { "magic": true },
+      "special": "Casts Fireball at 5th rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Fireball", "rank": 5, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_267_wand_of_fireball_9",
+      "name": "Wand of Fireball (9th rank)",
+      "level": 19,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of blackened oak with a red stone set in its tip.",
+      "stats": { "magic": true },
+      "special": "Casts Fireball at 9th rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Fireball", "rank": 9, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_268_wand_of_lightning_bolt_3",
+      "name": "Wand of Lightning Bolt (3rd rank)",
+      "level": 7,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of copper-banded, with a spark that jumps to your rings.",
+      "stats": { "magic": true },
+      "special": "Casts Lightning Bolt at 3rd rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Lightning Bolt", "rank": 3, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_269_wand_of_lightning_bolt_6",
+      "name": "Wand of Lightning Bolt (6th rank)",
+      "level": 13,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of copper-banded, with a spark that jumps to your rings.",
+      "stats": { "magic": true },
+      "special": "Casts Lightning Bolt at 6th rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Lightning Bolt", "rank": 6, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_270_wand_of_breathe_fire_1",
+      "name": "Wand of Breathe Fire (1st rank)",
+      "level": 3,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of charred at one end, as if it had been used as a poker.",
+      "stats": { "magic": true },
+      "special": "Casts Breathe Fire at 1st rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Breathe Fire", "rank": 1, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_271_wand_of_breathe_fire_2",
+      "name": "Wand of Breathe Fire (2nd rank)",
+      "level": 5,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of charred at one end, as if it had been used as a poker.",
+      "stats": { "magic": true },
+      "special": "Casts Breathe Fire at 2nd rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Breathe Fire", "rank": 2, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_272_wand_of_chilling_spray_1",
+      "name": "Wand of Chilling Spray (1st rank)",
+      "level": 3,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of white birch, rimed with frost.",
+      "stats": { "magic": true },
+      "special": "Casts Chilling Spray at 1st rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Chilling Spray", "rank": 1, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_273_wand_of_horizon_thunder_sphere_2",
+      "name": "Wand of Horizon Thunder Sphere (2nd rank)",
+      "level": 5,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of brass, humming faintly.",
+      "stats": { "magic": true },
+      "special": "Casts Horizon Thunder Sphere at 2nd rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Horizon Thunder Sphere", "rank": 2, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_274_wand_of_acid_grip_2",
+      "name": "Wand of Acid Grip (2nd rank)",
+      "level": 5,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of green glass in a pitted silver sleeve.",
+      "stats": { "magic": true },
+      "special": "Casts Acid Grip at 2nd rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Acid Grip", "rank": 2, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_275_wand_of_cone_of_cold_5",
+      "name": "Wand of Cone of Cold (5th rank)",
+      "level": 11,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of bone-white and so cold it sticks to the skin.",
+      "stats": { "magic": true },
+      "special": "Casts Cone of Cold at 5th rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Cone of Cold", "rank": 5, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_276_wand_of_eclipse_burst_7",
+      "name": "Wand of Eclipse Burst (7th rank)",
+      "level": 15,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of jet, swallowing the light around it.",
+      "stats": { "magic": true },
+      "special": "Casts Eclipse Burst at 7th rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Eclipse Burst", "rank": 7, "per_day": 1 }
+    },
+    {
+      "item_id": "wd_277_wand_of_polar_ray_8",
+      "name": "Wand of Polar Ray (8th rank)",
+      "level": 17,
+      "type": "wand",
+      "traits": ["magical", "wand"],
+      "description": "A wand of a rod of clear ice that does not melt.",
+      "stats": { "magic": true },
+      "special": "Casts Polar Ray at 8th rank once a day, and is ready again after a night's rest. A caster casts it with their own spell attack and DC, anyone else with the wand's.",
+      "use": { "spell": "Polar Ray", "rank": 8, "per_day": 1 }
+    },
+    {
+      "item_id": "st_281_staff_of_fire",
+      "name": "Staff of Fire",
+      "level": 3,
+      "type": "staff",
+      "traits": ["magical", "staff"],
+      "description": "A blackened oak staff, its head carved like a candle flame and always warm.",
+      "stats": { "magic": true },
+      "special": "Holds Ignition (cantrip), Breathe Fire (1st). 2 charges a day, back after a night's rest: a spell costs as many as its rank, a cantrip none.",
+      "use": {
+        "spells": [
+          { "spell": "Ignition", "rank": 0 },
+          { "spell": "Breathe Fire", "rank": 1 }
+        ],
+        "charges": 2
+      }
+    },
+    {
+      "item_id": "st_282_greater_staff_of_fire",
+      "name": "Greater Staff of Fire",
+      "level": 8,
+      "type": "staff",
+      "traits": ["magical", "staff"],
+      "description": "The same blackened oak, bound in red iron, with a coal that never goes out set in the flame.",
+      "stats": { "magic": true },
+      "special": "Holds Ignition (cantrip), Breathe Fire (2nd), Fireball (3rd). 4 charges a day, back after a night's rest: a spell costs as many as its rank, a cantrip none.",
+      "use": {
+        "spells": [
+          { "spell": "Ignition", "rank": 0 },
+          { "spell": "Breathe Fire", "rank": 2 },
+          { "spell": "Fireball", "rank": 3 }
+        ],
+        "charges": 4
+      }
+    },
+    {
+      "item_id": "st_283_major_staff_of_fire",
+      "name": "Major Staff of Fire",
+      "level": 12,
+      "type": "staff",
+      "traits": ["magical", "staff"],
+      "description": "An iron staff with a living flame caged in its head. It singes the ceiling of any room it is kept in.",
+      "stats": { "magic": true },
+      "special": "Holds Ignition (cantrip), Fireball (3rd), Fireball (5th). 6 charges a day, back after a night's rest: a spell costs as many as its rank, a cantrip none.",
+      "use": {
+        "spells": [
+          { "spell": "Ignition", "rank": 0 },
+          { "spell": "Fireball", "rank": 3 },
+          { "spell": "Fireball", "rank": 5 }
+        ],
+        "charges": 6
+      }
+    },
+    {
+      "item_id": "st_284_staff_of_healing",
+      "name": "Staff of Healing",
+      "level": 4,
+      "type": "staff",
+      "traits": ["magical", "staff"],
+      "description": "A shepherd's crook of pale ash, carved with Ashkyr's sheaf, worn smooth by hands that were not the healer's.",
+      "stats": { "magic": true },
+      "special": "Holds Heal (1st). 2 charges a day, back after a night's rest: a spell costs as many as its rank, a cantrip none.",
+      "use": {
+        "spells": [
+          { "spell": "Heal", "rank": 1 }
+        ],
+        "charges": 2
+      }
+    },
+    {
+      "item_id": "st_285_greater_staff_of_healing",
+      "name": "Greater Staff of Healing",
+      "level": 8,
+      "type": "staff",
+      "traits": ["magical", "staff"],
+      "description": "The temple's own crook, gold-capped, lent out to those who will bring it back.",
+      "stats": { "magic": true },
+      "special": "Holds Heal (1st), Heal (3rd). 4 charges a day, back after a night's rest: a spell costs as many as its rank, a cantrip none.",
+      "use": {
+        "spells": [
+          { "spell": "Heal", "rank": 1 },
+          { "spell": "Heal", "rank": 3 }
+        ],
+        "charges": 4
+      }
+    },
+    {
+      "item_id": "st_286_major_staff_of_healing",
+      "name": "Major Staff of Healing",
+      "level": 12,
+      "type": "staff",
+      "traits": ["magical", "staff"],
+      "description": "A tall staff of white wood that puts out green shoots in spring, wherever it is.",
+      "stats": { "magic": true },
+      "special": "Holds Heal (3rd), Heal (5th). 6 charges a day, back after a night's rest: a spell costs as many as its rank, a cantrip none.",
+      "use": {
+        "spells": [
+          { "spell": "Heal", "rank": 3 },
+          { "spell": "Heal", "rank": 5 }
+        ],
+        "charges": 6
+      }
+    },
+    {
+      "item_id": "st_287_true_staff_of_healing",
+      "name": "True Staff of Healing",
+      "level": 16,
+      "type": "staff",
+      "rarity": "uncommon",
+      "traits": ["magical", "staff"],
+      "description": "The crook of the first sister of Ashkyr in the valley. The dying who touch it say they hear bread being broken.",
+      "stats": { "magic": true },
+      "special": "Holds Heal (5th), Heal (7th). 8 charges a day, back after a night's rest: a spell costs as many as its rank, a cantrip none.",
+      "use": {
+        "spells": [
+          { "spell": "Heal", "rank": 5 },
+          { "spell": "Heal", "rank": 7 }
+        ],
+        "charges": 8
+      }
+    },
+    {
+      "item_id": "st_288_stormwardens_staff",
+      "name": "Stormwarden's Staff",
+      "level": 10,
+      "type": "staff",
+      "rarity": "uncommon",
+      "traits": ["magical", "staff"],
+      "description": "A copper-shod staff of lightning-struck oak, carried by the wardens who keep the capital's roofs from burning in the summer storms.",
+      "stats": { "magic": true },
+      "special": "Holds Electric Arc (cantrip), Lightning Bolt (3rd), Lightning Bolt (4th). 5 charges a day, back after a night's rest: a spell costs as many as its rank, a cantrip none.",
+      "use": {
+        "spells": [
+          { "spell": "Electric Arc", "rank": 0 },
+          { "spell": "Lightning Bolt", "rank": 3 },
+          { "spell": "Lightning Bolt", "rank": 4 }
+        ],
+        "charges": 5
+      }
+    },
+    {
+      "item_id": "st_289_rimewood_staff",
+      "name": "Rimewood Staff",
+      "level": 14,
+      "type": "staff",
+      "rarity": "uncommon",
+      "traits": ["magical", "staff"],
+      "description": "White wood from a tree that grew in the Rift, cold enough to ache. Frost spreads from wherever its foot is set down.",
+      "stats": { "magic": true },
+      "special": "Holds Chilling Spray (2nd), Cone of Cold (5th), Cone of Cold (6th). 7 charges a day, back after a night's rest: a spell costs as many as its rank, a cantrip none.",
+      "use": {
+        "spells": [
+          { "spell": "Chilling Spray", "rank": 2 },
+          { "spell": "Cone of Cold", "rank": 5 },
+          { "spell": "Cone of Cold", "rank": 6 }
+        ],
+        "charges": 7
+      }
+    },
+    {
+      "item_id": "st_290_staff_of_the_unmaking",
+      "name": "Staff of the Unmaking",
+      "level": 18,
+      "type": "staff",
+      "rarity": "rare",
+      "traits": ["magical", "staff"],
+      "description": "The hierophants' rod of office: black, smooth, and hard to see the end of, as if it went on somewhere you could not.",
+      "stats": { "magic": true },
+      "special": "Holds Eclipse Burst (7th), Polar Ray (8th). 9 charges a day, back after a night's rest: a spell costs as many as its rank, a cantrip none.",
+      "use": {
+        "spells": [
+          { "spell": "Eclipse Burst", "rank": 7 },
+          { "spell": "Polar Ray", "rank": 8 }
+        ],
+        "charges": 9
+      },
+      "drops": [
+        { "from": "c_entropy_hierophant", "chance": 25 }
+      ]
     }
   ]
 }

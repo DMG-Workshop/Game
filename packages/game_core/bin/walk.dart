@@ -137,6 +137,7 @@ Future<void> main(List<String> args) async {
       roller: DiceRoller(seed),
       roomId: options['room'],
       hour: int.tryParse(options['hour'] ?? '') ?? 8,
+      scaleFights: !options.containsKey('fights-as-written'),
       // Starting from a given state, for trying a later part of the campaign
       // without replaying everything up to it.
       flags: (options['flags'] ?? '')
@@ -322,6 +323,8 @@ usage: walk [options]
   --resume=FILE      Pick up a saved game; it remembers its characters,
                      and a sheet re-imported a level up is settled on load
   --gold=N           Start with N more gold, to see who comes for it
+  --fights-as-written  Fight every encounter as written for four, however
+                     few you are (normally fewer and weaker foes come)
   --content=DIR      Rules content (default: $_defaultContent)
   --commands=a,b,c   Play a scripted sequence instead of reading stdin
   --help             Show this message

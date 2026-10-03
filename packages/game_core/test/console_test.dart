@@ -16,14 +16,21 @@ late SpellBook _spells;
 /// A command written "#words" answers with the number of the latest menu
 /// entry containing those words, so a test says what it picks rather than
 /// where that happens to sit in the list.
+///
+/// Fights come as written, for four, unless [scaled]: the orders on offer
+/// are easier to see with two thralls in the room than with one.
 Future<String> _play(String room, List<String> commands,
-    {int seed = 1, int gold = 0, List<String> carrying = const []}) async {
+    {int seed = 1,
+    int gold = 0,
+    List<String> carrying = const [],
+    bool scaled = false}) async {
   final world = WorldSession(
     campaign: _campaign,
     actors: [SessionActor(id: 'korash', character: loadKorash())],
     roller: DiceRoller(seed),
     roomId: room,
     spells: _spells,
+    scaleFights: scaled,
   );
   if (gold > 0) world.inventory.earn(gold * 100);
   for (final item in carrying) {
@@ -172,6 +179,15 @@ void main() {
     });
   });
 
+  test('a fight cut down for a smaller party says so', () async {
+    final log = await _play('WW_001_Edge', ['west'], seed: 3, scaled: true);
+    expect(
+        log.replaceAll(RegExp(r'\s+'), ' '),
+        contains('(Written for four. Against your party of one, 1 of the 2 '
+            'Hollow Thralls comes, and weakened.)'));
+    expect(log, contains('Strike Weak Hollow Thrall'));
+  });
+
   group('a fight', () {
     test('offers every order as a number', () async {
       final log = await _play('WW_001_Edge', ['west'], seed: 3);
@@ -293,8 +309,15 @@ void main() {
     });
 
     test('Hale will sell a plan of the city across his desk', () async {
-      final log = await _play('VC_003_GrandLibrary',
-          ['talk hale', '#empty sections', '#plan of the city', '1', '0'],
+      final log = await _play(
+          'VC_003_GrandLibrary',
+          [
+            'talk hale',
+            '#empty sections',
+            '#plan of the city',
+            '#A Plan of Valorheim',
+            '0',
+          ],
           gold: 20);
       expect(log, contains("The Library's Copying Desk"));
       expect(log, contains('You buy A Plan of Valorheim for 12 gp'));
@@ -322,5 +345,66 @@ void main() {
     final log = await _play('MH_004_Temple',
         ['talk aldus', '1', '1', '1', '1', '1', 'talk aldus', '1', '0']);
     expect(log, contains('(Nothing more to ask Brother Aldus for now.)'));
+  });
+
+  group('companions', () {
+    test('asked to join, show their numbers and their fee, then come along',
+        () async {
+      final log = await _play('MH_003_Tavern', [
+        'who',
+        'talk bren',
+        '#Ask her to join you',
+        '#Take Bren on',
+        'party',
+      ]);
+      expect(log, contains('(would join: Fighter, 20 gp)'));
+      expect(log, contains('Bren Cask — Human Fighter, level 6'));
+      expect(log, contains('Strike +17 2d12+4  (+1 Striking Greatsword)'));
+      expect(log, contains('Asks 20 gp to join.'));
+      expect(log, contains('Bren Cask joins the party.'));
+      expect(log, contains('The party  (2 of 4)'));
+      expect(log, contains('(companion)'));
+    });
+
+    test('no is no, and the talk goes on', () async {
+      final log = await _play('MH_003_Tavern', [
+        'talk bren',
+        '#Ask her to join you',
+        '0',
+        '0',
+        'party',
+      ]);
+      expect(log, isNot(contains('joins the party')));
+      expect(log, contains('The party  (1 of 4)'));
+    });
+
+    test('a cleric shows what she can cast before she is hired', () async {
+      final log = await _play('MH_004_Temple', ['recruit wren']);
+      expect(log, contains('Spells: Heal x14 (up to 3rd rank)'));
+      expect(log, contains('Cantrips: Daze, Void Warp'));
+      expect(log, contains('Take Wren on  (15 gp)'));
+    });
+
+    test('are parted with from the party menu, and go home', () async {
+      final log = await _play('MH_003_Tavern', [
+        'recruit',
+        '1',
+        'party',
+        '#Bren Cask',
+        '#Part ways',
+        '1',
+        'who',
+      ]);
+      expect(log, contains('Bren Cask joins the party.'));
+      expect(log, contains('Bren Cask leaves the party, back to'));
+      expect(log, contains('(would join: Fighter)\n'),
+          reason: 'already paid: no fee the second time');
+    });
+
+    test('an imported character has no door on the party menu', () async {
+      final log = await _play('MH_003_Tavern', ['party', '1']);
+      expect(log, contains('Korash Blackearth — Orc Magus, level 6'));
+      expect(log, isNot(contains('Part ways')));
+    });
   });
 }

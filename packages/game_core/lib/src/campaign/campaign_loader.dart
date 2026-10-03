@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:pf2e_core/pf2e_core.dart';
 
 import '../scene/adventure_loader.dart';
+import '../party/companion.dart';
 import '../party/experience.dart';
 import '../scene/scene.dart';
 import 'arc.dart';
@@ -211,6 +212,7 @@ class CampaignLoader {
             e.key.trim().toLowerCase(): e.value.toString(),
         },
         route: _readRoute(raw['route'], id),
+        recruit: _readRecruit(raw['recruit'], id),
         barks: [
           for (final b in _list(raw['barks']))
             if (b is Map)
@@ -223,6 +225,26 @@ class CampaignLoader {
       ));
     }
     return NpcDirectory(npcs);
+  }
+
+  /// Who an NPC would be in the party. The class has to be one a companion
+  /// can be built as, since the build is all the engine has to go on.
+  Recruit? _readRecruit(Object? raw, String npcId) {
+    if (raw is! Map) return null;
+    final m = raw.cast<String, Object?>();
+    final className = _string(m['class'], 'recruit class of $npcId');
+    if (CompanionKit.forClass(className) == null) {
+      throw CampaignFormatException('$npcId would join as a "$className", '
+          'and a companion can only be '
+          '${CompanionKit.classes.map((k) => k.className).join(', ')}.');
+    }
+    return Recruit(
+      className: className,
+      ancestry: _string(m['ancestry'], 'recruit ancestry of $npcId'),
+      heritage: _optional(m['heritage']) ?? '',
+      background: _optional(m['background']) ?? '',
+      fee: _readPrice(m['fee_gp'], 'hiring $npcId') ?? 0,
+    );
   }
 
   NpcRoute? _readRoute(Object? raw, String npcId) {
@@ -285,25 +307,68 @@ class CampaignLoader {
     return GearTable(items);
   }
 
-  /// Reads what using an item up does.
+  /// Reads what using an item does.
   ///
-  /// Only a consumable is used up, and a healing roll the engine cannot read
-  /// is a typo worth hearing about now rather than the first time somebody
-  /// is bleeding and reaches for it.
+  /// A draught heals and a bomb is thrown, and either is used up, so it has
+  /// to be consumable. A scroll is used up too; a wand (`per_day`) and a
+  /// staff (`charges`) are not. A roll the engine cannot read is a typo worth
+  /// hearing about now rather than the first time somebody is bleeding and
+  /// reaches for it.
   ItemUse? _readUse(Object? raw, String itemId, List<String> traits) {
     if (raw == null) return null;
     if (raw is! Map) {
       throw CampaignFormatException(
           'Item "$itemId" has a "use" that is not an object.');
     }
-    if (!traits.any((t) => t.trim().toLowerCase() == 'consumable')) {
-      throw CampaignFormatException('Item "$itemId" can be used up, but is not '
+    final consumable =
+        traits.any((t) => t.trim().toLowerCase() == 'consumable');
+    DamageExpression? roll(String key) {
+      final written = raw[key];
+      if (written == null) return null;
+      return DamageExpression.tryParse(written.toString()) ??
+          (throw CampaignFormatException('Item "$itemId" has a $key of '
+              '"$written", which is not a roll the engine can read.'));
+    }
+
+    final heal = roll('heal');
+    final bomb = roll('bomb');
+    final spells = [
+      if (raw['spell'] != null)
+        HeldSpell(_string(raw['spell'], 'spell of $itemId'),
+            _int(raw['rank'], fallback: 1)),
+      for (final s in _list(raw['spells']))
+        if (s is Map)
+          HeldSpell(_string(s['spell'], 'spell of $itemId'),
+              _int(s['rank'], fallback: 1)),
+    ];
+    final perDay = _int(raw['per_day'], fallback: 0);
+    final charges = _int(raw['charges'], fallback: 0);
+
+    final kinds = [heal, bomb, if (spells.isNotEmpty) spells]
+        .where((k) => k != null)
+        .length;
+    if (kinds != 1) {
+      throw CampaignFormatException('Item "$itemId" has to heal, be thrown, '
+          'or cast a spell: one of them.');
+    }
+    final usedUp = spells.isEmpty || (perDay == 0 && charges == 0);
+    if (usedUp && !consumable) {
+      throw CampaignFormatException('Item "$itemId" is used up, but is not '
           'consumable.');
     }
-    final heal = DamageExpression.tryParse(_optional(raw['heal']) ?? '');
-    if (heal == null) {
-      throw CampaignFormatException('Item "$itemId" heals "${raw['heal']}", '
-          'which is not a roll the engine can read.');
+    if (!usedUp && consumable) {
+      throw CampaignFormatException('Item "$itemId" comes back each day, so '
+          'it is not consumable.');
+    }
+    for (final s in spells) {
+      if (s.rank < 0 || s.rank > 10) {
+        throw CampaignFormatException('Item "$itemId" casts ${s.name} at '
+            'rank ${s.rank}, which is not 0 to 10.');
+      }
+      if (charges > 0 && s.rank > charges) {
+        throw CampaignFormatException('Item "$itemId" casts ${s.name} at '
+            'rank ${s.rank}, more than its $charges charges.');
+      }
     }
     // A turn is three actions, so nothing can take more.
     final actions = _int(raw['actions'], fallback: 1);
@@ -311,7 +376,16 @@ class CampaignLoader {
       throw CampaignFormatException('Item "$itemId" takes $actions actions to '
           'use, which is not 1 to 3.');
     }
-    return ItemUse(heal: heal, actions: actions);
+    return ItemUse(
+      heal: heal,
+      bomb: bomb,
+      splash: _int(raw['splash'], fallback: 0),
+      attackBonus: _int(raw['bonus'], fallback: 0),
+      spells: spells,
+      perDay: perDay,
+      charges: charges,
+      actions: actions,
+    );
   }
 
   /// Reads an item's rarity, defaulting to common where it says nothing.
@@ -768,20 +842,25 @@ class CampaignLoader {
       if (!seen.add(name.toLowerCase())) {
         throw CampaignFormatException('"$name" is in the spell table twice.');
       }
-      final defenseName = _string(raw['defense'], 'defense of "$name"');
+      // A healing spell says what it heals instead of what it does and what
+      // stops it: nobody saves against being mended.
+      final heals = raw.containsKey('heal');
+      final defenseName =
+          heals ? 'will' : _string(raw['defense'], 'defense of "$name"');
       final defense = SpellDefense.tryParse(defenseName);
       if (defense == null) {
         throw CampaignFormatException('"$name" is rolled against '
             '"$defenseName", which is not ac, fortitude, reflex or will.');
       }
-      final damage = DamageExpression.tryParse(
-          _string(raw['damage'], 'damage of "$name"'));
+      final amount = heals ? 'heal' : 'damage';
+      final damage =
+          DamageExpression.tryParse(_string(raw[amount], '$amount of "$name"'));
       if (damage == null) {
-        throw CampaignFormatException('"$name" has damage "${raw['damage']}", '
-            'which is not dice.');
+        throw CampaignFormatException('"$name" has $amount '
+            '"${raw[amount]}", which is not dice.');
       }
       final heighten = _map(raw['heighten']);
-      final extraRaw = _optional(heighten['damage']);
+      final extraRaw = _optional(heighten[amount]);
       final extra =
           extraRaw == null ? null : DamageExpression.tryParse(extraRaw);
       if (extraRaw != null &&
@@ -804,6 +883,7 @@ class CampaignLoader {
         area: raw['area'] == true,
         heightenEvery: _int(heighten['every'], fallback: 1).clamp(1, 10),
         heightenDamage: extra,
+        heals: heals,
       ));
     }
     return SpellBook(spells);

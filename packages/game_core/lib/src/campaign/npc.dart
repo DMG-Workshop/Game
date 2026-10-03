@@ -1,3 +1,5 @@
+import '../party/companion.dart';
+
 /// Where a travelling NPC goes, and how restless they are.
 class NpcRoute {
   const NpcRoute({
@@ -55,6 +57,7 @@ class Npc {
     this.barks = const [],
     this.appearsAfter = const [],
     this.leavesAfter = const [],
+    this.recruit,
   });
 
   final String id;
@@ -97,6 +100,9 @@ class Npc {
   }
 
   final int tier;
+
+  /// Set for somebody who would join the party: their class, and their fee.
+  final Recruit? recruit;
 
   /// Topic to reply, keyed by the word the player raises.
   final Map<String, String> keywords;

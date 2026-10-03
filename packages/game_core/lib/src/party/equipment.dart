@@ -225,6 +225,24 @@ class EquippedStats {
         false;
   }
 
+  /// Whether a Strike with what is in hand is shot or thrown rather than
+  /// swung, so it reaches across the field and not only next door.
+  ///
+  /// A campaign weapon says so in its traits. Pathbuilder's kit carries no
+  /// traits, only a name, so a bow or a sling is known by what it is called.
+  bool get isRanged {
+    final weapon = loadout.weapon;
+    if (weapon != null) return _isRanged(weapon);
+    final imported = _importedWeapon;
+    return imported != null && _rangedNames.hasMatch(imported.name);
+  }
+
+  static final RegExp _rangedNames = RegExp(
+    r'bow\b|sling|blowgun|javelin|\bdarts?\b|arbalest|shuriken|bola|'
+    r'pistol|musket|arquebus|firearm',
+    caseSensitive: false,
+  );
+
   String get weaponLabel =>
       loadout.weapon?.name ?? _importedWeapon?.display ?? 'bare hands';
 

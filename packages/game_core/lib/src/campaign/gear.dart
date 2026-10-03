@@ -84,23 +84,86 @@ class CheckBonus {
   String toString() => '+$bonus $stat${when == null ? '' : ' ($when)'}';
 }
 
-/// What using up a consumable does, where the engine can do it.
-///
-/// Healing for now: a draught drunk, or got into somebody else. A consumable
-/// without one is spent when something calls for it, as its own text says,
-/// rather than by hand.
-class ItemUse {
-  const ItemUse({required this.heal, this.actions = 1});
+/// One spell an item holds, and the rank it is cast at.
+class HeldSpell {
+  const HeldSpell(this.name, this.rank);
 
-  /// The Hit Points it gives back, rolled when it is used.
-  final DamageExpression heal;
-
-  /// What it costs in a fight: Pathfinder's one action to drink a potion or
-  /// feed it to someone within reach.
-  final int actions;
+  /// As the spell table names it.
+  final String name;
+  final int rank;
 
   @override
-  String toString() => 'restores $heal HP';
+  String toString() => rank == 0 ? name : '$name (rank $rank)';
+}
+
+/// What using an item does, where the engine can do it.
+///
+/// One of three things. A draught heals: drunk, or got into somebody else.
+/// A bomb is thrown at an enemy: an attack roll, and splash on a miss. And a
+/// scroll, a wand or a staff casts a spell it holds: a scroll once, a wand
+/// [perDay] times a day, a staff from [charges] that come back with rest. An
+/// item without a use does its work as its own text says, or by being worn.
+class ItemUse {
+  const ItemUse({
+    this.heal,
+    this.bomb,
+    this.splash = 0,
+    this.attackBonus = 0,
+    this.spells = const [],
+    this.perDay = 0,
+    this.charges = 0,
+    this.actions = 1,
+  });
+
+  /// The Hit Points it gives back, rolled when it is used.
+  final DamageExpression? heal;
+
+  /// The damage a bomb does on a hit, doubled on a critical.
+  final DamageExpression? bomb;
+
+  /// Damage a bomb does to its target even on a miss, and on a hit besides.
+  /// Nothing on a critical miss.
+  final int splash;
+
+  /// A bomb's item bonus to the attack roll.
+  final int attackBonus;
+
+  /// What a scroll, a wand or a staff casts.
+  final List<HeldSpell> spells;
+
+  /// A wand's casts a day. A scroll has none: it is used up.
+  final int perDay;
+
+  /// A staff's charges a day. A spell costs as many as its rank, and a
+  /// cantrip none.
+  final int charges;
+
+  /// What it costs in a fight: Pathfinder's one action to drink a potion,
+  /// feed it to someone within reach, or throw a bomb. A spell from an item
+  /// takes the spell's own actions.
+  final int actions;
+
+  bool get heals => heal != null;
+  bool get isBomb => bomb != null;
+  bool get castsSpells => spells.isNotEmpty;
+
+  /// A staff, which spends charges rather than counting casts.
+  bool get isStaff => charges > 0;
+
+  /// A wand, which comes back each day rather than being used up.
+  bool get isWand => perDay > 0 && !isStaff;
+
+  @override
+  String toString() {
+    if (heal != null) return 'restores $heal HP';
+    if (bomb != null) {
+      return 'thrown for $bomb${splash > 0 ? ', $splash splash' : ''}';
+    }
+    final held = spells.join(', ');
+    if (isStaff) return 'casts $held; $charges charges a day';
+    if (isWand) return 'casts $held, $perDay a day';
+    return 'casts $held, once';
+  }
 }
 
 /// An item in the campaign's loot tables.
