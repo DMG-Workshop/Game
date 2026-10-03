@@ -39,7 +39,7 @@ same place, and are easy to miss.
 **How this project wishes to be credited** (Section III.b.ii):
 
 ```
-Marching Order, [Copyright Notice], DMG Workshop
+Lanternfall, [Copyright Notice], DMG Workshop
 ```
 
 Only the copyright line is still outstanding, and it needs a year and a

@@ -1,11 +1,12 @@
-# Marching Order
+# Lanternfall
 
 A text-first Pathfinder 2e RPG for phones, tablets, and the browser, built
 around importing a character you already play.
 
-The name says the thing that makes it different: this is a *party*, not a
-hero. It is also deliberately world-agnostic — Campaign I is Shattered Seals,
-and Campaign II will not have to fight the app for its name.
+The name is deliberately world-agnostic: Campaign I is Shattered Seals, and
+Campaign II will not have to fight the app for its name. (The game was first
+called Marching Order, which is why the app's code still lives in
+`apps/marching_order`.)
 
 ## The idea
 

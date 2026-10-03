@@ -46,7 +46,7 @@ class GameController extends ChangeNotifier {
     _console = GameConsole(session, _LogSink(_append), _ask, width: 100000);
     _append(
       '${'=' * 40}\n'
-      'MARCHING ORDER\n${session.campaign.title}\n'
+      'LANTERNFALL\n${session.campaign.title}\n'
       '${'=' * 40}\n',
     );
     if (!resumed) {

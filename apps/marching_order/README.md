@@ -1,4 +1,4 @@
-# Marching Order — the app
+# Lanternfall — the app
 
 The game on a screen, for Android, iOS and the web. It is the same
 `GameConsole` the terminal client drives, from `packages/game_core`, with a
