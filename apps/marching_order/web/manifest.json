@@ -1,11 +1,11 @@
 {
-    "name": "marching_order",
-    "short_name": "marching_order",
+    "name": "Lanternfall",
+    "short_name": "Lanternfall",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Marching Order: a text-first Pathfinder 2e RPG",
+    "description": "Lanternfall: a text-first Pathfinder 2e RPG",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

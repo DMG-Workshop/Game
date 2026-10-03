@@ -11,7 +11,7 @@ class MarchingOrderApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'Marching Order',
+    title: 'Lanternfall',
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
       colorScheme: ColorScheme.fromSeed(
@@ -78,7 +78,7 @@ class _TitleScreenState extends State<TitleScreen> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                Text('Marching Order', style: theme.textTheme.displaySmall),
+                Text('Lanternfall', style: theme.textTheme.displaySmall),
                 const SizedBox(height: 4),
                 Text(
                   'Campaign I: Shattered Seals',

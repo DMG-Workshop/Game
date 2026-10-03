@@ -153,7 +153,7 @@ Future<void> main(List<String> args) async {
 
   stdout
     ..writeln('=' * 70)
-    ..writeln('MARCHING ORDER — ${campaign.title}')
+    ..writeln('LANTERNFALL — ${campaign.title}')
     ..writeln(saved == null
         ? '${campaign.world.metadata.name} · seed $seed'
         : '${campaign.world.metadata.name} · resumed from $resumePath')

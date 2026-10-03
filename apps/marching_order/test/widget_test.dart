@@ -12,7 +12,7 @@ void main() {
   testWidgets('the title screen offers the sample character', (tester) async {
     await tester.pumpWidget(const MarchingOrderApp());
     await tester.pump();
-    expect(find.text('Marching Order'), findsOneWidget);
+    expect(find.text('Lanternfall'), findsOneWidget);
     expect(find.textContaining('Play the sample'), findsOneWidget);
     expect(find.text('Continue'), findsNothing, reason: 'nothing saved yet');
   });
