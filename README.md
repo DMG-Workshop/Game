@@ -103,7 +103,11 @@ flutter run                       # or: flutter build web --no-web-resources-cdn
 ```
 
 Start a new game with the JSON Pathbuilder 2e exports, or with the sample
-character.
+character: Torvin Ashgrove, a level 5 human fighter
+(`packages/game_core/assets/characters/torvin.json`), who is also who the
+terminal game starts with when it is given no `--characters`. Korash, the
+reference build the rules are tested against, stays in `pf2e_core`'s test
+fixtures.
 
 `pf2e_core` proves that a Pathbuilder export contains enough to rebuild a full
 character sheet. `game_core` proves the loop on top of it.

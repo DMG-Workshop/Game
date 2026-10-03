@@ -74,12 +74,13 @@ void main() {
     final save = '${dir.path}/game.json';
     await _walk(['--seed=3', '--save=$save', '--commands=look']);
 
-    final sheet = jsonDecode(
-            File('../pf2e_core/test/fixtures/korash.json').readAsStringSync())
-        as Map<String, Object?>;
+    // The sample character, a level up, as Pathbuilder would export it.
+    final sheet =
+        jsonDecode(File('assets/characters/torvin.json').readAsStringSync())
+            as Map<String, Object?>;
     final build = (sheet['build'] ?? sheet) as Map<String, Object?>;
     build['level'] = (build['level'] as num).toInt() + 1;
-    final levelled = File('${dir.path}/korash_up.json')
+    final levelled = File('${dir.path}/torvin_up.json')
       ..writeAsStringSync(jsonEncode(sheet));
 
     final run = await _walk([
@@ -88,6 +89,6 @@ void main() {
       '--commands=look',
     ]);
     expect(run.exitCode, 0, reason: '${run.stderr}');
-    expect(run.stdout, contains('comes back level 7, up from 6'));
+    expect(run.stdout, contains('comes back level 6, up from 5'));
   });
 }
