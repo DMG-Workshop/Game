@@ -3,16 +3,21 @@ import 'dart:io';
 import 'package:game_core/game_core.dart';
 import 'package:pf2e_core/pf2e_core.dart';
 
-ImportedCharacter loadKorash() => const PathbuilderImporter()
-    .importJson(
-        File('../pf2e_core/test/fixtures/korash.json').readAsStringSync())
+/// Mira Quell, a Wizard/Witch 6: the caster the rules are tested against,
+/// from pf2e_core's fixtures.
+ImportedCharacter loadMira() =>
+    const PathbuilderImporter().importJson(loadMiraPayload()).character;
+
+/// Torvin Ashgrove, the level 5 fighter the game ships as its sample.
+ImportedCharacter loadTorvin() => const PathbuilderImporter()
+    .importJson(File('assets/characters/torvin.json').readAsStringSync())
     .character;
 
 Adventure loadQuietWake() => const AdventureLoader()
     .fromJson(File('assets/adventures/the_quiet_wake.json').readAsStringSync());
 
-String loadKorashPayload() =>
-    File('../pf2e_core/test/fixtures/korash.json').readAsStringSync();
+String loadMiraPayload() =>
+    File('../pf2e_core/test/fixtures/mira.json').readAsStringSync();
 
 ImportedCharacter loadSela() => const PathbuilderImporter()
     .importJson(File('test/fixtures/sela.json').readAsStringSync())
@@ -21,17 +26,17 @@ ImportedCharacter loadSela() => const PathbuilderImporter()
 GameSession newSession({int seed = 1, Adventure? adventure}) =>
     GameSession.solo(
       adventure: adventure ?? loadQuietWake(),
-      character: loadKorash(),
+      character: loadMira(),
       roller: DiceRoller(seed),
     );
 
-/// A two-actor session: Korash, who knows the dead, and Sela, who does not but
+/// A two-actor session: Mira, who knows the dead, and Sela, who does not but
 /// can sneak. Enough contrast to tell a real ranking from a coincidence.
 GameSession newPartySession({int seed = 1, Adventure? adventure}) =>
     GameSession(
       adventure: adventure ?? loadQuietWake(),
       actors: [
-        SessionActor(id: 'korash', character: loadKorash()),
+        SessionActor(id: 'mira', character: loadMira()),
         SessionActor(id: 'sela', character: loadSela()),
       ],
       roller: DiceRoller(seed),

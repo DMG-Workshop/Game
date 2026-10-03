@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:game_core/game_core.dart';
 import 'package:pf2e_core/pf2e_core.dart';
 
-const _defaultCharacter = '../pf2e_core/test/fixtures/korash.json';
+const _defaultCharacter = '../pf2e_core/test/fixtures/mira.json';
 const _defaultAdventure = 'assets/adventures/the_quiet_wake.json';
 
 /// Plays an adventure in the terminal.
@@ -134,7 +134,7 @@ Future<void> main(List<String> args) async {
       }
     }
 
-    // "examine-body korash" or "1 sela" names who attempts it; without a name
+    // "examine-body mira" or "1 sela" names who attempts it; without a name
     // the best candidate does.
     final parts = choice.split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
     final resolved =
@@ -285,6 +285,6 @@ usage: play [options]
   --help             Show this message
 
 At the prompt, enter an option number or id. Add a name to say who attempts
-it ("examine-body korash"); without one, the best candidate rolls. "look"
+it ("examine-body mira"); without one, the best candidate rolls. "look"
 re-describes the room, "quit" ends the session.
 ''';

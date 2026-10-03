@@ -5,7 +5,7 @@ import 'package:game_core/game_core.dart';
 import 'package:pf2e_core/pf2e_core.dart';
 
 const _defaultCampaign = '../../campaigns/shattered_seals';
-const _defaultCharacter = '../pf2e_core/test/fixtures/korash.json';
+const _defaultCharacter = 'assets/characters/torvin.json';
 const _defaultContent = '../../content/pf2e_remaster';
 
 /// Walks a campaign world in the terminal.

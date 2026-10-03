@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _campaignDir = 'assets/campaign';
 const _contentDir = 'assets/content';
-const _demoCharacter = 'assets/characters/korash.json';
+const _demoCharacter = 'assets/characters/torvin.json';
 const _saveKey = 'marching_order.save';
 const _saveVersion = 1;
 

@@ -148,35 +148,35 @@ void main() {
 
   group('rolling against a character', () {
     test('resolves a statistic derived from an import', () {
-      final korash = loadKorash().character;
-      final stats = DerivedStats(korash);
+      final mira = loadMira().character;
+      final stats = DerivedStats(mira);
       final resolver = CheckResolver(DiceRoller(2024));
 
-      final deception =
-          resolver.resolveStat(stats.skill(CoreSkill.deception)!, dc: 20);
-      expect(deception.label, 'Deception');
-      expect(deception.modifier, 13);
-      expect(deception.total, deception.dieRoll + 13);
+      final arcana =
+          resolver.resolveStat(stats.skill(CoreSkill.arcana)!, dc: 20);
+      expect(arcana.label, 'Arcana');
+      expect(arcana.modifier, 14);
+      expect(arcana.total, arcana.dieRoll + 14);
     });
 
     test('an untrained statistic carries its weaker modifier', () {
-      final stats = DerivedStats(loadKorash().character);
+      final stats = DerivedStats(loadMira().character);
       final resolver = CheckResolver(DiceRoller(11));
-      // Korash knows the dead, not the divine: Lore: Religion is +12 while
-      // the Religion skill itself is untrained at +0.
+      // Mira has read about the divine without practising it: Lore: Religion
+      // is +12 while the Religion skill itself is untrained at +1.
       expect(
           resolver.resolveStat(stats.lore('Religion')!, dc: 20).modifier, 12);
       expect(
           resolver
               .resolveStat(stats.skill(CoreSkill.religion)!, dc: 20)
               .modifier,
-          0);
+          1);
     });
 
     test('is reproducible for a given seed', () {
-      final stats = DerivedStats(loadKorash().character);
+      final stats = DerivedStats(loadMira().character);
       CheckOutcome run() => CheckResolver(DiceRoller(777))
-          .resolveStat(stats.skill(CoreSkill.athletics)!, dc: 18);
+          .resolveStat(stats.skill(CoreSkill.occultism)!, dc: 18);
       expect(run().dieRoll, run().dieRoll);
       expect(run().degree, run().degree);
     });

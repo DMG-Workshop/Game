@@ -49,7 +49,7 @@ WorldSession _world({
 }) =>
     WorldSession(
       campaign: campaign ?? _campaign,
-      actors: [SessionActor(id: 'korash', character: loadKorash())],
+      actors: [SessionActor(id: 'mira', character: loadMira())],
       roller: DiceRoller(seed),
       roomId: room,
       hour: hour,
@@ -311,7 +311,7 @@ void main() {
 
     test('carry out of one fight and into the next', () {
       final world = fought();
-      final v = world.vitalsOf('korash');
+      final v = world.vitalsOf('mira');
       expect(v.hp, lessThan(v.maxHp), reason: 'seed 3 costs something');
       // Picked up on the Mere Road, where the next fight is waiting.
       final snapshot =
@@ -336,18 +336,18 @@ void main() {
       expect(fight.outcome, EncounterOutcome.defeat);
       final before = world.minute;
       world.concludeEncounter(fight);
-      expect(world.vitalsOf('korash').hp, 1);
+      expect(world.vitalsOf('mira').hp, 1);
       expect(world.minute - before, greaterThanOrEqualTo(60));
     });
 
     test('rest restores Constitution times level, and the day\'s magic', () {
       final world = fought();
-      final v = world.vitalsOf('korash');
+      final v = world.vitalsOf('mira');
       final before = v.hp;
       v.focus = 0;
       v.slotsLeft[1] = 0;
-      final healed = world.rest()['korash']!;
-      expect(healed, restHealing(loadKorash()).clamp(0, v.maxHp - before));
+      final healed = world.rest()['mira']!;
+      expect(healed, restHealing(loadMira()).clamp(0, v.maxHp - before));
       expect(v.focus, v.maxFocus);
       expect(v.slotsLeft[1], v.slots[1]);
       expect(world.isFatigued, isFalse);
@@ -368,12 +368,12 @@ void main() {
     test('Treat Wounds heals 2d8 on a success, and not twice in an hour', () {
       for (var seed = 1; seed < 30; seed++) {
         final world = _world(room: 'MH_002_GuardHall', seed: seed);
-        world.vitalsOf('korash').hp = 20;
+        world.vitalsOf('mira').hp = 20;
         final t = world.treatWounds();
         if (t.check.degree != DegreeOfSuccess.success) continue;
         expect(t.roll!.dice, hasLength(2));
         expect(t.roll!.expression.dieSize, 8);
-        expect(world.vitalsOf('korash').hp, 20 + t.change);
+        expect(world.vitalsOf('mira').hp, 20 + t.change);
         expect(world.treatWounds, throwsA(isA<InvalidMoveException>()));
         world.advanceTime(1);
         world.treatWounds();
@@ -389,7 +389,7 @@ void main() {
 
     test('Refocus gives one point back, ten minutes at a time', () {
       final world = _world(room: 'MH_002_GuardHall');
-      final v = world.vitalsOf('korash');
+      final v = world.vitalsOf('mira');
       expect(world.refocus, throwsA(isA<InvalidMoveException>()));
       v.focus = 0;
       world.refocus();
@@ -401,7 +401,7 @@ void main() {
       final world = fought();
       world.endurance.travelMinutes = 200;
       final back = _restored(world);
-      expect(back.vitalsOf('korash').hp, world.vitalsOf('korash').hp);
+      expect(back.vitalsOf('mira').hp, world.vitalsOf('mira').hp);
       expect(back.endurance.travelMinutes, 200);
     });
 
@@ -412,7 +412,7 @@ void main() {
         ..remove('endurance');
       final back = WorldSession.restore(
           campaign: _campaign, actors: world.actors, snapshot: old);
-      final v = back.vitalsOf('korash');
+      final v = back.vitalsOf('mira');
       expect(v.hp, v.maxHp);
     });
   });
@@ -427,15 +427,15 @@ void main() {
       final hit = seen.whereType<Exposure>().first;
       expect(hit.save.label, contains('Fortitude'));
       expect(hit.save.dc, dcForLevel(6));
-      expect(world.vitalsOf('korash').hp,
-          world.vitalsOf('korash').maxHp - hit.hpLost);
+      expect(
+          world.vitalsOf('mira').hp, world.vitalsOf('mira').maxHp - hit.hpLost);
     });
 
     test('never take anyone below 1 HP', () {
       final world = _world(campaign: _under(_always('storm')), hour: 5);
-      world.vitalsOf('korash').hp = 1;
+      world.vitalsOf('mira').hp = 1;
       _waitUntil(world, (e) => e.whereType<StormPassed>().isNotEmpty);
-      expect(world.vitalsOf('korash').hp, 1);
+      expect(world.vitalsOf('mira').hp, 1);
     });
 
     test('under a roof, cost nothing and pay a little for waiting out', () {
@@ -448,7 +448,7 @@ void main() {
       expect(seen.whereType<StormBroke>().single.sheltered, isTrue);
       final passed = seen.whereType<StormPassed>().single;
       expect(passed.xp, Accomplishment.minor.xp);
-      expect(world.experience.xpOf('korash'), passed.xp);
+      expect(world.experience.xpOf('mira'), passed.xp);
     });
 
     test('a shelter of your own pays more', () {
@@ -536,26 +536,26 @@ void itemBonusTests() {
     test(
         'the Ravencrest Hide helps with Survival in the valley, not away '
         'from it', () {
-      final korash = SessionActor(id: 'korash', character: loadKorash());
+      final mira = SessionActor(id: 'mira', character: loadMira());
       final home = wearing('a_006_ravencrest_hide');
-      expect(home.itemBonusFor(korash, 'survival'), 1);
+      expect(home.itemBonusFor(mira, 'survival'), 1);
       final away = wearing('a_006_ravencrest_hide', room: 'VC_001_Plaza');
-      expect(away.itemBonusFor(korash, 'survival'), 0);
+      expect(away.itemBonusFor(mira, 'survival'), 0);
     });
 
     test('the Oilskin Brigandine helps against the weather, and only then', () {
-      final korash = SessionActor(id: 'korash', character: loadKorash());
+      final mira = SessionActor(id: 'mira', character: loadMira());
       final world = wearing('a_030_oilskin_brigandine');
-      expect(world.itemBonusFor(korash, 'fortitude', exposure: true), 1);
-      expect(world.itemBonusFor(korash, 'fortitude'), 0);
+      expect(world.itemBonusFor(mira, 'fortitude', exposure: true), 1);
+      expect(world.itemBonusFor(mira, 'fortitude'), 0);
     });
 
     test('gear in the pack helps whoever makes the check', () {
       final world = _world();
       world.inventory.add('g_020_quiet_crown');
-      final korash = world.actors.single;
-      expect(world.itemBonusFor(korash, 'diplomacy'), 3);
-      expect(world.itemBonusFor(korash, 'Intimidation'), 3);
+      final mira = world.actors.single;
+      expect(world.itemBonusFor(mira, 'diplomacy'), 3);
+      expect(world.itemBonusFor(mira, 'Intimidation'), 3);
     });
 
     test('a conversation check counts it', () {
@@ -567,7 +567,7 @@ void itemBonusTests() {
         return talk.candidatesFor('haggle').single.stat.total;
       }
 
-      final sheet = loadKorash();
+      final sheet = loadMira();
       final itemOnSheet = SessionActor(id: 'k', character: sheet)
           .statFor('diplomacy')!
           .itemBonus;
@@ -576,7 +576,7 @@ void itemBonusTests() {
 
     test('item bonuses do not stack with the sheet\'s own', () {
       final stat =
-          SessionActor(id: 'k', character: loadKorash()).statFor('diplomacy')!;
+          SessionActor(id: 'k', character: loadMira()).statFor('diplomacy')!;
       final same = withItemBonus(stat, stat.itemBonus);
       expect(same.total, stat.total);
       final better = withItemBonus(stat, stat.itemBonus + 2);

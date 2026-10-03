@@ -11,7 +11,7 @@ const _sources = {
   '../../campaigns/shattered_seals': 'assets/campaign',
   '../../content/pf2e_remaster': 'assets/content',
 };
-const _sample = '../../packages/pf2e_core/test/fixtures/korash.json';
+const _sample = '../../packages/game_core/assets/characters/torvin.json';
 
 void main() {
   for (final MapEntry(key: from, value: to) in _sources.entries) {
@@ -24,6 +24,6 @@ void main() {
     }
   }
   Directory('assets/characters').createSync(recursive: true);
-  File(_sample).copySync('assets/characters/korash.json');
+  File(_sample).copySync('assets/characters/torvin.json');
   stdout.writeln('assets/ synced from the repository.');
 }

@@ -15,7 +15,7 @@ WorldSession _world({
 }) {
   final world = WorldSession(
     campaign: _campaign,
-    actors: [SessionActor(id: 'korash', character: loadKorash())],
+    actors: [SessionActor(id: 'mira', character: loadMira())],
     roller: DiceRoller(seed),
     roomId: room,
     flags: flags,

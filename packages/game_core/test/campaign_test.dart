@@ -480,11 +480,11 @@ void main() {
     });
 
     test('every skill an item names is one the engine can resolve', () {
-      // Korash stands in as any imported character: the skill list is the
+      // Mira stands in as any imported character: the skill list is the
       // same for all of them.
       final stats = DerivedStats(const PathbuilderImporter()
           .importJson(
-              File('../pf2e_core/test/fixtures/korash.json').readAsStringSync())
+              File('../pf2e_core/test/fixtures/mira.json').readAsStringSync())
           .character);
       for (final item in campaign.gear.all) {
         for (final skill in CoreSkill.values) {

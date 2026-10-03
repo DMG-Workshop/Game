@@ -11,12 +11,12 @@ import 'helpers.dart';
 late Campaign _campaign;
 late SpellBook _spells;
 
-SessionActor _korash() => SessionActor(id: 'korash', character: loadKorash());
+SessionActor _mira() => SessionActor(id: 'mira', character: loadMira());
 
 WorldSession _world({String room = 'WW_002_Deep', int seed = 3}) =>
     WorldSession(
       campaign: _campaign,
-      actors: [_korash()],
+      actors: [_mira()],
       roller: DiceRoller(seed),
       roomId: room,
       spells: _spells,
@@ -77,36 +77,36 @@ void main() {
   group('what a character can cast', () {
     test('comes from their own sheet: what they prepared, at what DC', () {
       final world = _world();
-      final options = world.castOptions('korash');
+      final options = world.castOptions('mira');
       final fireball = options.firstWhere((o) => o.spell.name == 'Fireball');
       expect(fireball.rank, 3);
       expect(fireball.cost, CastCost.prepared);
-      expect(fireball.left, 1, reason: 'prepared once');
-      final magus = _korash()
+      expect(fireball.left, 2, reason: 'prepared twice');
+      final wizard = _mira()
           .stats
           .spellcasting
-          .firstWhere((v) => v.entry.name == 'Magus');
-      expect(fireball.dc, magus.dc);
+          .firstWhere((v) => v.entry.name == 'Wizard');
+      expect(fireball.dc, wizard.dc);
       final darts = options.firstWhere((o) => o.spell.name == 'Needle Darts');
       expect(darts.cost, CastCost.cantrip);
       expect(darts.rank, 3);
-      expect(darts.attackBonus, magus.attackBonus);
+      expect(darts.attackBonus, wizard.attackBonus);
     });
 
     test('says which of their spells have no numbers yet', () {
-      final missing = _world().spellsWithoutNumbers('korash');
-      expect(missing, contains('Enfeeble'));
+      final missing = _world().spellsWithoutNumbers('mira');
+      expect(missing, contains('Force Barrage'));
       expect(missing, isNot(contains('Fireball')));
     });
 
     test('without a spell table, nothing is on offer', () {
       final world = WorldSession(
         campaign: _campaign,
-        actors: [_korash()],
+        actors: [_mira()],
         roller: DiceRoller(3),
         roomId: 'WW_002_Deep',
       );
-      expect(world.castOptions('korash'), isEmpty);
+      expect(world.castOptions('mira'), isEmpty);
     });
   });
 
@@ -117,8 +117,8 @@ void main() {
       final result = fight.cast('fireball');
       final caught = result.hits.map((h) => h.target.name).toList();
       expect(caught, contains('Hollow Thrall'));
-      // Korash is standing with them, so the burst has him too.
-      expect(caught, contains('Korash Blackearth'));
+      // Mira is standing with them, so the burst has her too.
+      expect(caught, contains('Mira Quell'));
       final rolled = result.damageRoll!.total;
       for (final hit in result.hits) {
         expect(
@@ -141,29 +141,37 @@ void main() {
         expect(() => fight.cast('fireball'),
             throwsA(isA<InvalidActionException>()));
       }
+      // Two prepared, one cast: one left, and the fight being over does not
+      // give the other back.
       final fireball = world
-          .castOptions('korash')
+          .castOptions('mira')
           .firstWhere((o) => o.spell.name == 'Fireball');
-      expect(fireball.left, 0);
-      expect(fireball.isAvailable, isFalse);
+      expect(fireball.left, 1);
+      world.vitalsOf('mira').expended['Wizard|3|Fireball'] = 2;
+      expect(
+          world
+              .castOptions('mira')
+              .firstWhere((o) => o.spell.name == 'Fireball')
+              .isAvailable,
+          isFalse);
     });
 
     test('a night\'s rest prepares it again', () {
       final world = _world(room: 'MH_002_GuardHall');
-      world.vitalsOf('korash').expended['Magus|3|Fireball'] = 1;
+      world.vitalsOf('mira').expended['Wizard|3|Fireball'] = 2;
       expect(
           world
-              .castOptions('korash')
+              .castOptions('mira')
               .firstWhere((o) => o.spell.name == 'Fireball')
               .left,
           0);
       world.rest();
       expect(
           world
-              .castOptions('korash')
+              .castOptions('mira')
               .firstWhere((o) => o.spell.name == 'Fireball')
               .left,
-          1);
+          2);
     });
 
     test('cantrips never run out', () {
@@ -175,7 +183,7 @@ void main() {
       }
       expect(
           world
-              .castOptions('korash')
+              .castOptions('mira')
               .firstWhere((o) => o.spell.name == 'Needle Darts')
               .isAvailable,
           isTrue);
@@ -223,7 +231,7 @@ void main() {
 
     test('what has been spent survives a save', () {
       final world = _world();
-      world.vitalsOf('korash').expended['Magus|3|Fireball'] = 1;
+      world.vitalsOf('mira').expended['Magus|3|Fireball'] = 1;
       final back = WorldSession.restore(
         campaign: _campaign,
         actors: world.actors,
@@ -231,7 +239,7 @@ void main() {
             jsonDecode(jsonEncode(world.snapshot())) as Map<String, Object?>,
         spells: _spells,
       );
-      expect(back.vitalsOf('korash').expended['Magus|3|Fireball'], 1);
+      expect(back.vitalsOf('mira').expended['Magus|3|Fireball'], 1);
     });
   });
 }

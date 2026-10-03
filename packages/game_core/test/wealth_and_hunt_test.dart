@@ -9,13 +9,13 @@ import 'helpers.dart';
 
 late Campaign _campaign;
 
-SessionActor _korash() => SessionActor(id: 'korash', character: loadKorash());
+SessionActor _mira() => SessionActor(id: 'mira', character: loadMira());
 
 /// A session whose purse holds [gold], and nothing else.
 WorldSession _worth(int gold, {int seed = 3, String room = 'MH_001_Square'}) =>
     WorldSession(
       campaign: _campaign,
-      actors: [_korash()],
+      actors: [_mira()],
       roller: DiceRoller(seed),
       roomId: room,
       inventory: PartyInventory(gear: _campaign.gear, coin: gold * 100),
@@ -106,7 +106,7 @@ void main() {
       final world = _worth(0);
       world.inventory.add('w_029_drovers_goad');
       world.equip('goad');
-      expect(world.inventory.valueOn('korash'),
+      expect(world.inventory.valueOn('mira'),
           _campaign.gear.byId('w_029_drovers_goad')!.price);
       expect(world.inventory.valueOn('nobody'), 0);
     });
@@ -123,7 +123,7 @@ void main() {
     test('records a fight: its coin, and each thing found, by name', () {
       final world = WorldSession(
         campaign: _campaign,
-        actors: [_korash()],
+        actors: [_mira()],
         roller: DiceRoller(3),
         roomId: 'WW_002_Deep',
       );
@@ -144,7 +144,7 @@ void main() {
     test('records a reward under whoever paid it', () {
       final world = WorldSession(
         campaign: _campaign,
-        actors: [_korash()],
+        actors: [_mira()],
         roller: DiceRoller(3),
         roomId: 'MH_002_GuardHall',
       );
@@ -167,7 +167,7 @@ void main() {
     test('a quest reward is written down with the quest', () {
       final world = WorldSession(
         campaign: _campaign,
-        actors: [_korash()],
+        actors: [_mira()],
         roller: DiceRoller(3),
         roomId: 'MH_001_Square',
         flags: {
@@ -284,7 +284,7 @@ void main() {
     });
 
     test('richer brings a higher-level hunter', () {
-      // Korash is level 6 and alone, so is expected to be worth 450 gp.
+      // Mira is level 6 and alone, so is expected to be worth 450 gp.
       final levels = [
         for (final gold in [450, 600, 900, 1400, 2300])
           _worth(gold).notoriety.hunterLevel,
@@ -415,7 +415,7 @@ void main() {
 
     test('beating a hunter pays like a fight, and counts', () {
       for (var seed = 1; seed < 40; seed++) {
-        // Noticed: a low threat, so Korash should have the better of it.
+        // Noticed: a low threat, so Mira should have the better of it.
         final world = _worth(600, seed: seed);
         if (_walkUntilHunted(world) == null) continue;
         final fight = _fightOut(world.beginEncounter());
@@ -429,10 +429,10 @@ void main() {
         expect(fight.coinEarned, greaterThan(0));
         expect(world.pursuer, isNull);
         expect(world.ledger.entries.first.source, startsWith('Hunted: '));
-        expect(world.experience.xpOf('korash'), fight.xpEarned);
+        expect(world.experience.xpOf('mira'), fight.xpEarned);
         return;
       }
-      fail('Korash never beat a low-threat hunter in 40 seeds');
+      fail('Mira never beat a low-threat hunter in 40 seeds');
     });
 
     test('losing to one costs part of the purse', () {

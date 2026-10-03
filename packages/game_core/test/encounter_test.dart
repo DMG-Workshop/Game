@@ -6,13 +6,11 @@ import 'package:test/test.dart';
 
 import 'campaign_test.dart' show loadShatteredSeals;
 
-ImportedCharacter _korash() => const PathbuilderImporter()
-    .importJson(
-        File('../pf2e_core/test/fixtures/korash.json').readAsStringSync())
+ImportedCharacter _mira() => const PathbuilderImporter()
+    .importJson(File('../pf2e_core/test/fixtures/mira.json').readAsStringSync())
     .character;
 
-List<SessionActor> _party() =>
-    [SessionActor(id: 'korash', character: _korash())];
+List<SessionActor> _party() => [SessionActor(id: 'mira', character: _mira())];
 
 /// A harmless creature, so a fight can be won without fifty rolls.
 const _straw = Creature(
@@ -171,12 +169,12 @@ void main() {
 
     test('builds the party from their imported sheets', () {
       final f = fight(encounter: _adjacent);
-      final korash = f.party.single;
+      final mira = f.party.single;
       // The same numbers the character sheet shows.
-      expect(korash.armorClass, 25);
-      expect(korash.maxHp, 70);
-      expect(korash.attackBonus, 15);
-      expect(korash.damage.toString(), '2d10+4');
+      expect(mira.armorClass, 22);
+      expect(mira.maxHp, 56);
+      expect(mira.attackBonus, 9);
+      expect(mira.damage.toString(), '2d4');
     });
   });
 

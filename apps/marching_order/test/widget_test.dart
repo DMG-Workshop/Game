@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:marching_order/game_controller.dart';
@@ -24,7 +25,7 @@ void main() {
         await GameController.demoCharacter(),
       ]);
       await pumpEventQueue();
-      expect(game.log, contains('Korash Blackearth'));
+      expect(game.log, contains('Torvin Ashgrove'));
       expect(game.prompt, '> ');
       expect(game.chips.map((c) => c.command), contains('look'));
 
@@ -104,9 +105,12 @@ void main() {
 
   test('the pack and a fight are menus of chips', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
-    // Seeded, so the fight starts the same way every time.
+    // Seeded, so the fight starts the same way every time. Mira, the
+    // caster the rules are tested against, rather than the sample: aiming
+    // wants a caster.
     final game = await GameController.start([
-      await GameController.demoCharacter(),
+      File('../../packages/pf2e_core/test/fixtures/mira.json')
+          .readAsStringSync(),
     ], seed: 3);
     await pumpEventQueue();
 
@@ -218,7 +222,7 @@ void main() {
     await pumpEventQueue();
     expect(game.prompt, 'party> ');
     expect(game.chips.map((c) => c.label), [
-      'Korash Blackearth',
+      'Torvin Ashgrove',
       'Bren Cask',
       'Close',
     ]);

@@ -135,7 +135,7 @@ void main() {
   });
 
   group('stat keys', () {
-    test('the sample adventure resolves entirely against Korash', () {
+    test('the sample adventure resolves entirely against Mira', () {
       final session = newSession();
       expect(
           loader.unresolvableStats(session.adventure, session.stats), isEmpty);

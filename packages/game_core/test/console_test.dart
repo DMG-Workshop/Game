@@ -23,10 +23,16 @@ Future<String> _play(String room, List<String> commands,
     {int seed = 1,
     int gold = 0,
     List<String> carrying = const [],
-    bool scaled = false}) async {
+    bool scaled = false,
+    bool fighter = false}) async {
   final world = WorldSession(
     campaign: _campaign,
-    actors: [SessionActor(id: 'korash', character: loadKorash())],
+    // Mira the wizard, unless [fighter]: Torvin, the sample.
+    actors: [
+      fighter
+          ? SessionActor(id: 'torvin', character: loadTorvin())
+          : SessionActor(id: 'mira', character: loadMira()),
+    ],
     roller: DiceRoller(seed),
     roomId: room,
     spells: _spells,
@@ -137,13 +143,14 @@ void main() {
 
   group('buying something to wield', () {
     test('asks whether to take it up, with what it would change', () async {
-      final log = await _play('MH_001_Square', ['buy guard sword', '1']);
-      expect(log, contains('Korash Blackearth could wield it now:'));
+      final log =
+          await _play('MH_001_Square', ['buy guard sword', '1'], fighter: true);
+      expect(log, contains('Torvin Ashgrove could wield it now:'));
       expect(
           log,
-          contains('Wield it  Strike +15 2d10+4 (+1 Striking Scythe) '
-              '-> +14 1d8+4'));
-      expect(log, contains('Korash Blackearth takes up Millhaven Guard Sword'));
+          contains('Wield it  Strike +16 2d8+4 (+1 Striking Longsword) '
+              '-> +15 1d8+4'));
+      expect(log, contains('Torvin Ashgrove takes up Millhaven Guard Sword'));
     });
 
     test('a command instead of an answer leaves it in the pack', () async {
@@ -162,10 +169,9 @@ void main() {
         '#Millhaven', '#Drop it', '#Drop it', '0',
       ]);
       expect(log, contains('1. Millhaven Guard Sword'));
-      expect(log, contains('Korash Blackearth takes up Millhaven Guard Sword'));
-      expect(log, contains('(on Korash Blackearth)'));
-      expect(
-          log, contains('Korash Blackearth puts away Millhaven Guard Sword'));
+      expect(log, contains('Mira Quell takes up Millhaven Guard Sword'));
+      expect(log, contains('(on Mira Quell)'));
+      expect(log, contains('Mira Quell puts away Millhaven Guard Sword'));
       expect(log, contains('It will be gone for good.'));
       expect(log, contains('You leave Millhaven Guard Sword behind.'));
       expect(log, contains('The pack is empty'));
@@ -174,8 +180,8 @@ void main() {
     test('offers a draught to drink, and says who is not hurt', () async {
       final log =
           await _play('MH_001_Square', ['buy 2', 'i', '#Minor', '#Drink', '0']);
-      expect(log, contains('Drink it  (HP 70/70)'));
-      expect(log, contains('Korash Blackearth is not hurt.'));
+      expect(log, contains('Drink it  (HP 56/56)'));
+      expect(log, contains('Mira Quell is not hurt.'));
     });
   });
 
@@ -185,7 +191,7 @@ void main() {
         log.replaceAll(RegExp(r'\s+'), ' '),
         contains('(Written for four. Against your party of one, 1 of the 2 '
             'Hollow Thralls comes, and weakened.)'));
-    expect(log, contains('Strike Weak Hollow Thrall'));
+    expect(log, contains('Cast Daze at Weak Hollow Thrall'));
   });
 
   group('a fight', () {
@@ -206,8 +212,8 @@ void main() {
       final log = await _play('WW_001_Edge', ['west'], seed: 3);
       expect(
           log,
-          contains('Cast Fireball  (2 actions, 1 left): catches Hollow Thrall '
-              '2, Hollow Thrall 1 and Korash Blackearth — your own side too'));
+          contains('Cast Fireball  (2 actions, 2 left): catches Hollow Thrall '
+              '2, Hollow Thrall 1 and Mira Quell — your own side too'));
     });
 
     test('casts a spell by its number, at whoever is picked', () async {
@@ -216,7 +222,7 @@ void main() {
           seed: 3);
       expect(log, contains('Ignition: at whom?'));
       expect(log, contains('Hollow Thrall 2  (35/35 HP, engaged)'));
-      expect(log, contains('Korash Blackearth casts Ignition'));
+      expect(log, contains('Mira Quell casts Ignition'));
       expect(log, contains('Hollow Thrall 1: Ignition (spell attack)'));
     });
 
@@ -226,38 +232,38 @@ void main() {
           seed: 3);
       expect(log, contains('0. Back to the fight'));
       expect(log, isNot(contains('casts Ignition')));
-      expect('-- Korash Blackearth, round 1, 3 action(s) --'.allMatches(log),
+      expect('-- Mira Quell, round 1, 3 action(s) --'.allMatches(log),
           hasLength(2),
           reason: 'the same turn offered again, with nothing spent');
     });
 
     test('a burst can be dropped where it spares the party', () async {
-      // Seed 5: one thrall at Korash's elbow, the other hanging back.
+      // Seed 10: one thrall at Mira's elbow, the other hanging back.
       final log = await _play(
-          'WW_001_Edge', ['west', '#Cast Fireball', '#At Hollow Thrall 2'],
-          seed: 5);
+          'WW_001_Edge', ['west', '#Cast Fireball', '#At Hollow Thrall 1'],
+          seed: 10);
       expect(
           log,
-          contains('At Hollow Thrall 1, engaged: catches Hollow Thrall 1 and '
-              'Korash Blackearth — your own side too'));
+          contains('At Hollow Thrall 2, engaged: catches Hollow Thrall 2 and '
+              'Mira Quell — your own side too'));
       expect(
-          log, contains('At Hollow Thrall 2, near: catches Hollow Thrall 2'));
-      expect(log, contains('Hollow Thrall 2: Reflex against Fireball'));
-      expect(log, isNot(contains('Korash Blackearth: Reflex against')));
+          log, contains('At Hollow Thrall 1, near: catches Hollow Thrall 1'));
+      expect(log, contains('Hollow Thrall 1: Reflex against Fireball'));
+      expect(log, isNot(contains('Mira Quell: Reflex against')));
     });
 
     test('offers a draught once somebody is hurt, and drinks it', () async {
       final log = await _play(
           'MH_001_Square',
           [
-            'buy 2', 'west', 'west', 'west', 'end', 'end', '#Drink', //
+            'buy 2', 'west', 'west', 'west', '#Drink', //
           ],
           seed: 3);
       expect(
           log,
           contains('Drink Minor Hearth-Water  (1 action; you are at '
-              '26/70 HP)'));
-      expect(log, contains('Korash Blackearth drinks Minor Hearth-Water'));
+              '46/56 HP)'));
+      expect(log, contains('Mira Quell drinks Minor Hearth-Water'));
     });
 
     test('says what a spell costs when there are too few actions', () async {
@@ -266,7 +272,7 @@ void main() {
           seed: 3);
       expect(
           log,
-          contains('That takes 2 actions, and Korash Blackearth has '
+          contains('That takes 2 actions, and Mira Quell has '
               '1 left this turn.'));
     });
   });
@@ -327,8 +333,8 @@ void main() {
   test('a spell named on its own is cast', () async {
     final log =
         await _play('WW_001_Edge', ['west', 'spells', 'needle darts'], seed: 3);
-    expect(log, contains('Daze (cantrip, rank 3, at will), Magus'));
-    expect(log, contains('Daze (cantrip, rank 3, at will), Necromancer'));
+    expect(log, contains('Daze (cantrip, rank 3, at will), Wizard'));
+    expect(log, contains('Daze (cantrip, rank 3, at will), Witch'));
     expect(log, contains('casts Needle Darts'));
     expect(log, isNot(contains('In a fight you can:')));
   });
@@ -403,7 +409,7 @@ void main() {
 
     test('an imported character has no door on the party menu', () async {
       final log = await _play('MH_003_Tavern', ['party', '1']);
-      expect(log, contains('Korash Blackearth — Orc Magus, level 6'));
+      expect(log, contains('Mira Quell — Human Wizard, level 6'));
       expect(log, isNot(contains('Part ways')));
     });
   });

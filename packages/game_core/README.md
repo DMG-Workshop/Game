@@ -15,7 +15,7 @@ are one problem, narrative is another.
 ```
 dart run game_core:play
 dart run game_core:play --seed=12 --choices=examine-body,descend,read-ledger
-dart run game_core:play --characters=korash.json,sela.json --seed=12
+dart run game_core:play --characters=mira.json,sela.json --seed=12
 ```
 
 `--choices` plays a scripted sequence instead of reading stdin, which makes a
@@ -23,7 +23,7 @@ playthrough reproducible and testable. With a fixed `--seed`, the same choices
 always produce the same rolls.
 
 At the prompt, add a name to say who attempts something — `examine-body
-korash`. Without one, the best candidate rolls.
+mira`. Without one, the best candidate rolls.
 
 ## Who rolls
 
@@ -32,9 +32,9 @@ attempt a check, `suggestedActorFor` names the best, and `choose` accepts any
 of them:
 
 ```dart
-session.suggestedActorFor('examine-body');       // (actor: korash, stat: +14)
-session.choose('examine-body');                  // the best one rolls
-session.choose('recite-rites', actorId: 'korash') // or this one does
+session.suggestedActorFor('examine-body');     // (actor: mira, stat: +14)
+session.choose('examine-body');                // the best one rolls
+session.choose('recite-rites', actorId: 'mira') // or this one does
 ```
 
 So a client can roll the suggestion silently, offer the ranked list, or let a
@@ -46,9 +46,10 @@ absent Lore is not the same as an untrained skill. A gate opens an option when
 *any* actor satisfies it, and is re-checked against whoever actually attempts
 it, so the party is offered the chance only its expert can take.
 
-The ranking produces detail nobody writes on purpose. Korash the undertaker is
-+0 at reciting funeral rites; Sela the rogue is +2, because both are untrained
-and she has the Wisdom. The party's best at burying someone is the thief.
+The ranking produces detail nobody writes on purpose. Mira, who has read
+everything about the dead, is +1 at reciting funeral rites; Sela the rogue is
++2, because both are untrained and Sela has the Wisdom. The party's best at
+burying someone is the thief.
 
 ## Content is data
 
@@ -151,6 +152,6 @@ to be verified on someone else's device.
 ## The sample adventure
 
 `assets/adventures/the_quiet_wake.json` is a short original scene set written
-to exercise one character's asymmetry: Korash reads a corpse at +14 and
-recites over it at +0, and the menu shows both. It is original fiction and
+to exercise one character's asymmetry: Mira reads a corpse at +14 and recites
+over it at +1, and the menu shows both. It is original fiction and
 carries no Paizo setting material — see `NOTICE.md` at the repository root.

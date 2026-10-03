@@ -9,7 +9,7 @@ late Campaign _campaign;
 
 WorldSession _world(String room, Set<String> flags) => WorldSession(
       campaign: _campaign,
-      actors: [SessionActor(id: 'korash', character: loadKorash())],
+      actors: [SessionActor(id: 'mira', character: loadMira())],
       roller: DiceRoller(3),
       roomId: room,
       flags: flags,

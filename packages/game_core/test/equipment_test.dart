@@ -5,23 +5,24 @@ import 'package:game_core/game_core.dart';
 import 'package:pf2e_core/pf2e_core.dart';
 import 'package:test/test.dart';
 
-const _fixture = '../pf2e_core/test/fixtures/korash.json';
+/// Torvin, the sample fighter: master of martial weapons at level 5,
+/// trained in every armour, Strength 19 and Dexterity 16.
+const _fixture = 'assets/characters/torvin.json';
 
-ImportedCharacter _korash() => const PathbuilderImporter()
+ImportedCharacter _torvin() => const PathbuilderImporter()
     .importJson(File(_fixture).readAsStringSync())
     .character;
 
-/// Korash with a different Dexterity, for the rules that only show up on a
-/// character built the other way round. Our one fixture has Dex 10, and a cap
-/// that never binds proves nothing.
-ImportedCharacter _korashWithDex(int score) {
+/// Torvin with a different Dexterity, for the rules that only show up on a
+/// character built the other way round.
+ImportedCharacter _torvinWithDex(int score) {
   final raw = jsonDecode(File(_fixture).readAsStringSync()) as Map;
   ((raw['build'] as Map)['abilities'] as Map)['dex'] = score;
   return const PathbuilderImporter().importJson(jsonEncode(raw)).character;
 }
 
 DerivedStats _stats([ImportedCharacter? character]) =>
-    DerivedStats(character ?? _korash());
+    DerivedStats(character ?? _torvin());
 
 GearItem _weapon({
   String id = 'w_test',
@@ -72,28 +73,28 @@ void main() {
   group('the kit they arrived in', () {
     test('matches the imported sheet exactly', () {
       final equipped = EquippedStats(_stats());
-      expect(equipped.armorClass, 25);
-      expect(equipped.attackBonus, 15);
-      expect(equipped.damage.toString(), '2d10+4');
-      expect(equipped.weaponLabel, '+1 Striking Scythe');
-      expect(equipped.armorLabel, '+1 Full Plate');
+      expect(equipped.armorClass, 23);
+      expect(equipped.attackBonus, 16);
+      expect(equipped.damage.toString(), '2d8+4');
+      expect(equipped.weaponLabel, '+1 Striking Longsword');
+      expect(equipped.armorLabel, 'Full Plate');
     });
   });
 
   group('a weapon in hand', () {
     test('computes the same numbers Pathbuilder did for the same weapon', () {
-      // The scythe as a campaign item: martial, d10, +1 potency, striking.
-      // Pathbuilder says +15 for 2d10+4, and so must we — level 6, expert in
-      // martial weapons (4+6), Strength +4, potency +1.
-      final scythe = _weapon(
-        damage: '1d10',
+      // The longsword as a campaign item: martial, d8, +1 potency, striking.
+      // The sheet says +16 for 2d8+4, and so must we — level 5, master of
+      // martial weapons (6+5), Strength +4, potency +1.
+      final longsword = _weapon(
+        damage: '1d8',
         bonus: 1,
         striking: 'striking',
         traits: const ['martial'],
       );
-      final equipped = EquippedStats(_stats(), Loadout(weapon: scythe));
-      expect(equipped.attackBonus, 15);
-      expect(equipped.damage.toString(), '2d10+4');
+      final equipped = EquippedStats(_stats(), Loadout(weapon: longsword));
+      expect(equipped.attackBonus, 16);
+      expect(equipped.damage.toString(), '2d8+4');
     });
 
     test('a striking rune sets the number of dice', () {
@@ -130,15 +131,31 @@ void main() {
     });
 
     test('proficiency comes from the weapon category', () {
-      // Korash is an expert with martial weapons and untrained with advanced
-      // ones, and untrained gives up the level entirely.
+      // Torvin is a master of martial weapons and an expert with advanced
+      // ones.
       final martial =
           EquippedStats(_stats(), Loadout(weapon: _weapon(traits: ['martial'])))
               .attackBonus;
       final advanced = EquippedStats(
           _stats(), Loadout(weapon: _weapon(traits: ['advanced']))).attackBonus;
-      expect(martial, 14); // 6 level + 4 expert + 4 Strength
-      expect(advanced, 4); // Strength alone
+      expect(martial, 15); // 5 level + 6 master + 4 Strength
+      expect(advanced, 13); // 5 level + 4 expert + 4 Strength
+    });
+
+    test('untrained gives up the level entirely', () {
+      // Mira, a wizard, is trained with simple weapons and nothing else.
+      final mira = DerivedStats(const PathbuilderImporter()
+          .importJson(
+              File('../pf2e_core/test/fixtures/mira.json').readAsStringSync())
+          .character);
+      final simple =
+          EquippedStats(mira, Loadout(weapon: _weapon(traits: ['simple'])))
+              .attackBonus;
+      final martial =
+          EquippedStats(mira, Loadout(weapon: _weapon(traits: ['martial'])))
+              .attackBonus;
+      expect(simple, 8); // 6 level + 2 trained + Strength 0
+      expect(martial, 0); // Strength alone, which is nothing
     });
 
     test('an uncategorised weapon is treated as martial', () {
@@ -149,12 +166,12 @@ void main() {
 
     test('Strength swings it, and finesse only changes the attack', () {
       final finesse = EquippedStats(
-        _stats(_korashWithDex(20)),
+        _stats(_torvinWithDex(20)),
         Loadout(weapon: _weapon(traits: ['martial', 'finesse'])),
       );
       // Dexterity +5 beats Strength +4, so the attack uses it.
       expect(finesse.attackAbility, Ability.dexterity);
-      expect(finesse.attackBonus, 15);
+      expect(finesse.attackBonus, 16); // 5 + 6 master + Dexterity 5
       // Damage is still Strength: finesse does not change what a blow weighs.
       expect(finesse.damage.flatBonus, 4);
     });
@@ -173,7 +190,7 @@ void main() {
         Loadout(weapon: _weapon(traits: ['martial', 'propulsive'])),
       );
       expect(bow.attackAbility, Ability.dexterity);
-      expect(bow.attackBonus, 10); // 6 + 4 + Dexterity 0
+      expect(bow.attackBonus, 14); // 5 + 6 master + Dexterity 3
       expect(bow.damage.flatBonus, 2); // half of Strength +4
     });
 
@@ -198,18 +215,18 @@ void main() {
 
   group('armour on', () {
     test('AC is rebuilt from the suit rather than the sheet', () {
-      // 10 + (trained 2 + level 6) + Dexterity 0 (capped at 0) + 6 plate + 2
-      // potency = 26, one better than the +1 full plate he came in.
+      // 10 + (trained 2 + level 5) + Dexterity 3 (capped at 0) + 6 plate + 2
+      // potency = 25, two better than the plain full plate he came in.
       final equipped = EquippedStats(
         _stats(),
         Loadout(armor: _armor(bonus: 2, acBonus: 6, dexCap: 0)),
       );
-      expect(equipped.armorClass, 26);
+      expect(equipped.armorClass, 25);
       expect(equipped.armorCategory, 'heavy');
     });
 
     test('the Dexterity cap actually binds', () {
-      final nimble = _stats(_korashWithDex(18)); // +4
+      final nimble = _stats(_torvinWithDex(18)); // +4
       final plate = EquippedStats(
         nimble,
         Loadout(armor: _armor(acBonus: 6, dexCap: 0, traits: ['heavy'])),
@@ -224,7 +241,7 @@ void main() {
     });
 
     test('proficiency comes from the armour category', () {
-      // Korash is trained in every category, so the categories differ only by
+      // Torvin is trained in every category, so the categories differ only by
       // what the suits themselves are worth.
       expect(
         EquippedStats(_stats(), Loadout(armor: _armor(traits: ['light'])))
@@ -238,8 +255,8 @@ void main() {
         _stats(),
         Loadout(armor: _armor(traits: ['medium'])),
       );
-      // Medium default: +4 AC, Dexterity capped at 1.
-      expect(bare.armorClass, 10 + 8 + 0 + 4);
+      // Medium default: +4 AC, Dexterity +3 capped at 1.
+      expect(bare.armorClass, 10 + 7 + 1 + 4);
       expect(bare.dexterityCap, 1);
     });
 
@@ -288,9 +305,9 @@ void main() {
       pack
         ..add('w_axe')
         ..add('w_axe');
-      pack.equip('korash', 'w_axe');
+      pack.equip('mira', 'w_axe');
       expect(pack.equip('sela', 'w_axe').item.id, 'w_axe');
-      expect(pack.holdersOf('w_axe'), unorderedEquals(['korash', 'sela']));
+      expect(pack.holdersOf('w_axe'), unorderedEquals(['mira', 'sela']));
     });
 
     test('a third person cannot use a copy that does not exist', () {
@@ -298,19 +315,19 @@ void main() {
         ..add('w_axe')
         ..add('w_axe');
       pack
-        ..equip('korash', 'w_axe')
+        ..equip('mira', 'w_axe')
         ..equip('sela', 'w_axe');
       expect(
         () => pack.equip('elara', 'w_axe'),
         throwsA(isA<EquipException>()
-            .having((e) => e.message, 'message', contains('korash and sela'))),
+            .having((e) => e.message, 'message', contains('mira and sela'))),
       );
     });
 
     test('re-equipping your own copy is not taking somebody else\'s', () {
       pack.add('w_axe');
-      pack.equip('korash', 'w_axe');
-      expect(pack.equip('korash', 'w_axe').item.id, 'w_axe');
+      pack.equip('mira', 'w_axe');
+      expect(pack.equip('mira', 'w_axe').item.id, 'w_axe');
     });
 
     test('taking a copy out leaves the rest', () {
@@ -326,7 +343,7 @@ void main() {
 
     test('will not take the only copy off somebody\'s back', () {
       pack.add('w_axe');
-      pack.equip('korash', 'w_axe');
+      pack.equip('mira', 'w_axe');
       expect(
         () => pack.remove('w_axe'),
         throwsA(isA<EquipException>()
@@ -335,7 +352,7 @@ void main() {
       pack.add('w_axe');
       expect(pack.remove('w_axe').id, 'w_axe',
           reason: 'the spare can go; the worn one stays');
-      expect(pack.holderOf('w_axe'), 'korash');
+      expect(pack.holderOf('w_axe'), 'mira');
     });
 
     test('keeps a purse, and will not spend what it has not got', () {
@@ -377,9 +394,9 @@ void main() {
       pack
         ..add('w_axe')
         ..add('a_test');
-      expect(pack.equip('korash', 'w_axe').slot, EquipSlot.weapon);
-      expect(pack.equip('korash', 'a_test').slot, EquipSlot.armor);
-      final loadout = pack.loadoutFor('korash');
+      expect(pack.equip('mira', 'w_axe').slot, EquipSlot.weapon);
+      expect(pack.equip('mira', 'a_test').slot, EquipSlot.armor);
+      final loadout = pack.loadoutFor('mira');
       expect(loadout.weapon?.id, 'w_axe');
       expect(loadout.armor?.id, 'a_test');
     });
@@ -388,22 +405,21 @@ void main() {
       pack
         ..add('w_axe')
         ..add('w_spear');
-      pack.equip('korash', 'w_axe');
-      final swap = pack.equip('korash', 'w_spear');
+      pack.equip('mira', 'w_axe');
+      final swap = pack.equip('mira', 'w_spear');
       expect(swap.replaced?.id, 'w_axe');
       // The old one is still in the pack; it was put away, not dropped.
       expect(pack.isCarrying('w_axe'), isTrue);
     });
 
     test('refuses something nobody is carrying', () {
-      expect(
-          () => pack.equip('korash', 'w_axe'), throwsA(isA<EquipException>()));
+      expect(() => pack.equip('mira', 'w_axe'), throwsA(isA<EquipException>()));
     });
 
     test('refuses something that is not worn or wielded', () {
       pack.add('g_charm');
       expect(
-        () => pack.equip('korash', 'g_charm'),
+        () => pack.equip('mira', 'g_charm'),
         throwsA(isA<EquipException>().having(
             (e) => e.message, 'message', contains('stays in the pack'))),
       );
@@ -411,38 +427,38 @@ void main() {
 
     test('one item cannot be on two people at once', () {
       pack.add('w_axe');
-      pack.equip('korash', 'w_axe');
+      pack.equip('mira', 'w_axe');
       expect(
         () => pack.equip('elara', 'w_axe'),
         throwsA(isA<EquipException>()
-            .having((e) => e.message, 'message', contains('korash'))),
+            .having((e) => e.message, 'message', contains('mira'))),
       );
-      expect(pack.holderOf('w_axe'), 'korash');
+      expect(pack.holderOf('w_axe'), 'mira');
     });
 
     test('unequipping gives it back and leaves it carried', () {
       pack.add('w_axe');
-      pack.equip('korash', 'w_axe');
-      expect(pack.unequip('korash', EquipSlot.weapon)?.id, 'w_axe');
-      expect(pack.loadoutFor('korash').weapon, isNull);
+      pack.equip('mira', 'w_axe');
+      expect(pack.unequip('mira', EquipSlot.weapon)?.id, 'w_axe');
+      expect(pack.loadoutFor('mira').weapon, isNull);
       expect(pack.isCarrying('w_axe'), isTrue);
       expect(pack.holderOf('w_axe'), isNull);
     });
 
     test('unequipping an empty slot is not an error', () {
-      expect(pack.unequip('korash', EquipSlot.armor), isNull);
+      expect(pack.unequip('mira', EquipSlot.armor), isNull);
     });
 
     test('survives being written out and read back', () {
       pack
         ..add('w_axe')
         ..add('a_test');
-      pack.equip('korash', 'w_axe');
+      pack.equip('mira', 'w_axe');
 
       final restored =
           PartyInventory.fromJson(table, jsonDecode(jsonEncode(pack.toJson())));
       expect(restored.carried.map((i) => i.id), pack.carried.map((i) => i.id));
-      expect(restored.loadoutFor('korash').weapon?.id, 'w_axe');
+      expect(restored.loadoutFor('mira').weapon?.id, 'w_axe');
     });
 
     test('keeps every copy and every coin across a save', () {
@@ -452,14 +468,14 @@ void main() {
         ..add('w_axe')
         ..earn(4321);
       pack
-        ..equip('korash', 'w_axe')
+        ..equip('mira', 'w_axe')
         ..equip('sela', 'w_axe');
 
       final restored =
           PartyInventory.fromJson(table, jsonDecode(jsonEncode(pack.toJson())));
       expect(restored.countOf('w_axe'), 3);
       expect(restored.coin, 4321);
-      expect(restored.holdersOf('w_axe'), unorderedEquals(['korash', 'sela']));
+      expect(restored.holdersOf('w_axe'), unorderedEquals(['mira', 'sela']));
     });
 
     test('a save cannot put more people in a sword than there are swords', () {
@@ -468,7 +484,7 @@ void main() {
       final restored = PartyInventory.fromJson(table, {
         'carried': ['w_axe'],
         'equipped': {
-          'korash': {'weapon': 'w_axe'},
+          'mira': {'weapon': 'w_axe'},
           'sela': {'weapon': 'w_axe'},
         },
       });
@@ -480,11 +496,11 @@ void main() {
       final restored = PartyInventory.fromJson(table, {
         'carried': ['w_axe', 'w_deleted'],
         'equipped': {
-          'korash': {'weapon': 'w_deleted'}
+          'mira': {'weapon': 'w_deleted'}
         },
       });
       expect(restored.carried.map((i) => i.id), ['w_axe']);
-      expect(restored.loadoutFor('korash').weapon, isNull);
+      expect(restored.loadoutFor('mira').weapon, isNull);
     });
   });
 }

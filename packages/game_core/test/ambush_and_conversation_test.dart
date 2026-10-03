@@ -130,7 +130,7 @@ WorldSession _walk({
 }) =>
     WorldSession(
       campaign: campaign ?? _road(),
-      actors: [SessionActor(id: 'korash', character: loadKorash())],
+      actors: [SessionActor(id: 'mira', character: loadMira())],
       roller: DiceRoller(seed),
       roomId: room,
       flags: flags,
@@ -308,7 +308,7 @@ void main() {
       final talk = world.beginConversation('pell')!.talk;
       final event = talk.choose('thank');
       expect(event.said, 'Thanks, friend.');
-      expect(event.actorName, 'Korash Blackearth');
+      expect(event.actorName, 'Mira Quell');
       expect(event.narration, 'He smiles.');
     });
 

@@ -17,7 +17,7 @@ WorldSession _world({
 }) =>
     WorldSession(
       campaign: _campaign,
-      actors: actors ?? [SessionActor(id: 'korash', character: loadKorash())],
+      actors: actors ?? [SessionActor(id: 'mira', character: loadMira())],
       roller: DiceRoller(seed),
       roomId: room,
       flags: flags,
@@ -30,7 +30,7 @@ WorldSession _restored(WorldSession world) => WorldSession.restore(
           jsonDecode(jsonEncode(world.snapshot())) as Map<String, Object?>,
     );
 
-/// Fights whatever is here to the end. The thralls are level 3 and Korash is
+/// Fights whatever is here to the end. The thralls are level 3 and Mira is
 /// level 6, so this is a win; the tests are about what the win pays.
 EncounterSession _winHere(WorldSession world) {
   final fight = world.beginEncounter();
@@ -91,38 +91,38 @@ void main() {
 
     test('starts from what the sheet says', () {
       final xp = Experience()
-        ..reconcile([(id: 'korash', level: 6, sheetXp: 350)]);
-      expect(xp.xpOf('korash'), 350);
+        ..reconcile([(id: 'mira', level: 6, sheetXp: 350)]);
+      expect(xp.xpOf('mira'), 350);
     });
 
     test('a thousand is enough to level', () {
       final xp = Experience()
-        ..reconcile([(id: 'korash', level: 6, sheetXp: 0)])
-        ..award(['korash'], 990);
-      expect(xp.readyToLevel('korash'), isFalse);
-      xp.award(['korash'], 10);
-      expect(xp.readyToLevel('korash'), isTrue);
+        ..reconcile([(id: 'mira', level: 6, sheetXp: 0)])
+        ..award(['mira'], 990);
+      expect(xp.readyToLevel('mira'), isFalse);
+      xp.award(['mira'], 10);
+      expect(xp.readyToLevel('mira'), isTrue);
     });
 
     test('a re-imported sheet a level higher takes the thousand off', () {
       final xp = Experience()
-        ..reconcile([(id: 'korash', level: 6, sheetXp: 0)])
-        ..award(['korash'], 1120);
-      final settled = xp.reconcile([(id: 'korash', level: 7, sheetXp: 0)]);
+        ..reconcile([(id: 'mira', level: 6, sheetXp: 0)])
+        ..award(['mira'], 1120);
+      final settled = xp.reconcile([(id: 'mira', level: 7, sheetXp: 0)]);
       expect(settled.single.levels, 1);
-      expect(xp.xpOf('korash'), 120);
-      expect(xp.readyToLevel('korash'), isFalse);
+      expect(xp.xpOf('mira'), 120);
+      expect(xp.readyToLevel('mira'), isFalse);
     });
 
     test('survives a save', () {
       final xp = Experience()
-        ..reconcile([(id: 'korash', level: 6, sheetXp: 0)])
-        ..award(['korash'], 450);
+        ..reconcile([(id: 'mira', level: 6, sheetXp: 0)])
+        ..award(['mira'], 450);
       final back = Experience.fromJson(jsonDecode(jsonEncode(xp.toJson())));
-      expect(back.xpOf('korash'), 450);
+      expect(back.xpOf('mira'), 450);
       // And it still knows which level it was counting from.
-      back.reconcile([(id: 'korash', level: 7, sheetXp: 0)]);
-      expect(back.xpOf('korash'), 0);
+      back.reconcile([(id: 'mira', level: 7, sheetXp: 0)]);
+      expect(back.xpOf('mira'), 0);
     });
   });
 
@@ -176,7 +176,7 @@ void main() {
       final world = _world(
         room: 'WW_002_Deep',
         actors: [
-          SessionActor(id: 'korash', character: loadKorash()),
+          SessionActor(id: 'mira', character: loadMira()),
           SessionActor(id: 'sela', character: loadSela()),
         ],
       );
@@ -187,7 +187,7 @@ void main() {
       // Two level 3 thralls, written for four; a party of two meets one of
       // them, at half the budget. 15 XP, and each character earns all 15.
       expect(fight.xpEarned, 15);
-      expect(world.experience.xpOf('korash'), 15);
+      expect(world.experience.xpOf('mira'), 15);
       expect(world.experience.xpOf('sela'), 15);
       // 2d6 gp.
       expect(world.inventory.coin - coinBefore, inInclusiveRange(200, 1200));
@@ -199,7 +199,7 @@ void main() {
       world.concludeEncounter(fight);
       expect(fight.coinEarned, 0);
       expect(fight.xpEarned, 0);
-      expect(world.experience.xpOf('korash'), 0);
+      expect(world.experience.xpOf('mira'), 0);
     });
 
     test('every fight in the campaign has coin on it', () {
@@ -284,7 +284,7 @@ void main() {
       final settled = world.settleArcs();
       expect(settled.completed.single.id, 'side_undertakers_ledger');
       expect(world.inventory.coin, coin + 1000);
-      expect(world.experience.xpOf('korash'), 10);
+      expect(world.experience.xpOf('mira'), 10);
 
       // Settling again pays nothing more.
       expect(world.settleArcs().completed, isEmpty);
@@ -304,7 +304,7 @@ void main() {
       expect(settled.completed.map((a) => a.id), ['tier_1_local_threat']);
       expect(settled.worldState, contains('Unlock_Travel_to_Valorheim'));
       expect(world.inventory.coin, coin + 5000);
-      expect(world.experience.xpOf('korash'), 80);
+      expect(world.experience.xpOf('mira'), 80);
       expect(world.applyPendingWorldState(), isEmpty);
     });
 

@@ -22,7 +22,7 @@ WorldSession _world(int partySize, {bool scale = true}) => WorldSession(
       campaign: _campaign,
       actors: [
         for (var i = 0; i < partySize; i++)
-          SessionActor(id: 'pc$i', character: loadKorash()),
+          SessionActor(id: 'pc$i', character: loadMira()),
       ],
       roller: DiceRoller(3),
       roomId: 'WW_002_Deep',

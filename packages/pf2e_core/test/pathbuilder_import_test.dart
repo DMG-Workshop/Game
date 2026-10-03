@@ -4,62 +4,62 @@ import 'package:test/test.dart';
 import 'fixture_loader.dart';
 
 void main() {
-  late ImportedCharacter korash;
+  late ImportedCharacter mira;
   late ImportReport report;
 
   setUp(() {
-    final result = loadKorash();
-    korash = result.character;
+    final result = loadMira();
+    mira = result.character;
     report = result.report;
   });
 
   group('identity and sentinels', () {
     test('strips the leading whitespace Pathbuilder exports in names', () {
-      expect(korash.name, 'Korash Blackearth');
+      expect(mira.name, 'Mira Quell');
     });
 
     test('maps the "Not set" sentinel to null', () {
-      expect(korash.gender, isNull);
-      expect(korash.age, isNull);
-      expect(korash.deity, isNull);
+      expect(mira.gender, isNull);
+      expect(mira.age, isNull);
+      expect(mira.deity, isNull);
     });
 
     test('keeps legacy alignment but flags it', () {
-      expect(korash.alignment, 'N');
+      expect(mira.alignment, 'N');
       expect(report.hasCode('legacy_alignment'), isTrue);
     });
 
     test('reads class, dual class and ancestry', () {
-      expect(korash.className, 'Magus');
-      expect(korash.dualClassName, 'Necromancer');
-      expect(korash.ancestry, 'Orc');
-      expect(korash.heritage, 'Dragonblood');
-      expect(korash.background, 'Undertaker');
-      expect(korash.level, 6);
+      expect(mira.className, 'Wizard');
+      expect(mira.dualClassName, 'Witch');
+      expect(mira.ancestry, 'Human');
+      expect(mira.heritage, 'Skilled Human');
+      expect(mira.background, 'Hermit');
+      expect(mira.level, 6);
     });
   });
 
   group('variant rules', () {
     test('detects dual class from its dedicated field', () {
-      expect(korash.variantRules.dualClass, isTrue);
+      expect(mira.variantRules.dualClass, isTrue);
     });
 
     test('infers Free Archetype and Ancestry Paragon from feat source labels',
         () {
       // Neither has a field of its own; both exist only as free text such as
-      // "Free Archetype 4" and "Ancestry Paragon 3".
-      expect(korash.variantRules.freeArchetype, isTrue);
-      expect(korash.variantRules.ancestryParagon, isTrue);
+      // "Free Archetype 2" and "Ancestry Paragon 3".
+      expect(mira.variantRules.freeArchetype, isTrue);
+      expect(mira.variantRules.ancestryParagon, isTrue);
       expect(report.hasCode('variant_rules_inferred'), isTrue);
     });
   });
 
   group('feats', () {
     test('reads all entries including short tuples', () {
-      expect(korash.feats.length, 21);
+      expect(mira.feats.length, 23);
       // Background-granted feats carry four elements rather than seven.
       final awarded =
-          korash.feats.firstWhere((f) => f.name == 'Forensic Acumen');
+          mira.feats.firstWhere((f) => f.name == 'Dubious Knowledge');
       expect(awarded.type, 'Awarded Feat');
       expect(awarded.level, 1);
       expect(awarded.source, isNull);
@@ -67,56 +67,56 @@ void main() {
     });
 
     test('captures a feat’s own selected option', () {
-      final assurance = korash.feats.firstWhere((f) => f.name == 'Assurance');
+      final assurance = mira.feats.firstWhere((f) => f.name == 'Assurance');
       expect(assurance.choice, 'Medicine');
     });
 
     test('links granted feats to their parent through the composite key', () {
-      final reincarnation =
-          korash.feats.firstWhere((f) => f.name == 'Reincarnation Feat');
-      expect(reincarnation.isParent, isTrue);
+      // Each child's source is its parent's name and source run together:
+      // "Natural AmbitionHuman Feat 1".
+      final ambition =
+          mira.feats.firstWhere((f) => f.name == 'Natural Ambition');
+      expect(ambition.isParent, isTrue);
+      expect(mira.childrenOf(ambition).map((f) => f.name), ['Reach Spell']);
 
-      final children = korash.childrenOf(reincarnation);
-      expect(children.map((f) => f.name), contains('Weight of Experience'));
-
-      // The chain nests: Reincarnation Feat -> Weight of Experience ->
-      // Assurance, with each parent key built by bare concatenation.
-      final weight =
-          korash.feats.firstWhere((f) => f.name == 'Weight of Experience');
+      final adopted =
+          mira.feats.firstWhere((f) => f.name == 'Adopted Ancestry');
+      expect(adopted.choice, 'Elf');
       expect(
-          korash.childrenOf(weight).map((f) => f.name), contains('Assurance'));
+          mira.childrenOf(adopted).map((f) => f.name), ['Otherworldly Magic']);
     });
 
     test('flags a parent choice that was never resolved', () {
-      final unresolved = korash.unresolvedChoices.map((f) => f.name);
-      expect(unresolved, contains('Basic Maneuver'));
+      final unresolved = mira.unresolvedChoices.map((f) => f.name);
+      expect(unresolved, contains('Skill Mastery'));
+      expect(unresolved, isNot(contains('Natural Ambition')));
       expect(report.hasCode('unresolved_choice'), isTrue);
     });
   });
 
   group('class features', () {
     test('de-duplicates features that also appear as feats', () {
-      // Reactive Strike is in both `feats` and `specials`.
-      expect(korash.feats.map((f) => f.name), contains('Reactive Strike'));
-      expect(korash.classFeatures, isNot(contains('Reactive Strike')));
+      // Reach Spell is in both `feats` and `specials`.
+      expect(mira.feats.map((f) => f.name), contains('Reach Spell'));
+      expect(mira.classFeatures, isNot(contains('Reach Spell')));
       expect(report.hasCode('feature_feat_overlap'), isTrue);
     });
 
     test('keeps genuine features', () {
-      expect(korash.classFeatures, contains('Spellstrike'));
-      expect(korash.classFeatures, contains('Arcane Cascade'));
-      expect(korash.classFeatures, contains('Inexorable Iron'));
-      expect(korash.classFeatures, contains('Puppeteer'));
+      expect(mira.classFeatures, contains('Arcane Bond'));
+      expect(mira.classFeatures, contains('Arcane School'));
+      expect(mira.classFeatures, contains('Patron'));
+      expect(mira.classFeatures, contains('Hexes'));
     });
   });
 
   group('proficiencies', () {
     test('separates defences from skills', () {
-      expect(korash.proficiencyFor('fortitude'), Proficiency.expert);
-      expect(korash.proficiencyFor('martial'), Proficiency.expert);
-      expect(korash.proficiencyFor('heavy'), Proficiency.trained);
-      expect(korash.proficiencyFor('advanced'), Proficiency.untrained);
-      expect(korash.skills[CoreSkill.deception], Proficiency.expert);
+      expect(mira.proficiencyFor('reflex'), Proficiency.expert);
+      expect(mira.proficiencyFor('simple'), Proficiency.trained);
+      expect(mira.proficiencyFor('unarmored'), Proficiency.trained);
+      expect(mira.proficiencyFor('martial'), Proficiency.untrained);
+      expect(mira.skills[CoreSkill.arcana], Proficiency.expert);
     });
 
     test('ignores Starfinder skills that leak into the schema', () {
@@ -127,72 +127,74 @@ void main() {
     });
 
     test('every core skill is present even when absent from the payload', () {
-      expect(korash.skills.length, CoreSkill.values.length);
+      expect(mira.skills.length, CoreSkill.values.length);
     });
   });
 
   group('gear', () {
     test('reads the striking rune from the field named "str"', () {
       // `weapons[].str` is the striking rune; `abilities.str` is Strength.
-      final scythe = korash.weapons.single;
-      expect(scythe.strikingRune, StrikingRune.striking);
-      expect(scythe.strikingRune.diceCount, 2);
-      expect(scythe.damageFormula, '2d10+4');
-      expect(scythe.attackBonus, 15);
-      expect(scythe.potencyRune, 1);
-      expect(scythe.display, '+1 Striking Scythe');
+      final staff = mira.weapons.single;
+      expect(staff.strikingRune, StrikingRune.striking);
+      expect(staff.strikingRune.diceCount, 2);
+      expect(staff.damageFormula, '2d4');
+      expect(staff.attackBonus, 9);
+      expect(staff.potencyRune, 1);
+      expect(staff.display, '+1 Striking Staff');
     });
 
     test('reads worn armour', () {
-      expect(korash.wornArmor?.name, 'Full Plate');
-      expect(korash.wornArmor?.proficiencyCategory, 'heavy');
-      expect(korash.wornArmor?.potencyRune, 1);
+      expect(mira.wornArmor?.name, "Explorer's Clothing");
+      expect(mira.wornArmor?.proficiencyCategory, 'unarmored');
+      expect(mira.wornArmor?.potencyRune, 1);
     });
 
     test('reads money', () {
-      expect(korash.money.gp, 270);
-      expect(korash.money.totalInCopper, 27000);
+      expect(mira.money.gp, 270);
+      expect(mira.money.totalInCopper, 27000);
     });
   });
 
   group('spellcasting', () {
     test('reads one entry per class', () {
-      expect(korash.spellcasting.length, 2);
-      final magus = korash.spellcasting.first;
-      expect(magus.name, 'Magus');
-      expect(magus.tradition, MagicTradition.arcane);
-      expect(magus.castingType, 'prepared');
-      expect(magus.ability, Ability.intelligence);
+      expect(mira.spellcasting.length, 2);
+      final wizard = mira.spellcasting.first;
+      expect(wizard.name, 'Wizard');
+      expect(wizard.tradition, MagicTradition.arcane);
+      expect(wizard.castingType, 'prepared');
+      expect(wizard.ability, Ability.intelligence);
+      expect(mira.spellcasting.last.tradition, MagicTradition.occult);
     });
 
     test('sorts spell lists by rank despite arbitrary payload order', () {
-      // The Magus `spells` array arrives ordered 0, 3, 2, 1.
-      final magus = korash.spellcasting.first;
-      expect(magus.known.map((l) => l.rank), [0, 1, 2, 3]);
-      expect(magus.knownAt(3)!.spells, ['Fireball']);
+      // The Wizard `spells` array arrives ordered 0, 3, 2, 1.
+      final wizard = mira.spellcasting.first;
+      expect(wizard.known.map((l) => l.rank), [0, 1, 2, 3]);
+      expect(wizard.knownAt(3)!.spells, ['Fireball', 'Lightning Bolt']);
     });
 
     test('distinguishes known spells from the prepared loadout', () {
-      final magus = korash.spellcasting.first;
-      // Stupefy is in the spellbook but was not prepared today.
-      expect(magus.knownAt(2)!.spells, contains('Stupefy'));
-      expect(magus.preparedAt(2)!.spells, isNot(contains('Stupefy')));
+      final wizard = mira.spellcasting.first;
+      // See the Unseen is in the spellbook but was not prepared today.
+      expect(wizard.knownAt(2)!.spells, contains('See the Unseen'));
+      expect(wizard.preparedAt(2)!.spells, isNot(contains('See the Unseen')));
     });
 
     test('keeps duplicates in a prepared list', () {
-      // Prepared is a slot list, not a set: both rank-1 slots hold Sure Strike.
-      final necro = korash.spellcasting[1];
-      expect(necro.preparedAt(1)!.spells, ['Sure Strike', 'Sure Strike']);
+      // Prepared is a slot list, not a set: two rank-1 slots hold Sure Strike.
+      final witch = mira.spellcasting[1];
+      expect(
+          witch.preparedAt(1)!.spells, ['Sure Strike', 'Sure Strike', 'Fear']);
     });
 
     test('reads slots per day with cantrips at index zero', () {
-      final magus = korash.spellcasting.first;
-      expect(magus.slotsPerDay, [5, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0]);
-      expect(magus.cantripCount, 5);
-      expect(magus.highestRank, 3);
-      expect(magus.slotsAt(3), 2);
-      expect(magus.slotsAt(4), 0);
-      expect(magus.slotsAt(99), 0);
+      final wizard = mira.spellcasting.first;
+      expect(wizard.slotsPerDay, [5, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0]);
+      expect(wizard.cantripCount, 5);
+      expect(wizard.highestRank, 3);
+      expect(wizard.slotsAt(3), 3);
+      expect(wizard.slotsAt(4), 0);
+      expect(wizard.slotsAt(99), 0);
     });
 
     test('warns when dual-class entries report identical slot arrays', () {
@@ -202,25 +204,25 @@ void main() {
 
   group('focus', () {
     test('uses the top-level pool, not the per-caster field', () {
-      // Each spellCasters entry reports focusPoints 0; the real pool is 3.
-      expect(korash.focusPoints, 3);
-      for (final entry in korash.spellcasting) {
+      // Each spellCasters entry reports focusPoints 0; the real pool is 2.
+      expect(mira.focusPoints, 2);
+      for (final entry in mira.spellcasting) {
         expect(entry.name, isNotEmpty);
       }
     });
 
     test('flattens the tradition/ability nesting', () {
-      expect(korash.focus.length, 2);
+      expect(mira.focus.length, 2);
       final occult =
-          korash.focus.firstWhere((f) => f.tradition == MagicTradition.occult);
+          mira.focus.firstWhere((f) => f.tradition == MagicTradition.occult);
       expect(occult.ability, Ability.intelligence);
-      expect(occult.cantrips, ['Create Thrall', 'Thrall Charge']);
-      expect(occult.spells, ['Life Tap', 'Necrotic Bomb']);
+      expect(occult.cantrips, ['Evil Eye']);
+      expect(occult.spells, ['Cackle']);
 
       final arcane =
-          korash.focus.firstWhere((f) => f.tradition == MagicTradition.arcane);
+          mira.focus.firstWhere((f) => f.tradition == MagicTradition.arcane);
       expect(arcane.cantrips, isEmpty);
-      expect(arcane.spells, ['Thunderous Strike']);
+      expect(arcane.spells, ['Force Bolt']);
     });
   });
 
@@ -264,7 +266,7 @@ void main() {
     });
   });
 
-  test('a clean import of a real build raises no errors', () {
+  test('a clean import of a full build raises no errors', () {
     expect(report.hasErrors, isFalse);
   });
 }

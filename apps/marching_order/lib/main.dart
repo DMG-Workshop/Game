@@ -132,7 +132,9 @@ class _TitleScreenState extends State<TitleScreen> {
                                 await GameController.demoCharacter(),
                               ]),
                             ),
-                      child: const Text('Play the sample (Korash, level 6)'),
+                      child: const Text(
+                        'Play the sample (Torvin, level 5 fighter)',
+                      ),
                     ),
                   ],
                 ),
