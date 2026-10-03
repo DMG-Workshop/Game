@@ -6,6 +6,10 @@ import 'game_controller.dart';
 
 void main() => runApp(const MarchingOrderApp());
 
+/// Which build this is, for telling whether a deploy has arrived: the
+/// commit and its date, passed in by the Pages workflow. Empty otherwise.
+const _build = String.fromEnvironment('BUILD');
+
 class MarchingOrderApp extends StatelessWidget {
   const MarchingOrderApp({super.key});
 
@@ -145,6 +149,15 @@ class _TitleScreenState extends State<TitleScreen> {
                 if (_error case final error?) ...[
                   const SizedBox(height: 16),
                   Text(error, style: TextStyle(color: theme.colorScheme.error)),
+                ],
+                if (_build.isNotEmpty) ...[
+                  const SizedBox(height: 32),
+                  Text(
+                    'Build $_build',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
                 ],
               ],
             ),
