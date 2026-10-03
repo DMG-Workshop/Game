@@ -16,14 +16,15 @@ WorldSession _world({
 }) {
   final world = WorldSession(
     campaign: _campaign,
-    actors: [SessionActor(id: 'korash', character: loadKorash())],
+    // Torvin, the fighter: the Mere Road is fought with a sword.
+    actors: [SessionActor(id: 'torvin', character: loadTorvin())],
     roller: DiceRoller(seed),
     roomId: room,
     flags: flags,
     cameFrom: cameFrom,
   );
   if (armed) {
-    // Late-game kit, so a level 6 character walking a level 3 road is a test
+    // Late-game kit, so a level 5 character walking a level 3 road is a test
     // of the road rather than of the dice.
     world.inventory
       ..add('w_019_the_last_nail')
@@ -94,7 +95,7 @@ void main() {
     });
 
     test('every roll is one a real character can make', () {
-      final stats = DerivedStats(loadKorash());
+      final stats = DerivedStats(loadMira());
       for (final c in _campaign.conversations.all) {
         expect(const AdventureLoader().unresolvableStats(c.adventure, stats),
             isEmpty,

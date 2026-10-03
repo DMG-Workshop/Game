@@ -105,10 +105,11 @@ void main() {
 
   test('the pack and a fight are menus of chips', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
-    // Seeded, so the fight starts the same way every time. Korash, the
-    // reference build, rather than the sample: aiming wants a caster.
+    // Seeded, so the fight starts the same way every time. Mira, the
+    // caster the rules are tested against, rather than the sample: aiming
+    // wants a caster.
     final game = await GameController.start([
-      File('../../packages/pf2e_core/test/fixtures/korash.json')
+      File('../../packages/pf2e_core/test/fixtures/mira.json')
           .readAsStringSync(),
     ], seed: 3);
     await pumpEventQueue();

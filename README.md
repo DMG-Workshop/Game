@@ -18,11 +18,11 @@ tablet or a desktop browser far more gracefully than a tactical grid would.
 ## Design decisions so far
 
 **Text-first, MUD-flavoured.** The character's identity lives in its skill
-choices, not its attack bonus. Korash — the reference build — has Lore: Undead
-at +14, Deception and Diplomacy at +13, and Religion at untrained +0. A text
-game where skills open doors makes every one of those choices load-bearing; a
-tactical combat sim reduces him to "+15 to hit" and the import becomes
-decoration.
+choices, not its attack bonus. Mira — the caster the rules are tested
+against — has Lore: Undead at +14, Arcana and Occultism at +14, and Religion
+at untrained +1. A text game where skills open doors makes every one of those
+choices load-bearing; a tactical combat sim reduces her to "+12 spell attack"
+and the import becomes decoration.
 
 It also collapses the largest cost. No sprites, tilesets, or animation means
 effort goes into the rules engine, and world content becomes data rather than
@@ -105,27 +105,27 @@ flutter run                       # or: flutter build web --no-web-resources-cdn
 Start a new game with the JSON Pathbuilder 2e exports, or with the sample
 character: Torvin Ashgrove, a level 5 human fighter
 (`packages/game_core/assets/characters/torvin.json`), who is also who the
-terminal game starts with when it is given no `--characters`. Korash, the
-reference build the rules are tested against, stays in `pf2e_core`'s test
-fixtures.
+terminal game starts with when it is given no `--characters`. Mira Quell, a
+Wizard/Witch 6 in `pf2e_core`'s test fixtures, is the caster the rules are
+tested against.
 
 `pf2e_core` proves that a Pathbuilder export contains enough to rebuild a full
 character sheet. `game_core` proves the loop on top of it.
 
 ## Status
 
-`pf2e_core` imports a real export, reproduces its sheet exactly, and resolves
-checks against it. Every sheet value is pinned against the Pathbuilder display
-for build 472704:
+`pf2e_core` imports a Pathbuilder export, rebuilds its sheet, and resolves
+checks against it. Every sheet value of the test fixture is pinned, worked
+out line by line from the rules:
 
 ```
-$ dart run pf2e_core:sheet packages/pf2e_core/test/fixtures/korash.json
+$ dart run pf2e_core:sheet packages/pf2e_core/test/fixtures/mira.json
 
-Korash Blackearth - Magus/Necromancer 6
-Orc Dragonblood | Undertaker | Medium
-Str 19 (+4), Dex 10 (+0), Con 14 (+2), Int 18 (+4), Wis 10 (+0), Cha 16 (+3)
-AC 25  HP 70  Speed 20ft  Class DC 22
-Fortitude +12 (E)  Reflex +10 (E)  Will +10 (E)
+Mira Quell - Wizard/Witch 6
+Human Skilled Human | Hermit | Medium
+Str 10 (+0), Dex 16 (+3), Con 14 (+2), Int 19 (+4), Wis 12 (+1), Cha 12 (+1)
+AC 22  HP 56  Speed 30ft  Class DC 22
+Fortitude +10 (T)  Reflex +13 (E)  Will +11 (E)
 ```
 
 Check resolution covers the four degrees of success and the natural 20/1
@@ -140,8 +140,8 @@ the whole design argument on its own:
 $ dart run game_core:play --seed=12 --choices=examine-body,descend
 
   1. Examine the body properly  [Lore: Undead +14 vs DC 18]
-  2. Recite the funeral rites over him  [Religion +0 vs DC 15]
-  3. Offer the widow your condolences  [Diplomacy +13 vs DC 20]
+  2. Recite the funeral rites over him  [Religion +1 vs DC 15]
+  3. Offer the widow your condolences  [Diplomacy +11 vs DC 20]
   4. Collect your fee and go
 
 > examine-body
@@ -150,8 +150,8 @@ $ dart run game_core:play --seed=12 --choices=examine-body,descend
 ```
 
 The same character is expert at reading a corpse and untrained at reciting
-over it. In a combat sim both collapse to "+15 to hit"; here they are the
-content.
+over it. In a combat sim both collapse to "+12 spell attack"; here they are
+the content.
 
 A party of four is stored with full import history. Re-importing after a
 level-up proposes an update rather than applying one, listing exactly what
@@ -161,15 +161,15 @@ state can always be re-derived.
 With a party, the menu names who would roll:
 
 ```
-  1. Examine the body properly  [Korash Blackearth: Lore: Undead +14 vs DC 18]
+  1. Examine the body properly  [Mira Quell: Lore: Undead +14 vs DC 18]
   2. Recite the funeral rites over him  [Sela Finch: Religion +2 vs DC 15]
-       also: korash +0
+       also: mira +1
 ```
 
-Korash is the undertaker and he is *worse* at reciting funeral rites than the
-rogue, because both are untrained and she has the Wisdom. Nobody authored
-that; it falls out of two real character sheets meeting one scene. It is the
-clearest evidence so far that the design bet is sound.
+Mira has read everything about the dead and is *worse* at reciting funeral
+rites than the rogue, because both are untrained and Sela has the Wisdom.
+Nobody authored that; it falls out of two character sheets meeting one
+scene. It is the clearest evidence so far that the design bet is sound.
 
 **Valorheim is walkable.** Seventeen rooms, bidirectional exits, NPCs who
 answer keywords, weather and a day cycle:

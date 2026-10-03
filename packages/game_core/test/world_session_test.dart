@@ -7,9 +7,12 @@ import 'package:test/test.dart';
 
 import 'campaign_test.dart' show loadShatteredSeals;
 
-ImportedCharacter _korash() => const PathbuilderImporter()
-    .importJson(
-        File('../pf2e_core/test/fixtures/korash.json').readAsStringSync())
+ImportedCharacter _mira() => const PathbuilderImporter()
+    .importJson(File('../pf2e_core/test/fixtures/mira.json').readAsStringSync())
+    .character;
+
+ImportedCharacter _torvin() => const PathbuilderImporter()
+    .importJson(File('assets/characters/torvin.json').readAsStringSync())
     .character;
 
 WorldSession newWorld({
@@ -18,10 +21,15 @@ WorldSession newWorld({
   Set<String>? flags,
   int hour = 8,
   Campaign? campaign,
+  bool fighter = false,
 }) =>
     WorldSession(
       campaign: campaign ?? loadShatteredSeals(),
-      actors: [SessionActor(id: 'korash', character: _korash())],
+      actors: [
+        fighter
+            ? SessionActor(id: 'torvin', character: _torvin())
+            : SessionActor(id: 'mira', character: _mira()),
+      ],
       roller: DiceRoller(seed),
       roomId: room,
       flags: flags,
@@ -368,7 +376,7 @@ void main() {
     setUpAll(() => campaign = loadShatteredSeals());
 
     WorldSession withPack(List<String> itemIds) {
-      final world = newWorld(campaign: campaign);
+      final world = newWorld(campaign: campaign, fighter: true);
       for (final id in itemIds) {
         world.inventory.add(id);
       }
@@ -393,24 +401,24 @@ void main() {
 
     test('wearing better armour is worth exactly what the rules say', () {
       final world = withPack(['a_011_monarchs_vestment']);
-      expect(world.statsFor('korash').armorClass, 25);
+      expect(world.statsFor('torvin').armorClass, 23);
 
       final result = world.equip('monarch');
       expect(result.slot, EquipSlot.armor);
-      expect(result.actor.id, 'korash');
-      // Full plate +6 and a +2 rune, against the +1 full plate he came in.
-      expect(world.statsFor('korash').armorClass, 26);
+      expect(result.actor.id, 'torvin');
+      // Full plate +6 and a +2 rune, against the plain full plate he came in.
+      expect(world.statsFor('torvin').armorClass, 25);
     });
 
     test('a smaller weapon keeps the attack and costs the damage', () {
-      // The dagger is +1 striking like his scythe, so it swings just as
-      // often; it is the die that is smaller, and that is the trade.
+      // The dagger is +1 striking like his longsword, so it swings just as
+      // well; it is the die that is smaller, and that is the trade.
       final world = withPack(['w_006_shadowbane_dagger']);
-      expect(world.statsFor('korash').damage.toString(), '2d10+4');
+      expect(world.statsFor('torvin').damage.toString(), '2d8+4');
 
       world.equip('shadowbane');
-      final after = world.statsFor('korash');
-      expect(after.attackBonus, 15);
+      final after = world.statsFor('torvin');
+      expect(after.attackBonus, 16);
       expect(after.damage.toString(), '2d4+4');
     });
 
@@ -418,15 +426,17 @@ void main() {
       final world = newWorld(
         campaign: campaign,
         room: 'WW_002_Deep',
+        fighter: true,
       );
       world.inventory.add('w_019_the_last_nail');
       world.equip('last nail');
 
       final fight = world.beginEncounter();
-      final korash = fight.party.single;
-      // Major striking, 1d6 base: four dice and Strength, at +3 potency.
-      expect(korash.damage.toString(), '4d6+4');
-      expect(korash.attackBonus, 17);
+      final torvin = fight.party.single;
+      // Major striking, 1d6 base: four dice and Strength, at +3 potency:
+      // master 11, Strength 4, +3.
+      expect(torvin.damage.toString(), '4d6+4');
+      expect(torvin.attackBonus, 18);
     });
 
     test('taking it off puts the imported kit back', () {
@@ -434,7 +444,7 @@ void main() {
       world.equip('shadowbane');
       final removed = world.unequip('weapon');
       expect(removed.removed?.id, 'w_006_shadowbane_dagger');
-      expect(world.statsFor('korash').damage.toString(), '2d10+4');
+      expect(world.statsFor('torvin').damage.toString(), '2d8+4');
       expect(world.inventory.isCarrying('w_006_shadowbane_dagger'), isTrue);
     });
 
@@ -465,7 +475,7 @@ void main() {
     test('refuses somebody who is not in the party', () {
       expect(() => newWorld(campaign: campaign).statsFor('nobody'),
           throwsA(isA<InvalidMoveException>()));
-      expect(newWorld(campaign: campaign).knowsActor('korash'), isTrue);
+      expect(newWorld(campaign: campaign).knowsActor('mira'), isTrue);
       expect(newWorld(campaign: campaign).knowsActor('liora'), isFalse);
     });
 
@@ -480,14 +490,14 @@ void main() {
 
       final restored = WorldSession.restore(
         campaign: campaign,
-        actors: [SessionActor(id: 'korash', character: _korash())],
+        actors: [SessionActor(id: 'torvin', character: _torvin())],
         snapshot:
             jsonDecode(jsonEncode(world.snapshot())) as Map<String, Object?>,
       );
       expect(restored.inventory.carried.map((i) => i.id),
           world.inventory.carried.map((i) => i.id));
-      expect(restored.statsFor('korash').armorClass, 26);
-      expect(restored.statsFor('korash').damage.toString(), '2d4+4');
+      expect(restored.statsFor('torvin').armorClass, 25);
+      expect(restored.statsFor('torvin').damage.toString(), '2d4+4');
     });
 
     test('a save from before the pack existed keeps its loot', () {
@@ -495,7 +505,7 @@ void main() {
       // gear comes back into the pack rather than vanishing.
       final restored = WorldSession.restore(
         campaign: campaign,
-        actors: [SessionActor(id: 'korash', character: _korash())],
+        actors: [SessionActor(id: 'mira', character: _mira())],
         snapshot: {
           'campaignId': campaign.id,
           'roomId': 'MH_001_Square',
@@ -623,7 +633,7 @@ void main() {
 
       final resumed = WorldSession.restore(
         campaign: loadShatteredSeals(),
-        actors: [SessionActor(id: 'korash', character: _korash())],
+        actors: [SessionActor(id: 'mira', character: _mira())],
         snapshot: world.snapshot(),
       );
 
@@ -640,7 +650,7 @@ void main() {
       expect(
         () => WorldSession.restore(
           campaign: loadShatteredSeals(),
-          actors: [SessionActor(id: 'korash', character: _korash())],
+          actors: [SessionActor(id: 'mira', character: _mira())],
           snapshot: snapshot,
         ),
         throwsArgumentError,

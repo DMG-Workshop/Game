@@ -8,7 +8,7 @@ import 'helpers.dart';
 GameSession vaultSession({int seed = 1}) => GameSession(
       adventure: loadQuietWake(),
       actors: [
-        SessionActor(id: 'korash', character: loadKorash()),
+        SessionActor(id: 'mira', character: loadMira()),
         SessionActor(id: 'sela', character: loadSela()),
       ],
       roller: DiceRoller(seed),
@@ -34,7 +34,7 @@ void main() {
         () => GameSession(
           adventure: loadQuietWake(),
           actors: [
-            SessionActor(id: 'a', character: loadKorash()),
+            SessionActor(id: 'a', character: loadMira()),
             SessionActor(id: 'a', character: loadSela()),
           ],
           roller: DiceRoller(1),
@@ -47,18 +47,18 @@ void main() {
       final session = newSession();
       expect(session.actors, hasLength(1));
       expect(session.primary.id, 'pc');
-      expect(session.character.name, 'Korash Blackearth');
+      expect(session.character.name, 'Mira Quell');
     });
 
     test('a party can be built from a roster', () {
       final party = Party(id: 'p', name: 'P');
       final store = CharacterStore(party: party, idGenerator: () => 'a');
-      store.importDirect(loadKorashPayload());
+      store.importDirect(loadMiraPayload());
 
       final actors = party.toActors();
       expect(actors, hasLength(1));
       expect(actors.single.id, 'a');
-      expect(actors.single.name, 'Korash Blackearth');
+      expect(actors.single.name, 'Mira Quell');
     });
   });
 
@@ -66,8 +66,8 @@ void main() {
     test('ranks everyone who can attempt a check, best first', () {
       final session = newPartySession();
       final ranked = session.candidatesFor('speak-widow');
-      expect(ranked.map((c) => c.actor.id), ['korash', 'sela']);
-      expect(ranked.first.stat.total, 13); // Korash Diplomacy
+      expect(ranked.map((c) => c.actor.id), ['mira', 'sela']);
+      expect(ranked.first.stat.total, 11); // Mira Diplomacy
       expect(ranked.last.stat.total, 9); // Sela Diplomacy
     });
 
@@ -76,18 +76,18 @@ void main() {
       final session = newPartySession();
       final ranked = session.candidatesFor('examine-body');
       expect(ranked, hasLength(1));
-      expect(ranked.single.actor.id, 'korash');
+      expect(ranked.single.actor.id, 'mira');
     });
 
     test('the best at a check need not be the obvious character', () {
       // Both are untrained in Religion, so the rogue's Wisdom beats the
-      // undertaker's. Emergent, and exactly the texture the design wants.
+      // wizard's. Emergent, and exactly the texture the design wants.
       final session = newPartySession();
       final ranked = session.candidatesFor('recite-rites');
       expect(ranked.first.actor.id, 'sela');
       expect(ranked.first.stat.total, 2);
-      expect(ranked.last.actor.id, 'korash');
-      expect(ranked.last.stat.total, 0);
+      expect(ranked.last.actor.id, 'mira');
+      expect(ranked.last.stat.total, 1);
     });
 
     test('is empty for an option with no check', () {
@@ -102,7 +102,7 @@ void main() {
 
     test('suggests the best candidate', () {
       final session = newPartySession();
-      expect(session.suggestedActorFor('examine-body')!.actor.id, 'korash');
+      expect(session.suggestedActorFor('examine-body')!.actor.id, 'mira');
       expect(session.suggestedActorFor('recite-rites')!.actor.id, 'sela');
       expect(session.suggestedActorFor('leave'), isNull);
     });
@@ -118,10 +118,10 @@ void main() {
 
     test('a named actor rolls instead, even when worse', () {
       final session = newPartySession(seed: 7);
-      final event = session.choose('recite-rites', actorId: 'korash');
-      expect(event.actorId, 'korash');
-      expect(event.actorName, 'Korash Blackearth');
-      expect(event.check!.modifier, 0);
+      final event = session.choose('recite-rites', actorId: 'mira');
+      expect(event.actorId, 'mira');
+      expect(event.actorName, 'Mira Quell');
+      expect(event.check!.modifier, 1);
     });
 
     test('refuses an actor who has no such statistic', () {
@@ -140,20 +140,20 @@ void main() {
       final session = newPartySession();
       final event = session.choose('leave');
       expect(event.check, isNull);
-      expect(event.actorId, 'korash');
+      expect(event.actorId, 'mira');
     });
   });
 
   group('gates with a party', () {
     test('an option opens when any one actor satisfies it', () {
-      // Only Korash is an expert in Lore: Undead, but the option is offered.
+      // Only Mira is an expert in Lore: Undead, but the option is offered.
       final session = vaultSession();
       expect(session.availableOptions().map((o) => o.id), contains('command'));
     });
 
     test('but only that actor may take it', () {
       final session = vaultSession();
-      expect(session.choose('command', actorId: 'korash').actorId, 'korash');
+      expect(session.choose('command', actorId: 'mira').actorId, 'mira');
 
       final another = vaultSession();
       expect(() => another.choose('command', actorId: 'sela'),
@@ -163,7 +163,7 @@ void main() {
     test('a gated option only ranks actors who pass the gate', () {
       final session = vaultSession();
       final ranked = session.candidatesFor('command');
-      expect(ranked.map((c) => c.actor.id), ['korash']);
+      expect(ranked.map((c) => c.actor.id), ['mira']);
     });
   });
 
@@ -175,7 +175,7 @@ void main() {
       final resumed = GameSession.restore(
         adventure: loadQuietWake(),
         actors: [
-          SessionActor(id: 'korash', character: loadKorash()),
+          SessionActor(id: 'mira', character: loadMira()),
           SessionActor(id: 'sela', character: loadSela()),
         ],
         snapshot: original.snapshot(),
@@ -189,7 +189,7 @@ void main() {
       final session = newPartySession(seed: 3);
       session.choose('recite-rites');
       session.choose('examine-body');
-      expect(session.log.map((e) => e.actorId), ['sela', 'korash']);
+      expect(session.log.map((e) => e.actorId), ['sela', 'mira']);
     });
   });
 }

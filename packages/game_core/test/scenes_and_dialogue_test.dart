@@ -11,17 +11,25 @@ WorldSession _world(String room,
         {Set<String> flags = const {}, int hour = 8}) =>
     WorldSession(
       campaign: _campaign,
-      actors: [SessionActor(id: 'korash', character: loadKorash())],
+      actors: [SessionActor(id: 'mira', character: loadMira())],
       roller: DiceRoller(3),
       roomId: room,
       flags: flags,
       hour: hour,
     );
 
-EncounterSession _fight(String encounterId, {int seed = 1}) => EncounterSession(
+/// A fight for Mira, the wizard, or for Torvin, the fighter, when it is
+/// to be won with a sword.
+EncounterSession _fight(String encounterId,
+        {int seed = 1, bool fighter = false}) =>
+    EncounterSession(
       encounter: _campaign.bestiary.encounterById(encounterId)!,
       bestiary: _campaign.bestiary,
-      actors: [SessionActor(id: 'korash', character: loadKorash())],
+      actors: [
+        fighter
+            ? SessionActor(id: 'torvin', character: loadTorvin())
+            : SessionActor(id: 'mira', character: loadMira()),
+      ],
       roller: DiceRoller(seed),
     );
 
@@ -115,7 +123,7 @@ void main() {
       final script = FightScript(_fight('e_mere_road_cutthroats'));
       final lines = script.opening();
       expect(lines.first.speaker, 'Covenant Cutthroat');
-      expect(lines[1].speaker, 'Korash Blackearth');
+      expect(lines[1].speaker, 'Mira Quell');
       expect(lines.every((l) => l.isSpeech), isTrue);
     });
 
@@ -123,7 +131,7 @@ void main() {
       final script = FightScript(_fight('e_whisperwood_thralls'));
       final lines = script.opening();
       expect(lines.first.isSpeech, isFalse);
-      expect(lines.last.speaker, 'Korash Blackearth');
+      expect(lines.last.speaker, 'Mira Quell');
     });
 
     test('one ambiance line a round, and not twice in a round', () {
@@ -151,7 +159,7 @@ void main() {
       final said = script.after([strike]);
       expect(said.first.speaker, 'Covenant Cutthroat');
       expect(said.first.text, contains('Wendel'));
-      expect(said.last.speaker, 'Korash Blackearth');
+      expect(said.last.speaker, 'Mira Quell');
       expect(script.after([strike]), isEmpty, reason: 'once is enough');
     });
 
@@ -223,7 +231,7 @@ void main() {
       final defeat = FightScript(lost).closing();
       expect(defeat.single.speaker, 'The Hollow Avatar');
 
-      final won = _fight('e_whisperwood_thralls');
+      final won = _fight('e_whisperwood_thralls', fighter: true);
       guard = 0;
       while (!won.isOver && guard++ < 500) {
         if (won.isPartyTurn) {
@@ -240,7 +248,7 @@ void main() {
       }
       expect(won.outcome, EncounterOutcome.victory);
       final victory = FightScript(won).closing();
-      expect(victory.last.speaker, 'Korash Blackearth');
+      expect(victory.last.speaker, 'Torvin Ashgrove');
     });
 
     test('saying things rolls no dice', () {
@@ -248,7 +256,7 @@ void main() {
       final fight = EncounterSession(
         encounter: _campaign.bestiary.encounterById('e_ritual_chamber')!,
         bestiary: _campaign.bestiary,
-        actors: [SessionActor(id: 'korash', character: loadKorash())],
+        actors: [SessionActor(id: 'mira', character: loadMira())],
         roller: roller,
       );
       final before = roller.state;
@@ -271,7 +279,7 @@ void main() {
     test('picking something up comes with a word', () {
       final world = _world('RF_002_OakGrove');
       final taken = world.take('doll');
-      expect(taken.spoken!.who.name, 'Korash Blackearth');
+      expect(taken.spoken!.who.name, 'Mira Quell');
       expect(taken.spoken!.line, contains('Dry'));
     });
 
@@ -289,7 +297,7 @@ void main() {
         expect(type.remark, isNotNull, reason: type.id);
       }
       final world = _world('MH_001_Square');
-      expect(world.remarkOn(world.weatherNow!)!.who.name, 'Korash Blackearth');
+      expect(world.remarkOn(world.weatherNow!)!.who.name, 'Mira Quell');
     });
 
     test('a night has its sounds, a word before sleep, and a waking', () {

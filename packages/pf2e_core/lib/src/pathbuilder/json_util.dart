@@ -4,8 +4,8 @@ const pathbuilderUnsetSentinel = 'Not set';
 /// Reads a string, trimming whitespace and mapping Pathbuilder's `"Not set"`
 /// sentinel and empty strings to null.
 ///
-/// Exported names can carry leading whitespace — the reference payload's name
-/// is `" Korash Blackearth"` — so trimming is not optional.
+/// Exported names can carry leading whitespace, as in `" Mira Quell"`, so
+/// trimming is not optional.
 String? readOptionalString(Object? raw) {
   if (raw == null) return null;
   final value = raw.toString().trim();

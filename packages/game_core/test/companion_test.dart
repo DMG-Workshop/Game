@@ -21,14 +21,14 @@ WorldSession _world(
 }) =>
     WorldSession(
       campaign: _campaign,
-      actors: actors ?? [SessionActor(id: 'korash', character: loadKorash())],
+      actors: actors ?? [SessionActor(id: 'mira', character: loadMira())],
       roller: DiceRoller(3),
       roomId: room,
       spells: _spells,
       scaleFights: scale,
     );
 
-/// [npc], standing in [room], taken on by Korash: walked over to rather
+/// [npc], standing in [room], taken on by Mira: walked over to rather
 /// than found there, since some of them are a long road from the start.
 WorldSession _withCompanion(String npc, {String room = 'WW_002_Deep'}) {
   final home = _campaign.npcs.byId(npc)!.location;
@@ -146,7 +146,7 @@ void main() {
       final bren = world.recruit('bren');
       expect(bren.name, 'Bren Cask');
       expect(bren.character.level, 6, reason: 'the party\'s level');
-      expect(world.actors.map((a) => a.id), ['korash', _bren]);
+      expect(world.actors.map((a) => a.id), ['mira', _bren]);
       expect(world.isCompanion(_bren), isTrue);
       expect(world.inventory.coin, coin - 2000);
       expect(world.vitalsOf(_bren).hp, world.vitalsOf(_bren).maxHp);
@@ -169,14 +169,13 @@ void main() {
 
     test('an imported character is not somebody to part with', () {
       final world = _world('MH_003_Tavern');
-      expect(
-          () => world.dismiss('korash'), throwsA(isA<InvalidMoveException>()));
+      expect(() => world.dismiss('mira'), throwsA(isA<InvalidMoveException>()));
     });
 
     test('nobody joins a party of four, or for coin the party has not got', () {
       final four = _world('MH_003_Tavern', actors: [
         for (var i = 0; i < 4; i++)
-          SessionActor(id: 'pc$i', character: loadKorash()),
+          SessionActor(id: 'pc$i', character: loadMira()),
       ]);
       expect(
           () => four.recruit('bren'),
@@ -204,18 +203,18 @@ void main() {
         snapshot: snapshot,
         spells: _spells,
       );
-      expect(back.actors.map((a) => a.id), ['korash', _bren]);
+      expect(back.actors.map((a) => a.id), ['mira', _bren]);
       expect(back.isCompanion(_bren), isTrue);
       expect(back.vitalsOf(_bren).hp, 50);
 
-      // Korash levelled up in Pathbuilder and was re-imported.
+      // Mira levelled up in Pathbuilder and was re-imported.
       final seven = const PathbuilderImporter()
-          .importJson(loadKorashPayload()
+          .importJson(loadMiraPayload()
               .replaceFirst(RegExp(r'"level":\s*6'), '"level": 7'))
           .character;
       final levelled = WorldSession.restore(
         campaign: _campaign,
-        actors: [SessionActor(id: 'korash', character: seven)],
+        actors: [SessionActor(id: 'mira', character: seven)],
         snapshot: snapshot,
         spells: _spells,
       );
@@ -230,7 +229,7 @@ void main() {
       final fight = world.beginEncounter();
       expect(fight.enemies.map((e) => e.name), ['Hollow Thrall'],
           reason: 'one of two thralls for two, and not weakened');
-      expect(fight.party.map((c) => c.id).toSet(), {'korash', _bren});
+      expect(fight.party.map((c) => c.id).toSet(), {'mira', _bren});
     });
   });
 
@@ -247,7 +246,7 @@ void main() {
       final fight = _withCompanion(_tamsin).beginEncounter();
       final tamsin = advanceTo(fight, _tamsin);
       expect(tamsin.reachZones, fight.zones.length - 1);
-      expect(fight.combatantById('korash')!.reachZones, 0);
+      expect(fight.combatantById('mira')!.reachZones, 0);
       expect(fight.targetsInReach(), isNotEmpty,
           reason: 'the thralls come on from near, in bowshot');
     });
@@ -255,19 +254,19 @@ void main() {
     test('Heal brings a fallen ally back to their feet', () {
       final fight = _withCompanion(_wren).beginEncounter();
       advanceTo(fight, _wren);
-      final korash = fight.combatantById('korash')!;
-      korash.takeDamage(korash.hp);
-      expect(korash.isDown, isTrue);
+      final mira = fight.combatantById('mira')!;
+      mira.takeDamage(mira.hp);
+      expect(mira.isDown, isTrue);
 
       final heal = fight.castOptions().firstWhere((o) => o.spell.heals);
-      expect(fight.aimsFor(heal).first.target.id, 'korash',
+      expect(fight.aimsFor(heal).first.target.id, 'mira',
           reason: 'the worst hurt first');
-      final result = fight.cast('Heal', targetId: 'korash');
+      final result = fight.cast('Heal', targetId: 'mira');
       final mended = result.mended.single;
-      expect(mended.target.id, 'korash');
+      expect(mended.target.id, 'mira');
       expect(mended.healed, greaterThan(0));
       expect(mended.revived, isTrue);
-      expect(korash.isDown, isFalse);
+      expect(mira.isDown, isFalse);
       expect(result.hits, isEmpty, reason: 'nobody was struck');
     });
   });
@@ -275,7 +274,7 @@ void main() {
   group('healing between fights', () {
     test('the cleric casts Heal on whoever is worst hurt', () {
       final world = _withCompanion(_wren, room: 'MH_004_Temple');
-      world.vitalsOf('korash').hp = 10;
+      world.vitalsOf('mira').hp = 10;
       final before = world
           .castOptions(_wren)
           .where((o) => o.spell.heals)
@@ -283,10 +282,10 @@ void main() {
 
       final cast = world.castHealing('heal');
       expect(cast.caster.id, _wren);
-      expect(cast.patient.id, 'korash');
+      expect(cast.patient.id, 'mira');
       expect(cast.option.rank, 3, reason: 'the highest rank left');
       expect(cast.healed, greaterThan(0));
-      expect(world.vitalsOf('korash').hp, 10 + cast.healed);
+      expect(world.vitalsOf('mira').hp, 10 + cast.healed);
       final after = world
           .castOptions(_wren)
           .where((o) => o.spell.heals)
@@ -296,7 +295,7 @@ void main() {
 
     test('says so when nobody is hurt, or nobody can cast it', () {
       final world = _withCompanion(_wren, room: 'MH_004_Temple');
-      expect(() => world.castHealing('heal', who: 'korash'),
+      expect(() => world.castHealing('heal', who: 'mira'),
           throwsA(isA<InvalidMoveException>()));
       expect(
           () => _world('MH_004_Temple').castHealing('heal'),

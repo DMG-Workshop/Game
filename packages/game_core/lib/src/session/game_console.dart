@@ -1270,7 +1270,7 @@ class GameConsole {
     return count > 1 ? '${item.name} x$count' : item.name;
   }
 
-  /// "  (on Korash Blackearth)", for something being worn or wielded.
+  /// "  (on Torvin Ashgrove)", for something being worn or wielded.
   String _wornBy(WorldSession session, GearItem item) {
     final holders = session.inventory.holdersOf(item.id);
     return holders.isEmpty
@@ -1739,7 +1739,7 @@ class GameConsole {
     }
   }
 
-  /// Accepts "equip nail" and "equip korash nail".
+  /// Accepts "equip nail" and "equip torvin nail".
   bool _equip(WorldSession session, String rest) {
     if (rest.isEmpty) {
       out.writeln('Equip what?');
@@ -2714,7 +2714,7 @@ class GameConsole {
     };
   }
 
-  /// "Hollow Thrall 2 and Korash Blackearth — your own side too".
+  /// "Hollow Thrall 2 and Torvin Ashgrove — your own side too".
   String _catches(EncounterSession fight, List<Combatant> caught) {
     final names = [for (final c in caught) _called(fight, c)];
     final list = names.length == 1

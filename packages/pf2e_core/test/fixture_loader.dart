@@ -11,7 +11,10 @@ ImportResult loadFixture(String name) {
   return const PathbuilderImporter().importJson(file.readAsStringSync());
 }
 
-/// Korash Blackearth, an Orc Magus/Necromancer 6 exported from Pathbuilder
-/// build 472704. Every expected value in these tests was read off the
-/// Pathbuilder character sheet for this build, not computed by this package.
-ImportResult loadKorash() => loadFixture('korash');
+/// Mira Quell, a Human Wizard/Witch 6 with Free Archetype and Ancestry
+/// Paragon. Written by hand in Pathbuilder 2e's export format, with the
+/// quirks real exports have: a name with a leading space, "Not set"
+/// sentinels, spell lists out of rank order, feats granted through parent
+/// and child choices, a Starfinder skill or two. The expected values in
+/// these tests are worked out from the rules, line by line.
+ImportResult loadMira() => loadFixture('mira');

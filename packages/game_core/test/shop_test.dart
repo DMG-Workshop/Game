@@ -16,7 +16,7 @@ WorldSession _world({
 }) =>
     WorldSession(
       campaign: _campaign,
-      actors: actors ?? [SessionActor(id: 'korash', character: loadKorash())],
+      actors: actors ?? [SessionActor(id: 'mira', character: loadMira())],
       roller: DiceRoller(3),
       roomId: room,
       flags: flags,
@@ -84,13 +84,13 @@ void main() {
 
   group('the purse', () {
     test('starts with what the character sheet says they carry', () {
-      // Korash's Pathbuilder export has 270 gp in it, and it is his.
+      // Mira's Pathbuilder export has 270 gp in it, and it is his.
       expect(_world().inventory.coin, _gp(270));
     });
 
     test('pools a party', () {
       final world = _world(actors: [
-        SessionActor(id: 'korash', character: loadKorash()),
+        SessionActor(id: 'mira', character: loadMira()),
         SessionActor(id: 'sela', character: loadSela()),
       ]);
       expect(world.inventory.coin, _gp(270 + 95));
@@ -111,7 +111,7 @@ void main() {
     test('a save from before coin existed gets the sheet coin back', () {
       final restored = WorldSession.restore(
         campaign: _campaign,
-        actors: [SessionActor(id: 'korash', character: loadKorash())],
+        actors: [SessionActor(id: 'mira', character: loadMira())],
         snapshot: {
           'campaignId': _campaign.id,
           'roomId': 'MH_001_Square',
@@ -226,8 +226,8 @@ void main() {
       world.equip('shadowbane');
       expect(
         () => world.sell('shadowbane'),
-        throwsA(isA<InvalidMoveException>().having((e) => e.message, 'message',
-            contains('Korash Blackearth is using'))),
+        throwsA(isA<InvalidMoveException>().having(
+            (e) => e.message, 'message', contains('Mira Quell is using'))),
       );
       world.unequip('weapon');
       expect(world.sell('shadowbane').price, _gp(80));

@@ -9,7 +9,7 @@ void main() {
   test('a new game begins where the first quest does, not at room "A"', () {
     final world = WorldSession(
       campaign: loadShatteredSeals(),
-      actors: [SessionActor(id: 'korash', character: loadKorash())],
+      actors: [SessionActor(id: 'mira', character: loadMira())],
       roller: DiceRoller(1),
     );
     // Shadows Over Millhaven starts on enter_MH_001; the Bloodstone Mine
@@ -20,7 +20,7 @@ void main() {
   test('the console wraps prose to the width it is given', () async {
     final world = WorldSession(
       campaign: loadShatteredSeals(),
-      actors: [SessionActor(id: 'korash', character: loadKorash())],
+      actors: [SessionActor(id: 'mira', character: loadMira())],
       roller: DiceRoller(1),
     );
     Future<String?> none({String prompt = ''}) async => null;

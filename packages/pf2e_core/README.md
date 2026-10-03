@@ -14,9 +14,9 @@ import 'package:pf2e_core/pf2e_core.dart';
 final result = const PathbuilderImporter().importJson(payload);
 final stats = DerivedStats(result.character);
 
-print(stats.armorClass);                       // 25
-print(stats.skill(CoreSkill.deception)!.total); // 13
-print(stats.lore('Undead')!.total);             // 14
+print(stats.armorClass);                    // 22
+print(stats.skill(CoreSkill.arcana)!.total); // 14
+print(stats.lore('Undead')!.total);          // 14
 
 for (final note in result.report.notes) {
   print(note); // anything dropped, guessed, or inconsistent
@@ -26,7 +26,7 @@ for (final note in result.report.notes) {
 There is a CLI for eyeballing an import against Pathbuilder's own display:
 
 ```
-dart run pf2e_core:sheet test/fixtures/korash.json --report
+dart run pf2e_core:sheet test/fixtures/mira.json --report
 cat build.json | dart run pf2e_core:sheet
 ```
 
@@ -43,8 +43,9 @@ valid export ID, and the two should not be used interchangeably.
 ## Schema notes
 
 The export format carries a decade of accumulated legacy. Everything below is
-handled by the importer and pinned by a test; the reference payload is
-`test/fixtures/korash.json`, an Orc Magus/Necromancer 6.
+handled by the importer and pinned by a test; the test payload is
+`test/fixtures/mira.json`, a Human Wizard/Witch 6 written in the export format
+with each of these traps in it.
 
 | Trap | Handling |
 | --- | --- |
@@ -54,7 +55,7 @@ handled by the importer and pinned by a test; the reference payload is
 | `weapons[].str` is the **striking rune**, `abilities.str` is Strength | Separate types |
 | `feats` tuples vary in length (4 or 7 elements) | Bounds-checked accessors |
 | Feat parent keys are concatenated with no delimiter | Matched whole, never parsed apart |
-| `specials` and `feats` overlap (e.g. Reactive Strike) | De-duplicated, reported |
+| `specials` and `feats` overlap (e.g. Reach Spell) | De-duplicated, reported |
 | Free Archetype / Ancestry Paragon have no field | Inferred from feat source labels |
 | `spells` arrives out of rank order (0, 3, 2, 1) | Sorted by `spellLevel`, never by index |
 | `prepared` may repeat a spell | Kept: it is a slot list, not a set |
@@ -69,8 +70,8 @@ proficiency term is the rank bonus **plus the character's level** — unless
 untrained, which contributes nothing at all.
 
 Getting that exception wrong inflates every untrained skill by the character's
-level, and it is the most common porting bug. Korash's Crafting is `+4` (bare
-Intelligence), not `+10`.
+level, and it is the most common porting bug. Mira's Athletics is `+0` (bare
+Strength), not `+6`.
 
 ## Licence
 
@@ -81,8 +82,7 @@ distributing anything.
 
 The package ships no Paizo trademarks, setting material, adventure content, or
 art. The one concentration of licensed expression here is
-`test/fixtures/korash.json`, a real Pathbuilder export naming roughly eighty
-rules elements; it is kept because pinning the importer against a real payload
-is worth more than a synthetic one.
+`test/fixtures/mira.json`, a character in Pathbuilder's export format naming
+some sixty rules elements by name (feats, spells, class features).
 
 Unaffiliated with Paizo and with Pathbuilder. Not legal advice.

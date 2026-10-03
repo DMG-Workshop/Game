@@ -11,7 +11,7 @@ void main() {
       expect(session.availableOptions().map((o) => o.id),
           isNot(contains('descend')));
 
-      // Examining the body sets "suspicious" on a success or better; Korash
+      // Examining the body sets "suspicious" on a success or better; Mira
       // rolls Lore: Undead at +14 against DC 18, so drive it deterministically
       // instead of hoping.
       while (!session.flags.contains('suspicious')) {
@@ -21,10 +21,10 @@ void main() {
     });
 
     test('a proficiency gate opens only at or above its rank', () {
-      final stats = DerivedStats(loadKorash());
+      final stats = DerivedStats(loadMira());
       const flags = <String>{};
 
-      // Korash is expert in Lore: Undead.
+      // Mira is expert in Lore: Undead.
       expect(
           const OptionGate(
                   minProficiencyStat: 'lore:undead',
@@ -46,7 +46,7 @@ void main() {
     });
 
     test('a gate on an unknown statistic stays closed', () {
-      final stats = DerivedStats(loadKorash());
+      final stats = DerivedStats(loadMira());
       expect(
           const OptionGate(
                   minProficiencyStat: 'lore:nonsense',
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('forbidden flags close a gate', () {
-      final stats = DerivedStats(loadKorash());
+      final stats = DerivedStats(loadMira());
       const gate = OptionGate(forbiddenFlags: ['alarmed']);
       expect(gate.allows(const {}, stats), isTrue);
       expect(gate.allows({'alarmed'}, stats), isFalse);
@@ -177,7 +177,7 @@ void main() {
       final snapshot = original.snapshot();
       final resumed = GameSession.restore(
         adventure: loadQuietWake(),
-        actors: [SessionActor(id: 'pc', character: loadKorash())],
+        actors: [SessionActor(id: 'pc', character: loadMira())],
         snapshot: snapshot,
       );
 
@@ -202,7 +202,7 @@ void main() {
       expect(
         () => GameSession.restore(
           adventure: loadQuietWake(),
-          actors: [SessionActor(id: 'pc', character: loadKorash())],
+          actors: [SessionActor(id: 'pc', character: loadMira())],
           snapshot: session.snapshot(),
         ),
         throwsArgumentError,
@@ -212,9 +212,9 @@ void main() {
 
   test('the untrained option is genuinely worse than the expert one', () {
     // The design bet in one assertion: the same character is +14 at reading a
-    // corpse and +0 at reciting over it, and the menu has to show both.
-    final stats = DerivedStats(loadKorash());
+    // corpse and +1 at reciting over it, and the menu has to show both.
+    final stats = DerivedStats(loadMira());
     expect(stats.statByKey('lore:undead')!.total, 14);
-    expect(stats.statByKey('religion')!.total, 0);
+    expect(stats.statByKey('religion')!.total, 1);
   });
 }

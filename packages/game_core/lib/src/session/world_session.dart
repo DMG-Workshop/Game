@@ -2108,7 +2108,7 @@ class WorldSession {
     return shop;
   }
 
-  /// Actor ids as a player would read them: "Korash Blackearth and Sela".
+  /// Actor ids as a player would read them: "Torvin Ashgrove and Sela".
   String _namesOf(List<String> actorIds) => actorIds
       .map((id) => _actors.where((a) => a.id == id).firstOrNull?.name ?? id)
       .join(' and ');

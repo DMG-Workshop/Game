@@ -24,7 +24,7 @@ WorldSession _world({
 }) {
   final world = WorldSession(
     campaign: _campaign,
-    actors: actors ?? [SessionActor(id: 'korash', character: loadKorash())],
+    actors: actors ?? [SessionActor(id: 'mira', character: loadMira())],
     roller: DiceRoller(3),
     roomId: room,
     spells: _spells,
@@ -83,7 +83,7 @@ void main() {
       expect(bow.level, 0);
       expect(bow.price, 600);
       final stats =
-          EquippedStats(DerivedStats(loadKorash()), Loadout(weapon: bow));
+          EquippedStats(DerivedStats(loadMira()), Loadout(weapon: bow));
       expect(stats.isRanged, isTrue);
       expect(stats.attackAbility, Ability.dexterity);
     });
@@ -138,13 +138,13 @@ void main() {
       for (var seed = 1; seed <= 80; seed++) {
         final probe = WorldSession(
           campaign: _campaign,
-          actors: [SessionActor(id: 'korash', character: loadKorash())],
+          actors: [SessionActor(id: 'mira', character: loadMira())],
           roller: DiceRoller(seed),
         );
         if (probe.whereIs('npc_010_sal') != 'MH_004_Temple') continue;
         final world = WorldSession(
           campaign: _campaign,
-          actors: [SessionActor(id: 'korash', character: loadKorash())],
+          actors: [SessionActor(id: 'mira', character: loadMira())],
           roller: DiceRoller(seed),
           roomId: 'MH_004_Temple',
         );
@@ -170,7 +170,7 @@ void main() {
       for (var seed = 1; seed <= 30; seed++) {
         final world = WorldSession(
           campaign: _campaign,
-          actors: [SessionActor(id: 'korash', character: loadKorash())],
+          actors: [SessionActor(id: 'mira', character: loadMira())],
           roller: DiceRoller(seed),
           roomId: 'WW_002_Deep',
           spells: _spells,
@@ -267,7 +267,7 @@ void main() {
   group('between fights', () {
     test('a wand of Heal mends somebody, once a day', () {
       final world = _world(room: 'MH_004_Temple', carrying: [_healWand]);
-      world.vitalsOf('korash').hp = 20;
+      world.vitalsOf('mira').hp = 20;
       final c = world.castHealing('heal', from: 'wand of heal');
       expect(c.option.item?.id, _healWand);
       expect(c.healed, greaterThan(0));

@@ -19,7 +19,7 @@ WorldSession _world({
   final world = WorldSession(
     campaign: _campaign,
     actors: [
-      SessionActor(id: 'korash', character: loadKorash()),
+      SessionActor(id: 'mira', character: loadMira()),
       if (withSela) SessionActor(id: 'sela', character: loadSela()),
     ],
     roller: DiceRoller(seed),
@@ -46,7 +46,7 @@ void main() {
   group('out of a fight', () {
     test('heals whoever is worst hurt, and the draught is gone', () {
       final world = _world(withSela: true, carrying: [_lesser]);
-      world.vitalsOf('korash').hp = 60; // 60/70 is the lesser hurt
+      world.vitalsOf('mira').hp = 50; // 50/56 is the lesser hurt
       world.vitalsOf('sela').hp = 5;
       final result = world.use('lesser hearth-water');
       expect(result.target, contains('Sela'));
@@ -59,12 +59,12 @@ void main() {
 
     test('goes to whoever it is given to', () {
       final world = _world(withSela: true, carrying: [_minor]);
-      world.vitalsOf('korash').hp = 10;
+      world.vitalsOf('mira').hp = 10;
       world.vitalsOf('sela').hp = world.vitalsOf('sela').maxHp - 1;
       final result = world.use('minor hearth-water', who: 'sela');
       expect(result.target, contains('Sela'));
       expect(result.healed, 1, reason: 'no further than full');
-      expect(world.vitalsOf('korash').hp, 10);
+      expect(world.vitalsOf('mira').hp, 10);
     });
 
     test('is not wasted on somebody whole', () {
@@ -73,7 +73,7 @@ void main() {
       expect(() => world.use('hearth-water'),
           throwsA(isA<InvalidMoveException>()));
       expect(
-          () => world.use('hearth-water', who: 'korash'),
+          () => world.use('hearth-water', who: 'mira'),
           throwsA(isA<InvalidMoveException>()
               .having((e) => e.message, 'message', contains('not hurt'))));
       expect(world.inventory.countOf(_minor), 1, reason: 'still in the pack');
@@ -85,7 +85,7 @@ void main() {
         'w_001_guard_sword',
         'g_007_last_shift_lamp',
       ]);
-      world.vitalsOf('korash').hp = 10;
+      world.vitalsOf('mira').hp = 10;
       String refusal(String what) {
         try {
           world.use(what);
@@ -106,7 +106,7 @@ void main() {
     test('rolls on the world dice, so a seed replays it', () {
       int heal() {
         final world = _world(seed: 11, carrying: [_lesser]);
-        world.vitalsOf('korash').hp = 1;
+        world.vitalsOf('mira').hp = 1;
         return world.use('lesser hearth-water').healed;
       }
 
@@ -117,9 +117,9 @@ void main() {
   group('in a fight', () {
     test('drinking is one action, and what is drunk is gone afterwards', () {
       final world = _world(room: 'WW_002_Deep', carrying: [_lesser]);
-      world.vitalsOf('korash').hp = 20;
+      world.vitalsOf('mira').hp = 20;
       final fight = world.beginEncounter();
-      _turnOf(fight, 'korash');
+      _turnOf(fight, 'mira');
       final before = fight.current.hp;
       final actions = fight.actionsLeft;
       final result = fight.use('lesser hearth-water');
@@ -133,7 +133,7 @@ void main() {
           _world(room: 'WW_002_Deep', withSela: true, carrying: [_lesser]);
       final fight = world.beginEncounter();
       final sela = fight.combatantById('sela')!..hp = 0;
-      _turnOf(fight, 'korash');
+      _turnOf(fight, 'mira');
       expect(sela.isDown, isTrue);
 
       final result = fight.use('lesser hearth-water', targetId: 'sela');
@@ -148,7 +148,7 @@ void main() {
           _world(room: 'WW_002_Deep', withSela: true, carrying: [_lesser]);
       final fight = world.beginEncounter();
       final sela = fight.combatantById('sela')!..hp = 1;
-      _turnOf(fight, 'korash');
+      _turnOf(fight, 'mira');
       sela.zoneIndex = fight.current.zoneIndex + 1;
       expect(
           () => fight.use('hearth-water', targetId: 'sela'),
@@ -160,9 +160,8 @@ void main() {
     test('takes an action to spare', () {
       final world = _world(
           room: 'WW_002_Deep', carrying: [_minor, _minor, _minor, _minor]);
-      world.vitalsOf('korash').hp = 5;
       final fight = world.beginEncounter();
-      _turnOf(fight, 'korash');
+      _turnOf(fight, 'mira');
       fight.current.hp = 5;
       for (var i = 0; i < EncounterSession.actionsPerTurn; i++) {
         fight.use('hearth-water');
