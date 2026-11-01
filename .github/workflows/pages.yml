@@ -33,11 +33,13 @@ jobs:
         run: dart run tool/sync_assets.dart
 
       # The site lives at /<repository>/, not at the root, and carries its
-      # own renderer rather than fetching it from a CDN.
+      # own renderer rather than fetching it from a CDN. The title screen
+      # shows the commit it was built from, and that commit's date.
       - name: Build for the web
         run: >
           flutter build web --release --no-web-resources-cdn
           --base-href /${{ github.event.repository.name }}/
+          --dart-define="BUILD=$(git log -1 --format='%h · %cs')"
 
       - uses: actions/upload-pages-artifact@v3
         with:

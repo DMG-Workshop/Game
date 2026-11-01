@@ -19,3 +19,11 @@ Every merge to `main` builds the web app and publishes it to GitHub Pages
 (`.github/workflows/pages.yml`), at `https://<owner>.github.io/<repository>/`.
 It needs Pages turned on once: Settings → Pages → Source: GitHub Actions.
 Saves live in each browser's own storage.
+
+The title screen shows the commit the site was built from and its date, so
+it is plain whether a deploy has arrived. Pages lets a browser keep each
+file for ten minutes, so `web/revalidate_worker.js`, a small service
+worker, checks every file with the server on each load: the first reload
+after a deploy runs the new build. It keeps nothing for offline play.
+`web/flutter_bootstrap.js` loads the app without Flutter's own service
+worker, which would otherwise replace it.

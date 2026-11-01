@@ -41,6 +41,12 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <script>
+    // So that a reload after a deploy runs the new build: see the worker.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('revalidate_worker.js');
+    }
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
